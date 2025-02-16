@@ -1,10 +1,15 @@
+import { Button } from "@/components/ui/button";
+import { useDataLayer } from "@/providers/DataLayerProvider";
+import { Plus, Upload } from "lucide-react";
+import Papa from "papaparse";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload } from "lucide-react";
-import Papa from "papaparse";
-import { useDataLayer } from "@/providers/DataLayerProvider";
 
-export function CsvUpload() {
+interface CsvUploadProps {
+  compact?: boolean;
+}
+
+export function CsvUpload({ compact = false }: CsvUploadProps) {
   const setData = useDataLayer((state) => state.setData);
 
   const onDrop = useCallback(
@@ -29,6 +34,26 @@ export function CsvUpload() {
     },
     multiple: false,
   });
+
+  const handleClear = () => {
+    setData([]);
+  };
+
+  if (compact) {
+    return (
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleClear}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          New Import
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div

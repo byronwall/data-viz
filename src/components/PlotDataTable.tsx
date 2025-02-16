@@ -1,8 +1,8 @@
 import { useDataLayer } from "@/providers/DataLayerProvider";
 
-export function DataDisplay() {
+export function PlotDataTable() {
   const data = useDataLayer((state) => state.data);
-  console.log(data);
+
   if (!data.length) return null;
 
   const headers = Object.keys(data[0]);

@@ -4,3 +4,5 @@
 - use typescript
 - use tailwind css for styling
 - use react
+- use shadcn/ui for components
+- use lucide-react for icons

@@ -9,16 +9,14 @@ import {
 import { RowChart } from "./charts/RowChart";
 import { BarChart } from "./charts/BarChart";
 import { ScatterPlot } from "./charts/ScatterPlot";
+import { useChartData } from "@/hooks/useChartData";
 
-type Props = {
-  data: any[];
-};
-
-export function PlotManager({ data }: Props) {
+export function PlotManager() {
+  const { getColumns } = useChartData();
   const [charts, setCharts] = useState<ChartSettings[]>([]);
 
-  // Get column names from the first row of data
-  const columns = data.length > 0 ? Object.keys(data[0]) : [];
+  // Get column names
+  const columns = getColumns();
 
   const addRowChart = (field: string) => {
     const newChart: ChartSettings = {
@@ -92,13 +90,11 @@ export function PlotManager({ data }: Props) {
         {charts.map((chart) => {
           switch (chart.type) {
             case "row":
-              return <RowChart key={chart.id} settings={chart} data={data} />;
+              return <RowChart key={chart.id} settings={chart} />;
             case "bar":
-              return <BarChart key={chart.id} settings={chart} data={data} />;
+              return <BarChart key={chart.id} settings={chart} />;
             case "scatter":
-              return (
-                <ScatterPlot key={chart.id} settings={chart} data={data} />
-              );
+              return <ScatterPlot key={chart.id} settings={chart} />;
           }
         })}
       </div>

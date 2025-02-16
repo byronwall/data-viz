@@ -1,13 +1,18 @@
+import { useState } from "react";
 import "./App.css";
-import { ExampleComponent } from "./components/ExampleComponent";
-import { Button } from "./components/ui/button";
+import { CsvUpload } from "./components/CsvUpload";
+import { DataDisplay } from "./components/DataDisplay";
 
 function App() {
+  const [parsedData, setParsedData] = useState<any[]>([]);
+
   return (
-    <div className="flex flex-col justify-center items-center h-screen gap-4">
-      <h1>Hello World</h1>
-      <Button>Click me</Button>
-      <ExampleComponent />
+    <div className="flex flex-col items-center p-8 gap-8">
+      <h1 className="text-2xl font-bold">CSV File Upload</h1>
+      <div className="w-full max-w-xl">
+        <CsvUpload onDataParsed={setParsedData} />
+      </div>
+      <DataDisplay data={parsedData} />
     </div>
   );
 }

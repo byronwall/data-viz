@@ -1,8 +1,8 @@
-interface DataDisplayProps {
-  data: any[];
-}
+import { useDataLayer } from "@/providers/DataLayerProvider";
 
-export function DataDisplay({ data }: DataDisplayProps) {
+export function DataDisplay() {
+  const data = useDataLayer((state) => state.data);
+  console.log(data);
   if (!data.length) return null;
 
   const headers = Object.keys(data[0]);

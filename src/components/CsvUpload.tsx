@@ -2,25 +2,24 @@ import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload } from "lucide-react";
 import Papa from "papaparse";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 
-interface CsvUploadProps {
-  onDataParsed: (data: any[]) => void;
-}
+export function CsvUpload() {
+  const setData = useDataLayer((state) => state.setData);
 
-export function CsvUpload({ onDataParsed }: CsvUploadProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
 
       Papa.parse(file, {
         complete: (results) => {
-          onDataParsed(results.data);
+          setData(results.data);
         },
         header: true,
         skipEmptyLines: true,
       });
     },
-    [onDataParsed]
+    [setData]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

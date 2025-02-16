@@ -9,10 +9,10 @@ export type RowChartSettings = BaseChartSettings & {
   sortBy?: "count" | "label";
 };
 
-export type BarChartSettings = BaseChartSettings & {
+export interface BarChartSettings extends BaseChartSettings {
   type: "bar";
-  binCount?: number;
-};
+  binCount?: number; // Optional number of bins for numeric data
+}
 
 export type ScatterPlotSettings = BaseChartSettings & {
   type: "scatter";

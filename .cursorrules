@@ -1,0 +1,6 @@
+# Rules
+
+- use pnpm as package manager
+- use typescript
+- use tailwind css for styling
+- use react

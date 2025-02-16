@@ -1,5 +1,5 @@
 import { CsvUpload } from "./components/CsvUpload";
-import { PlotDataTable } from "./components/PlotDataTable";
+import { PlotManager } from "./components/PlotManager";
 import { useDataLayer } from "./providers/DataLayerProvider";
 
 export function AppContent() {
@@ -15,7 +15,7 @@ export function AppContent() {
       <div className={`w-full max-w-xl ${hasData ? "hidden" : ""}`}>
         <CsvUpload />
       </div>
-      <PlotDataTable />
+      {hasData && <PlotManager data={data} />}
     </div>
   );
 }

@@ -1,3 +1,11 @@
+export const CHART_TYPES = [
+  { value: "row", label: "Row Chart" },
+  { value: "bar", label: "Bar Chart" },
+  { value: "scatter", label: "Scatter Plot" },
+] as const;
+
+export type ChartType = (typeof CHART_TYPES)[number]["value"];
+
 export type BaseChartSettings = {
   id: string;
   title: string;

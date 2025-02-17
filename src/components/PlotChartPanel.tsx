@@ -17,13 +17,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
+import { ChartSettingsContent } from "./ChartSettingsContent";
 
 interface PlotChartPanelProps {
   settings: ChartSettings;
   onDelete: () => void;
+  onSettingsChange: (settings: ChartSettings) => void;
+  availableFields: string[];
 }
 
-export function PlotChartPanel({ settings, onDelete }: PlotChartPanelProps) {
+export function PlotChartPanel({
+  settings,
+  onDelete,
+  onSettingsChange,
+  availableFields,
+}: PlotChartPanelProps) {
   const renderChart = () => {
     switch (settings.type) {
       case "row":
@@ -49,13 +57,11 @@ export function PlotChartPanel({ settings, onDelete }: PlotChartPanelProps) {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80">
-              {/* TODO: Add chart settings UI */}
-              <div className="space-y-4">
-                <h4 className="font-medium leading-none">Chart Settings</h4>
-                <p className="text-sm text-muted-foreground">
-                  Settings content coming soon...
-                </p>
-              </div>
+              <ChartSettingsContent
+                settings={settings}
+                onSettingsChange={onSettingsChange}
+                availableFields={availableFields}
+              />
             </PopoverContent>
           </Popover>
           <AlertDialog>

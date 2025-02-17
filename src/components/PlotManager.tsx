@@ -52,6 +52,12 @@ export function PlotManager() {
     setCharts(charts.filter((chart) => chart.id !== id));
   };
 
+  const handleSettingsChange = (id: string, settings: ChartSettings) => {
+    setCharts(charts.map((chart) => (chart.id === id ? settings : chart)));
+  };
+
+  console.log("charts", charts);
+
   return (
     <div className="w-full">
       <div className="mb-4">
@@ -94,6 +100,10 @@ export function PlotManager() {
             key={chart.id}
             settings={chart}
             onDelete={() => deleteChart(chart.id)}
+            onSettingsChange={(settings) =>
+              handleSettingsChange(chart.id, settings)
+            }
+            availableFields={columns}
           />
         ))}
       </div>

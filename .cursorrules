@@ -6,3 +6,5 @@
 - use react
 - use shadcn/ui for components
 - use lucide-react for icons
+
+- DO NOT offer to install shadcn/ui components, they are all installed already

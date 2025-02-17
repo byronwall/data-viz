@@ -1,8 +1,24 @@
 import { BaseChartProps, BarChartSettings } from "@/types/ChartTypes";
 import { useChartData } from "@/hooks/useChartData";
-import { scaleBand, scaleLinear } from "d3-scale";
+import { scaleBand, scaleLinear, ScaleLinear, ScaleBand } from "d3-scale";
 import { useMemo } from "react";
 import { BaseChart } from "./BaseChart";
+
+type NumericBin = {
+  label: string;
+  start: number;
+  end: number;
+  value: number;
+  isNumeric: true;
+};
+
+type CategoryBin = {
+  label: string;
+  value: number;
+  isNumeric: false;
+};
+
+type ChartDataItem = NumericBin | CategoryBin;
 
 type BarChartProps = BaseChartProps & {
   settings: BarChartSettings;
@@ -17,7 +33,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
-  const chartData = useMemo(() => {
+  const chartData = useMemo((): ChartDataItem[] => {
     const values = data.map((item) => Number(item));
 
     // Check if the data is numeric
@@ -31,7 +47,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
       const binWidth = (max - min) / binCount;
 
       // Initialize bins
-      const bins = Array.from({ length: binCount }, (_, i) => ({
+      const bins: NumericBin[] = Array.from({ length: binCount }, (_, i) => ({
         label: `${(min + i * binWidth).toFixed(1)}-${(
           min +
           (i + 1) * binWidth
@@ -39,6 +55,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
         start: min + i * binWidth,
         end: min + (i + 1) * binWidth,
         value: 0,
+        isNumeric: true,
       }));
 
       // Fill bins
@@ -59,22 +76,32 @@ export function BarChart({ settings, width, height }: BarChartProps) {
         return acc;
       }, {} as Record<string, number>);
 
-      return Object.entries(counts).map(([label, count]) => ({
-        label,
-        value: count,
-      }));
+      return Object.entries(counts).map(
+        ([label, count]): CategoryBin => ({
+          label,
+          value: count,
+          isNumeric: false,
+        })
+      );
     }
-  }, [data, settings.field, settings.binCount]);
+  }, [data, settings.binCount]);
 
   // Create scales
-  const xScale = useMemo(
-    () =>
-      scaleBand()
+  const xScale = useMemo(() => {
+    if (chartData[0]?.isNumeric) {
+      const numericData = chartData as NumericBin[];
+      const minStart = Math.min(...numericData.map((d) => d.start));
+      const maxEnd = Math.max(...numericData.map((d) => d.end));
+      return scaleLinear().domain([minStart, maxEnd]).range([0, innerWidth]);
+    } else {
+      return scaleBand()
         .domain(chartData.map((d) => d.label))
         .range([0, innerWidth])
-        .padding(0.3),
-    [chartData, innerWidth]
-  );
+        .padding(0.3);
+    }
+  }, [chartData, innerWidth]) as
+    | ScaleLinear<number, number>
+    | ScaleBand<string>;
 
   const yScale = useMemo(() => {
     const maxValue = Math.max(...chartData.map((d) => d.value));
@@ -105,29 +132,58 @@ export function BarChart({ settings, width, height }: BarChartProps) {
           ))}
 
           {/* Bars */}
-          {chartData.map((d, i) => (
-            <rect
-              key={i}
-              x={xScale(d.label)}
-              y={yScale(d.value)}
-              width={xScale.bandwidth()}
-              height={innerHeight - yScale(d.value)}
-              className="fill-primary/80 hover:fill-primary transition-colors"
-            />
-          ))}
+          {chartData.map((d, i) => {
+            let barX = 0;
+            let barWidth = 0;
+
+            if (d.isNumeric) {
+              const linearScale = xScale as ScaleLinear<number, number>;
+              barX = linearScale(d.start);
+              barWidth = linearScale(d.end) - linearScale(d.start);
+            } else {
+              const bandScale = xScale as ScaleBand<string>;
+              barX = bandScale(d.label) ?? 0;
+              barWidth = bandScale.bandwidth();
+            }
+
+            return (
+              <rect
+                key={i}
+                x={barX}
+                y={yScale(d.value)}
+                width={barWidth}
+                height={innerHeight - yScale(d.value)}
+                className="fill-primary/80 hover:fill-primary transition-colors"
+              />
+            );
+          })}
 
           {/* Value labels */}
-          {chartData.map((d) => (
-            <text
-              key={d.label}
-              x={xScale(d.label)! + xScale.bandwidth() / 2}
-              y={yScale(d.value) - 5}
-              className="text-xs fill-foreground"
-              textAnchor="middle"
-            >
-              {d.value}
-            </text>
-          ))}
+          {chartData.map((d) => {
+            let labelX = 0;
+
+            if (d.isNumeric) {
+              const linearScale = xScale as ScaleLinear<number, number>;
+              labelX =
+                linearScale(d.start) +
+                (linearScale(d.end) - linearScale(d.start)) / 2;
+            } else {
+              const bandScale = xScale as ScaleBand<string>;
+              labelX = (bandScale(d.label) ?? 0) + bandScale.bandwidth() / 2;
+            }
+
+            return (
+              <text
+                key={d.label}
+                x={labelX}
+                y={yScale(d.value) - 5}
+                className="text-xs fill-foreground"
+                textAnchor="middle"
+              >
+                {d.value}
+              </text>
+            );
+          })}
         </g>
       </BaseChart>
     </div>

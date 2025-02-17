@@ -56,6 +56,13 @@ export function PlotManager() {
     setCharts(charts.map((chart) => (chart.id === id ? settings : chart)));
   };
 
+  const duplicateChart = (id: string) => {
+    const chart = charts.find((chart) => chart.id === id);
+    if (chart) {
+      setCharts([...charts, { ...chart, id: crypto.randomUUID() }]);
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="mb-4">
@@ -102,6 +109,7 @@ export function PlotManager() {
               handleSettingsChange(chart.id, settings)
             }
             availableFields={columns}
+            onDuplicate={() => duplicateChart(chart.id)}
           />
         ))}
       </div>

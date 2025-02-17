@@ -48,15 +48,11 @@ export function ChartSettingsContent({
         <Label htmlFor="chartType">Chart Type</Label>
         <ComboBox
           value={localSettings.type}
-          options={CHART_TYPES.map((type) => ({
-            value: type.value,
-            label: type.value,
-          }))}
+          options={CHART_TYPES.map((type) => type.value)}
           onChange={(option) =>
             setLocalSettings({
               ...localSettings,
-              type:
-                (option?.value as ChartSettings["type"]) || localSettings.type,
+              type: option,
             })
           }
           placeholder="Select chart type"

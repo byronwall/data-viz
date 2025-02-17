@@ -14,11 +14,6 @@ export function ScatterPlot({ settings }: Props) {
   const xValues = getColumnData(settings.xField).map(Number);
   const yValues = getColumnData(settings.yField).map(Number);
 
-  console.log("values", {
-    xValues,
-    yValues,
-  });
-
   // Validate array lengths
   if (xValues.length !== yValues.length) {
     throw new Error("X and Y arrays must have the same length");

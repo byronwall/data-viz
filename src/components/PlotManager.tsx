@@ -48,6 +48,10 @@ export function PlotManager() {
     setCharts([...charts, newChart]);
   };
 
+  const deleteChart = (id: string) => {
+    setCharts(charts.filter((chart) => chart.id !== id));
+  };
+
   return (
     <div className="w-full">
       <div className="mb-4">
@@ -86,7 +90,11 @@ export function PlotManager() {
 
       <div className="grid grid-cols-2 gap-4">
         {charts.map((chart) => (
-          <PlotChartPanel key={chart.id} settings={chart} />
+          <PlotChartPanel
+            key={chart.id}
+            settings={chart}
+            onDelete={() => deleteChart(chart.id)}
+          />
         ))}
       </div>
     </div>

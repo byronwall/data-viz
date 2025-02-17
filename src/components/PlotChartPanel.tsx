@@ -6,6 +6,17 @@ import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Settings2, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
 
 interface PlotChartPanelProps {
   settings: ChartSettings;
@@ -47,9 +58,28 @@ export function PlotChartPanel({ settings, onDelete }: PlotChartPanelProps) {
               </div>
             </PopoverContent>
           </Popover>
-          <Button variant="ghost" size="icon" onClick={onDelete}>
-            <X className="h-4 w-4" />
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <X className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Chart</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this chart? This action cannot
+                  be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={onDelete} autoFocus>
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </CardHeader>
       <CardContent>{renderChart()}</CardContent>

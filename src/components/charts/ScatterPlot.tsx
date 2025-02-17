@@ -1,12 +1,13 @@
-import { ScatterPlotSettings } from "@/types/ChartTypes";
+import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
 import { useEffect, useRef } from "react";
 import { useChartData } from "@/hooks/useChartData";
 
-type Props = {
-  settings: ScatterPlotSettings;
-};
+// Update the props type to use ScatterChartSettings
+interface ScatterPlotProps extends BaseChartProps {
+  settings: ScatterChartSettings;
+}
 
-export function ScatterPlot({ settings }: Props) {
+export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { getColumnData } = useChartData();
 
@@ -26,15 +27,14 @@ export function ScatterPlot({ settings }: Props) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size with device pixel ratio for sharp rendering
+    // Use provided width and height instead of getBoundingClientRect
     const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
     ctx.scale(dpr, dpr);
 
-    // Clear canvas
-    ctx.clearRect(0, 0, rect.width, rect.height);
+    // Clear canvas using provided dimensions
+    ctx.clearRect(0, 0, width, height);
 
     // Calculate data bounds
     const xMin = Math.min(...xValues);
@@ -44,17 +44,15 @@ export function ScatterPlot({ settings }: Props) {
 
     // Add padding to bounds
     const padding = 40;
-    const plotWidth = rect.width - padding * 2;
-    const plotHeight = rect.height - padding * 2;
+    const plotWidth = width - padding * 2;
+    const plotHeight = height - padding * 2;
 
     // Scale function to convert data values to canvas coordinates
     const scaleX = (x: number) => {
       return padding + (plotWidth * (x - xMin)) / (xMax - xMin);
     };
     const scaleY = (y: number) => {
-      return (
-        rect.height - (padding + (plotHeight * (y - yMin)) / (yMax - yMin))
-      );
+      return height - (padding + (plotHeight * (y - yMin)) / (yMax - yMin));
     };
 
     // Draw axes
@@ -63,12 +61,12 @@ export function ScatterPlot({ settings }: Props) {
     ctx.lineWidth = 1;
 
     // X-axis
-    ctx.moveTo(padding, rect.height - padding);
-    ctx.lineTo(rect.width - padding, rect.height - padding);
+    ctx.moveTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
 
     // Y-axis
     ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, rect.height - padding);
+    ctx.lineTo(padding, height - padding);
     ctx.stroke();
 
     // Draw points using a for loop
@@ -81,17 +79,17 @@ export function ScatterPlot({ settings }: Props) {
       ctx.arc(x, y, 4, 0, Math.PI * 2);
       ctx.fill();
     }
-  }, [xValues, yValues, settings.xField, settings.yField]);
+  }, [xValues, yValues, settings.xField, settings.yField, width, height]);
 
   return (
     <div className="border rounded p-4">
       <h3 className="font-semibold mb-2">{settings.title}</h3>
-      <div className="relative w-full h-[400px]">
+      <div style={{ width, height }} className="relative">
         {xValues.length > 0 ? (
           <canvas
             ref={canvasRef}
-            className="absolute inset-0 w-full h-full"
-            style={{ width: "100%", height: "100%" }}
+            className="absolute inset-0"
+            style={{ width, height }}
           />
         ) : (
           <div className="flex items-center justify-center h-full text-muted-foreground">

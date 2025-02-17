@@ -1,18 +1,14 @@
+import { BaseChartProps } from "@/types/ChartTypes";
 import { useChartData } from "@/hooks/useChartData";
-import { BarChartSettings } from "@/types/ChartTypes";
 import { scaleBand, scaleLinear } from "d3-scale";
 import { useMemo } from "react";
 
-type Props = {
-  settings: BarChartSettings;
-};
+type BarChartProps = BaseChartProps;
 
-export function BarChart({ settings }: Props) {
+export function BarChart({ settings, width, height }: BarChartProps) {
   const { getColumnData } = useChartData();
   const data = getColumnData(settings.field);
   // Chart dimensions
-  const width = 600;
-  const height = 300;
   const margin = { top: 20, right: 20, bottom: 30, left: 40 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
@@ -54,7 +50,7 @@ export function BarChart({ settings }: Props) {
     } else {
       // Use original categorical logic for non-numeric data
       const counts = data.reduce((acc, item) => {
-        const value = String(item[settings.field]);
+        const value = String(item);
         acc[value] = (acc[value] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);

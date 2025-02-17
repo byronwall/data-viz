@@ -1,11 +1,9 @@
 import { ChartSettings } from "@/types/ChartTypes";
-import { RowChart } from "./charts/RowChart";
+import { Copy, GripVertical, Settings2, X } from "lucide-react";
 import { BarChart } from "./charts/BarChart";
+import { RowChart } from "./charts/RowChart";
 import { ScatterPlot } from "./charts/ScatterPlot";
-import { Button } from "./ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Settings2, X, Copy, GripVertical } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { ChartSettingsContent } from "./ChartSettingsContent";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +15,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { ChartSettingsContent } from "./ChartSettingsContent";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface PlotChartPanelProps {
   settings: ChartSettings;
@@ -25,6 +25,8 @@ interface PlotChartPanelProps {
   onSettingsChange: (settings: ChartSettings) => void;
   onDuplicate: () => void;
   availableFields: string[];
+  width: number;
+  height: number;
 }
 
 export function PlotChartPanel({
@@ -33,20 +35,40 @@ export function PlotChartPanel({
   onSettingsChange,
   onDuplicate,
   availableFields,
+  width,
+  height,
 }: PlotChartPanelProps) {
   const renderChart = () => {
     switch (settings.type) {
       case "row":
-        return <RowChart settings={settings} />;
+        return (
+          <RowChart
+            settings={settings}
+            width={width - 32}
+            height={height - 80}
+          />
+        );
       case "bar":
-        return <BarChart settings={settings} />;
+        return (
+          <BarChart
+            settings={settings}
+            width={width - 32}
+            height={height - 80}
+          />
+        );
       case "scatter":
-        return <ScatterPlot settings={settings} />;
+        return (
+          <ScatterPlot
+            settings={settings}
+            width={width - 32}
+            height={height - 80}
+          />
+        );
     }
   };
 
   return (
-    <div className="border rounded-lg p-4 bg-background">
+    <Card className="h-full">
       <div className="flex items-center justify-between mb-4">
         <div className="drag-handle cursor-move flex items-center gap-2">
           <GripVertical className="h-4 w-4 text-muted-foreground" />
@@ -95,6 +117,6 @@ export function PlotChartPanel({
         </div>
       </div>
       <CardContent>{renderChart()}</CardContent>
-    </div>
+    </Card>
   );
 }

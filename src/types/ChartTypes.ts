@@ -31,7 +31,7 @@ export interface BarChartSettings extends BaseChartSettings {
   binCount?: number;
 }
 
-export interface ScatterPlotSettings extends BaseChartSettings {
+export interface ScatterChartSettings extends BaseChartSettings {
   type: "scatter";
   xField: string;
   yField: string;
@@ -40,4 +40,10 @@ export interface ScatterPlotSettings extends BaseChartSettings {
 export type ChartSettings =
   | RowChartSettings
   | BarChartSettings
-  | ScatterPlotSettings;
+  | ScatterChartSettings;
+
+export interface BaseChartProps {
+  settings: ChartSettings;
+  width: number;
+  height: number;
+}

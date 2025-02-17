@@ -139,7 +139,7 @@ export function PlotManager() {
   };
 
   return (
-    <div className="w-full" ref={containerRef}>
+    <div className="w-full pb-40" ref={containerRef}>
       <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2">Available Fields</h2>
         <div className="flex flex-wrap gap-2">

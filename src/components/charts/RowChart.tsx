@@ -2,6 +2,7 @@ import { BaseChartProps } from "@/types/ChartTypes";
 import { useChartData } from "@/hooks/useChartData";
 import { scaleLinear, scaleBand } from "d3-scale";
 import { useMemo } from "react";
+import { BaseChart } from "./BaseChart";
 
 type RowChartProps = BaseChartProps & {
   settings: {
@@ -21,7 +22,7 @@ export function RowChart({ settings, width, height }: RowChartProps) {
   const innerHeight = height - margin.top - margin.bottom;
 
   // Calculate counts and handle overflow
-  const { displayCounts, hasOthers, othersCount } = useMemo(() => {
+  const { displayCounts } = useMemo(() => {
     const countMap = new Map<string, number>();
     data.forEach((value) => {
       const key = String(value);
@@ -50,15 +51,11 @@ export function RowChart({ settings, width, height }: RowChartProps) {
 
       return {
         displayCounts: [...visibleCounts, { label: "Others", count: otherSum }],
-        hasOthers: true,
-        othersCount: sortedCounts.length - (maxRows - 1),
       };
     }
 
     return {
       displayCounts: sortedCounts,
-      hasOthers: false,
-      othersCount: 0,
     };
   }, [
     data,
@@ -81,23 +78,14 @@ export function RowChart({ settings, width, height }: RowChartProps) {
 
   return (
     <div style={{ width, height }}>
-      <svg width={width} height={height}>
-        <g transform={`translate(${margin.left},${margin.top})`}>
-          {/* Y axis labels */}
-          {displayCounts.map(({ label }) => (
-            <text
-              key={label}
-              x={-5}
-              y={yScale(label)! + yScale.bandwidth() / 2}
-              textAnchor="end"
-              dominantBaseline="middle"
-              className="text-sm fill-foreground"
-            >
-              {label}
-              {label === "Others" && hasOthers && ` (${othersCount} items)`}
-            </text>
-          ))}
-
+      <BaseChart
+        width={width}
+        height={height}
+        margin={margin}
+        xScale={xScale}
+        yScale={yScale}
+      >
+        <g>
           {/* Bars */}
           {displayCounts.map(({ label, count }) => (
             <rect
@@ -114,15 +102,6 @@ export function RowChart({ settings, width, height }: RowChartProps) {
             />
           ))}
 
-          {/* X axis */}
-          <line
-            x1={0}
-            y1={innerHeight}
-            x2={innerWidth}
-            y2={innerHeight}
-            className="stroke-border"
-          />
-
           {/* Count labels */}
           {displayCounts.map(({ label, count }) => (
             <text
@@ -136,7 +115,7 @@ export function RowChart({ settings, width, height }: RowChartProps) {
             </text>
           ))}
         </g>
-      </svg>
+      </BaseChart>
     </div>
   );
 }

@@ -1,11 +1,6 @@
 import { ComboBox } from "./ComboBox";
 import { Label } from "./ui/label";
 
-interface FieldOption {
-  value: string;
-  label: string;
-}
-
 interface FieldSelectorProps {
   label: string;
   value: string;

@@ -29,6 +29,8 @@ export function ChartSettingsContent({
     onSettingsChange(localSettings);
   };
 
+  const hasDataField = localSettings.type !== "scatter";
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -61,28 +63,30 @@ export function ChartSettingsContent({
         />
       </div>
 
-      <FieldSelector
-        label="Data Field"
-        value={localSettings.field}
-        availableFields={availableFields}
-        onChange={(value) =>
-          setLocalSettings({
-            ...localSettings,
-            field: value,
-          })
-        }
-      />
+      {hasDataField && (
+        <FieldSelector
+          label="Data Field"
+          value={localSettings.field}
+          availableFields={availableFields}
+          onChange={(value) =>
+            setLocalSettings({
+              ...localSettings,
+              field: value,
+            })
+          }
+        />
+      )}
 
       {localSettings.type === "scatter" && (
         <>
           <FieldSelector
             label="X Axis Field"
-            value={localSettings.field}
+            value={localSettings.xField}
             availableFields={availableFields}
             onChange={(value) =>
               setLocalSettings({
                 ...localSettings,
-                field: value,
+                xField: value,
               })
             }
           />

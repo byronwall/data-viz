@@ -56,8 +56,6 @@ export function PlotManager() {
     setCharts(charts.map((chart) => (chart.id === id ? settings : chart)));
   };
 
-  console.log("charts", charts);
-
   return (
     <div className="w-full">
       <div className="mb-4">

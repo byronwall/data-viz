@@ -79,8 +79,6 @@ export function RowChart({ settings, width, height }: RowChartProps) {
     .range([0, innerHeight])
     .padding(0.1);
 
-  console.log("displayCounts", { displayCounts });
-
   return (
     <div style={{ width, height }}>
       <svg width={width} height={height}>

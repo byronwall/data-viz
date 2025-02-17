@@ -1,15 +1,13 @@
 import { Button } from "@/components/ui/button";
+import { useChartData } from "@/hooks/useChartData";
 import { ChartSettings } from "@/types/ChartTypes";
-import { useState } from "react";
 import {
-  BarChart as BarChartIcon,
   BarChartHorizontal,
+  BarChart as BarChartIcon,
   ScatterChart,
 } from "lucide-react";
-import { RowChart } from "./charts/RowChart";
-import { BarChart } from "./charts/BarChart";
-import { ScatterPlot } from "./charts/ScatterPlot";
-import { useChartData } from "@/hooks/useChartData";
+import { useState } from "react";
+import { PlotChartPanel } from "./PlotChartPanel";
 
 export function PlotManager() {
   const { getColumns } = useChartData();
@@ -87,16 +85,9 @@ export function PlotManager() {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {charts.map((chart) => {
-          switch (chart.type) {
-            case "row":
-              return <RowChart key={chart.id} settings={chart} />;
-            case "bar":
-              return <BarChart key={chart.id} settings={chart} />;
-            case "scatter":
-              return <ScatterPlot key={chart.id} settings={chart} />;
-          }
-        })}
+        {charts.map((chart) => (
+          <PlotChartPanel key={chart.id} settings={chart} />
+        ))}
       </div>
     </div>
   );

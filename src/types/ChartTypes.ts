@@ -6,27 +6,36 @@ export const CHART_TYPES = [
 
 export type ChartType = (typeof CHART_TYPES)[number]["value"];
 
-export type BaseChartSettings = {
+export interface ChartLayout {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  i: string;
+}
+
+export interface BaseChartSettings {
   id: string;
   title: string;
   field: string;
-};
+  layout: ChartLayout;
+}
 
-export type RowChartSettings = BaseChartSettings & {
+export interface RowChartSettings extends BaseChartSettings {
   type: "row";
   sortBy?: "count" | "label";
-};
+}
 
 export interface BarChartSettings extends BaseChartSettings {
   type: "bar";
-  binCount?: number; // Optional number of bins for numeric data
+  binCount?: number;
 }
 
-export type ScatterPlotSettings = BaseChartSettings & {
+export interface ScatterPlotSettings extends BaseChartSettings {
   type: "scatter";
   xField: string;
   yField: string;
-};
+}
 
 export type ChartSettings =
   | RowChartSettings

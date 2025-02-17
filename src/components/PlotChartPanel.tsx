@@ -4,7 +4,7 @@ import { BarChart } from "./charts/BarChart";
 import { ScatterPlot } from "./charts/ScatterPlot";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Settings2, X, Copy } from "lucide-react";
+import { Settings2, X, Copy, GripVertical } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
   AlertDialog,
@@ -46,11 +46,12 @@ export function PlotChartPanel({
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-base font-medium">
-          {settings.title || "Untitled Chart"}
-        </CardTitle>
+    <div className="border rounded-lg p-4 bg-background">
+      <div className="flex items-center justify-between mb-4">
+        <div className="drag-handle cursor-move flex items-center gap-2">
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <h3 className="font-medium">{settings.title}</h3>
+        </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={onDuplicate}>
             <Copy className="h-4 w-4" />
@@ -92,8 +93,8 @@ export function PlotChartPanel({
             </AlertDialogContent>
           </AlertDialog>
         </div>
-      </CardHeader>
+      </div>
       <CardContent>{renderChart()}</CardContent>
-    </Card>
+    </div>
   );
 }

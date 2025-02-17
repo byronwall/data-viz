@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { PlotChartPanel } from "./PlotChartPanel";
+import { ChartGridLayout } from "./ChartGridLayout";
+import type { ChartLayout } from "@/types/ChartTypes";
 
 export function PlotManager() {
   const { getColumns } = useChartData();
@@ -22,6 +24,13 @@ export function PlotManager() {
       type: "row",
       title: `Row Chart - ${field}`,
       field,
+      layout: {
+        x: (charts.length * 2) % 12,
+        y: Math.floor(charts.length / 6) * 4,
+        w: 6,
+        h: 4,
+        i: crypto.randomUUID(),
+      },
     };
     setCharts([...charts, newChart]);
   };
@@ -32,6 +41,13 @@ export function PlotManager() {
       type: "bar",
       title: `Bar Chart - ${field}`,
       field,
+      layout: {
+        x: (charts.length * 2) % 12,
+        y: Math.floor(charts.length / 6) * 4,
+        w: 6,
+        h: 4,
+        i: crypto.randomUUID(),
+      },
     };
     setCharts([...charts, newChart]);
   };
@@ -43,7 +59,14 @@ export function PlotManager() {
       title: `Scatter Plot - ${xField} vs Y`,
       field: xField,
       xField,
-      yField: columns[0], // Default to first column for now
+      yField: columns[0],
+      layout: {
+        x: (charts.length * 2) % 12,
+        y: Math.floor(charts.length / 6) * 4,
+        w: 6,
+        h: 4,
+        i: crypto.randomUUID(),
+      },
     };
     setCharts([...charts, newChart]);
   };
@@ -61,6 +84,15 @@ export function PlotManager() {
     if (chart) {
       setCharts([...charts, { ...chart, id: crypto.randomUUID() }]);
     }
+  };
+
+  const handleLayoutChange = (newLayout: ChartLayout[]) => {
+    setCharts(
+      charts.map((chart) => ({
+        ...chart,
+        layout: newLayout.find((l) => l.i === chart.layout?.i),
+      }))
+    );
   };
 
   return (
@@ -99,20 +131,24 @@ export function PlotManager() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <ChartGridLayout
+        layout={charts.map((chart) => chart.layout!)}
+        onLayoutChange={handleLayoutChange}
+      >
         {charts.map((chart) => (
-          <PlotChartPanel
-            key={chart.id}
-            settings={chart}
-            onDelete={() => deleteChart(chart.id)}
-            onSettingsChange={(settings) =>
-              handleSettingsChange(chart.id, settings)
-            }
-            availableFields={columns}
-            onDuplicate={() => duplicateChart(chart.id)}
-          />
+          <div key={chart.layout?.i}>
+            <PlotChartPanel
+              settings={chart}
+              onDelete={() => deleteChart(chart.id)}
+              onSettingsChange={(settings) =>
+                handleSettingsChange(chart.id, settings)
+              }
+              availableFields={columns}
+              onDuplicate={() => duplicateChart(chart.id)}
+            />
+          </div>
         ))}
-      </div>
+      </ChartGridLayout>
     </div>
   );
 }

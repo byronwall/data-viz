@@ -77,64 +77,59 @@ export function BarChart({ settings, width, height }: BarChartProps) {
     return scaleLinear().domain([0, maxValue]).range([innerHeight, 0]).nice();
   }, [chartData, innerHeight]);
 
-  console.log(chartData);
-
   return (
-    <div className="border rounded p-4">
-      <h3 className="font-semibold mb-2">{settings.title}</h3>
-      <svg width={width} height={height}>
-        <g transform={`translate(${margin.left},${margin.top})`}>
-          {/* Y-axis */}
-          {yScale.ticks(5).map((tick) => (
-            <g key={tick} transform={`translate(0,${yScale(tick)})`}>
-              <line
-                x2={innerWidth}
-                className="stroke-gray-200"
-                strokeDasharray="5,5"
-              />
-              <text
-                x={-8}
-                y={4}
-                className="text-xs fill-gray-500"
-                textAnchor="end"
-              >
-                {tick}
-              </text>
-            </g>
-          ))}
-
-          {/* Bars */}
-          {chartData.map((d, i) => (
-            <g key={i}>
-              <rect
-                x={xScale(d.label)}
-                y={yScale(d.value)}
-                width={xScale.bandwidth()}
-                height={innerHeight - yScale(d.value)}
-                className="fill-blue-500 hover:fill-blue-600 transition-colors"
-              />
-            </g>
-          ))}
-
-          {/* X-axis */}
-          {chartData.map((d) => (
-            <g
-              key={d.label}
-              transform={`translate(${
-                xScale(d.label)! + xScale.bandwidth() / 2
-              },${innerHeight + 8})`}
+    <svg width={width} height={height}>
+      <g transform={`translate(${margin.left},${margin.top})`}>
+        {/* Y-axis */}
+        {yScale.ticks(5).map((tick) => (
+          <g key={tick} transform={`translate(0,${yScale(tick)})`}>
+            <line
+              x2={innerWidth}
+              className="stroke-gray-200"
+              strokeDasharray="5,5"
+            />
+            <text
+              x={-8}
+              y={4}
+              className="text-xs fill-gray-500"
+              textAnchor="end"
             >
-              <text
-                className="text-xs fill-gray-500"
-                textAnchor="middle"
-                transform="rotate(45)"
-              >
-                {d.label}
-              </text>
-            </g>
-          ))}
-        </g>
-      </svg>
-    </div>
+              {tick}
+            </text>
+          </g>
+        ))}
+
+        {/* Bars */}
+        {chartData.map((d, i) => (
+          <g key={i}>
+            <rect
+              x={xScale(d.label)}
+              y={yScale(d.value)}
+              width={xScale.bandwidth()}
+              height={innerHeight - yScale(d.value)}
+              className="fill-blue-500 hover:fill-blue-600 transition-colors"
+            />
+          </g>
+        ))}
+
+        {/* X-axis */}
+        {chartData.map((d) => (
+          <g
+            key={d.label}
+            transform={`translate(${
+              xScale(d.label)! + xScale.bandwidth() / 2
+            },${innerHeight + 8})`}
+          >
+            <text
+              className="text-xs fill-gray-500"
+              textAnchor="middle"
+              transform="rotate(45)"
+            >
+              {d.label}
+            </text>
+          </g>
+        ))}
+      </g>
+    </svg>
   );
 }

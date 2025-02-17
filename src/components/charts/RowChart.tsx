@@ -40,60 +40,57 @@ export function RowChart({ settings, width, height }: RowChartProps) {
 
   return (
     <div style={{ width, height }}>
-      <div className="border rounded p-4">
-        <h3 className="font-semibold mb-2">{settings.field}</h3>
-        <svg width={width} height={height}>
-          <g transform={`translate(${margin.left},${margin.top})`}>
-            {/* Y axis labels */}
-            {counts.map(({ label }) => (
-              <text
-                key={label}
-                x={-5}
-                y={yScale(label)! + yScale.bandwidth() / 2}
-                textAnchor="end"
-                dominantBaseline="middle"
-                className="text-sm fill-foreground"
-              >
-                {label}
-              </text>
-            ))}
+      <svg width={width} height={height}>
+        <g transform={`translate(${margin.left},${margin.top})`}>
+          {/* Y axis labels */}
+          {counts.map(({ label }) => (
+            <text
+              key={label}
+              x={-5}
+              y={yScale(label)! + yScale.bandwidth() / 2}
+              textAnchor="end"
+              dominantBaseline="middle"
+              className="text-sm fill-foreground"
+            >
+              {label}
+            </text>
+          ))}
 
-            {/* Bars */}
-            {counts.map(({ label, count }) => (
-              <rect
-                key={label}
-                x={0}
-                y={yScale(label)}
-                width={xScale(count)}
-                height={yScale.bandwidth()}
-                className="fill-primary/80 hover:fill-primary"
-              />
-            ))}
-
-            {/* X axis */}
-            <line
-              x1={0}
-              y1={innerHeight}
-              x2={innerWidth}
-              y2={innerHeight}
-              className="stroke-border"
+          {/* Bars */}
+          {counts.map(({ label, count }) => (
+            <rect
+              key={label}
+              x={0}
+              y={yScale(label)}
+              width={xScale(count)}
+              height={yScale.bandwidth()}
+              className="fill-primary/80 hover:fill-primary"
             />
+          ))}
 
-            {/* Count labels */}
-            {counts.map(({ label, count }) => (
-              <text
-                key={label}
-                x={xScale(count) + 5}
-                y={yScale(label)! + yScale.bandwidth() / 2}
-                dominantBaseline="middle"
-                className="text-sm fill-foreground"
-              >
-                {count}
-              </text>
-            ))}
-          </g>
-        </svg>
-      </div>
+          {/* X axis */}
+          <line
+            x1={0}
+            y1={innerHeight}
+            x2={innerWidth}
+            y2={innerHeight}
+            className="stroke-border"
+          />
+
+          {/* Count labels */}
+          {counts.map(({ label, count }) => (
+            <text
+              key={label}
+              x={xScale(count) + 5}
+              y={yScale(label)! + yScale.bandwidth() / 2}
+              dominantBaseline="middle"
+              className="text-sm fill-foreground"
+            >
+              {count}
+            </text>
+          ))}
+        </g>
+      </svg>
     </div>
   );
 }

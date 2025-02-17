@@ -82,21 +82,18 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
   }, [xValues, yValues, settings.xField, settings.yField, width, height]);
 
   return (
-    <div className="border rounded p-4">
-      <h3 className="font-semibold mb-2">{settings.title}</h3>
-      <div style={{ width, height }} className="relative">
-        {xValues.length > 0 ? (
-          <canvas
-            ref={canvasRef}
-            className="absolute inset-0"
-            style={{ width, height }}
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            No data available
-          </div>
-        )}
-      </div>
+    <div style={{ width, height }} className="relative">
+      {xValues.length > 0 ? (
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0"
+          style={{ width, height }}
+        />
+      ) : (
+        <div className="flex items-center justify-center h-full text-muted-foreground">
+          No data available
+        </div>
+      )}
     </div>
   );
 }

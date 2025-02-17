@@ -11,7 +11,6 @@ export interface ChartLayout {
   y: number;
   w: number;
   h: number;
-  i: string;
 }
 
 export interface BaseChartSettings {

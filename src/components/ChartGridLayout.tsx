@@ -1,26 +1,29 @@
-import { ChartLayout } from "@/types/ChartTypes";
-import { ReactElement } from "react";
-import RGL, { WidthProvider } from "react-grid-layout";
+import { ChartSettings } from "@/types/ChartTypes";
+import type { Layout } from "react-grid-layout";
+import ReactGridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
-const ReactGridLayout = WidthProvider(RGL);
-
 interface ChartGridLayoutProps {
-  children: ReactElement[];
-  layout: ChartLayout[];
-  onLayoutChange: (layout: ChartLayout[]) => void;
+  charts: ChartSettings[];
+  onLayoutChange: (layout: Layout[]) => void;
+  children: React.ReactNode;
 }
 
 export function ChartGridLayout({
-  children,
-  layout,
+  charts,
   onLayoutChange,
+  children,
 }: ChartGridLayoutProps) {
+  const layouts = charts.map((chart) => ({
+    ...chart.layout,
+    i: chart.id, // Use chart.id as the grid item identifier
+  }));
+
   return (
     <ReactGridLayout
       className="layout"
-      layout={layout}
+      layout={layouts}
       onLayoutChange={onLayoutChange}
       cols={12}
       rowHeight={100}

@@ -16,7 +16,6 @@ import {
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { Button } from "./ui/button";
-import { Card, CardContent } from "./ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface PlotChartPanelProps {
@@ -38,6 +37,8 @@ export function PlotChartPanel({
   width,
   height,
 }: PlotChartPanelProps) {
+  console.log("height", height);
+
   const renderChart = () => {
     switch (settings.type) {
       case "row":
@@ -45,7 +46,7 @@ export function PlotChartPanel({
           <RowChart
             settings={settings}
             width={width - 32}
-            height={height - 80}
+            height={height - 32}
           />
         );
       case "bar":
@@ -53,7 +54,7 @@ export function PlotChartPanel({
           <BarChart
             settings={settings}
             width={width - 32}
-            height={height - 80}
+            height={height - 32}
           />
         );
       case "scatter":
@@ -61,15 +62,18 @@ export function PlotChartPanel({
           <ScatterPlot
             settings={settings}
             width={width - 32}
-            height={height - 80}
+            height={height - 32}
           />
         );
     }
   };
 
   return (
-    <Card className="h-full">
-      <div className="flex items-center justify-between mb-4">
+    <div
+      className="bg-card border rounded-lg "
+      style={{ width: width, height: height }}
+    >
+      <div className="flex items-center justify-between" style={{ height: 24 }}>
         <div className="drag-handle cursor-move flex items-center gap-2">
           <GripVertical className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-medium">{settings.title}</h3>
@@ -116,7 +120,7 @@ export function PlotChartPanel({
           </AlertDialog>
         </div>
       </div>
-      <CardContent>{renderChart()}</CardContent>
-    </Card>
+      <div>{renderChart()}</div>
+    </div>
   );
 }

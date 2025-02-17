@@ -10,9 +10,9 @@ import { useState, useRef, useEffect } from "react";
 import { PlotChartPanel } from "./PlotChartPanel";
 import { ChartGridLayout } from "./ChartGridLayout";
 import type { ChartLayout } from "@/types/ChartTypes";
-
+import type { Layout } from "react-grid-layout";
 // Add these constants at the top of the file, after imports
-const GRID_ROW_HEIGHT = 150; // pixels per grid row
+const GRID_ROW_HEIGHT = 100; // pixels per grid row
 const GRID_COLS = 12; // number of grid columns
 const CONTAINER_PADDING = 16; // padding around the container
 
@@ -35,6 +35,8 @@ export function PlotManager() {
   // Add ref and state for container dimensions
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
+
+  console.log("containerWidth", containerWidth);
 
   // Add useEffect to measure container
   useEffect(() => {
@@ -60,7 +62,6 @@ export function PlotManager() {
         y: Math.floor(charts.length / 6) * 4,
         w: 6,
         h: 4,
-        i: crypto.randomUUID(),
       },
     };
     setCharts([...charts, newChart]);
@@ -77,7 +78,6 @@ export function PlotManager() {
         y: Math.floor(charts.length / 6) * 4,
         w: 6,
         h: 4,
-        i: crypto.randomUUID(),
       },
     };
     setCharts([...charts, newChart]);
@@ -96,7 +96,6 @@ export function PlotManager() {
         y: Math.floor(charts.length / 6) * 4,
         w: 6,
         h: 4,
-        i: crypto.randomUUID(),
       },
     };
     setCharts([...charts, newChart]);
@@ -112,17 +111,32 @@ export function PlotManager() {
 
   const duplicateChart = (id: string) => {
     const chart = charts.find((chart) => chart.id === id);
+    console.log("chart", chart);
     if (chart) {
-      setCharts([...charts, { ...chart, id: crypto.randomUUID() }]);
+      const newChart: ChartSettings = {
+        ...chart,
+        id: crypto.randomUUID(),
+      };
+      setCharts([...charts, newChart]);
     }
   };
 
-  const handleLayoutChange = (newLayout: ChartLayout[]) => {
+  const handleLayoutChange = (newLayout: Layout[]) => {
     setCharts(
-      charts.map((chart) => ({
-        ...chart,
-        layout: newLayout.find((l) => l.i === chart.layout?.i),
-      }))
+      charts.map((chart) => {
+        const updatedLayout = newLayout.find((l) => l.i === chart.id);
+        return {
+          ...chart,
+          layout: updatedLayout
+            ? {
+                x: updatedLayout.x,
+                y: updatedLayout.y,
+                w: updatedLayout.w,
+                h: updatedLayout.h,
+              }
+            : chart.layout,
+        };
+      })
     );
   };
 
@@ -162,14 +176,12 @@ export function PlotManager() {
         </div>
       </div>
 
-      <ChartGridLayout
-        layout={charts.map((chart) => chart.layout!)}
-        onLayoutChange={handleLayoutChange}
-      >
+      <ChartGridLayout charts={charts} onLayoutChange={handleLayoutChange}>
         {charts.map((chart) => {
-          const dimensions = gridToPixels(chart.layout!, containerWidth);
+          if (!chart.layout) return null;
+          const dimensions = gridToPixels(chart.layout, containerWidth);
           return (
-            <div key={chart.layout?.i}>
+            <div key={chart.id}>
               <PlotChartPanel
                 settings={chart}
                 onDelete={() => deleteChart(chart.id)}

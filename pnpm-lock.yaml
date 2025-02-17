@@ -110,6 +110,9 @@ importers:
       commander:
         specifier: ^13.1.0
         version: 13.1.0
+      crossfilter2:
+        specifier: ^1.5.4
+        version: 1.5.4
       csv-writer:
         specifier: ^1.6.0
         version: 1.6.0
@@ -1338,6 +1341,9 @@ packages:
   '@radix-ui/rect@1.1.0':
     resolution: {integrity: sha512-A9+lCBZoaMJlVKcRBz2YByCG+Cp2t6nAnMnNba+XiWxnj6r4JUFqfsgwocMBZU9LPtdxC6wB56ySYpc7LQIoJg==}
 
+  '@ranfdev/deepobj@1.0.2':
+    resolution: {integrity: sha512-FM3y6kfJaj5MCoAjdv24EDCTDbuFz+4+pgAunbjYfugwIE4O/xx8mPNji1n/ouG8pHCntSnBr1xwTOensF23Gg==}
+
   '@rollup/rollup-android-arm-eabi@4.34.7':
     resolution: {integrity: sha512-l6CtzHYo8D2TQ3J7qJNpp3Q1Iye56ssIAtqbM2H8axxCEEwvN7o8Ze9PuIapbxFL3OHrJU2JBX6FIIVnP/rYyw==}
     cpu: [arm]
@@ -1726,6 +1732,9 @@ packages:
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
+
+  crossfilter2@1.5.4:
+    resolution: {integrity: sha512-oOGqOM0RocwQFOXJnEaUKqYV6Mc1TNCRv3LrNUa0QlofQTutGAXyQaLW1aGKLls2sfnbwBEtsa6tPD3jY+ycqQ==}
 
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
@@ -3684,6 +3693,8 @@ snapshots:
 
   '@radix-ui/rect@1.1.0': {}
 
+  '@ranfdev/deepobj@1.0.2': {}
+
   '@rollup/rollup-android-arm-eabi@4.34.7':
     optional: true
 
@@ -4056,6 +4067,10 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+
+  crossfilter2@1.5.4:
+    dependencies:
+      '@ranfdev/deepobj': 1.0.2
 
   csstype@3.1.3: {}
 

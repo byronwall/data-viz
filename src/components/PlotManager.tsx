@@ -26,8 +26,7 @@ const gridToPixels = (layout: ChartLayout, containerWidth: number) => {
 };
 
 export function PlotManager() {
-  const { getColumns } = useChartData();
-  const [charts, setCharts] = useState<ChartSettings[]>([]);
+  const { getColumns, charts, setCharts } = useChartData();
 
   // Get column names
   const columns = getColumns();

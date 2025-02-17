@@ -7,8 +7,11 @@ interface DataLayerProps<T> {
   data?: T[];
 }
 
+// Add ID to the data type
+export type HasId = { __ID: number };
+
 interface DataLayerState<T> extends DataLayerProps<T> {
-  data: T[];
+  data: (T & HasId)[];
   setData: (data: T[]) => void;
 }
 
@@ -17,13 +20,24 @@ type DataLayerStore<T> = ReturnType<typeof createDataLayerStore<T>>;
 
 // Store creator
 const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
-  const DEFAULT_PROPS: DataLayerProps<T> = {
-    data: [],
+  const DEFAULT_PROPS: DataLayerState<T> = {
+    data: [] as (T & HasId)[],
+    setData: () => {},
   };
+
   return createStore<DataLayerState<T>>()((set) => ({
     ...DEFAULT_PROPS,
-    ...initProps,
-    setData: (data) => set({ data }),
+    data: initProps?.data
+      ? initProps.data.map((d, i) => ({ ...d, __ID: i }))
+      : [],
+    setData: (rawData) => {
+      // Add __ID to each row
+      const dataWithIds = rawData.map((row, index) => ({
+        ...row,
+        __ID: index,
+      }));
+      set({ data: dataWithIds });
+    },
   }));
 };
 
@@ -37,9 +51,9 @@ export function DataLayerProvider<T>({
   children,
   ...props
 }: DataLayerProviderProps<T>) {
-  const storeRef = useRef<DataLayerStore<T>>(null);
+  const storeRef = useRef<DataLayerStore<T> | null>(null);
   if (!storeRef.current) {
-    storeRef.current = createDataLayerStore(props);
+    storeRef.current = createDataLayerStore<T>(props);
   }
   return (
     <DataLayerContext.Provider value={storeRef.current}>

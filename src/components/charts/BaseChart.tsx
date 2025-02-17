@@ -30,7 +30,7 @@ export function BaseChart({
   const innerHeight = height - margin.top - margin.bottom;
 
   return (
-    <svg width={width} height={height}>
+    <svg width={width} height={height} className="select-none">
       <g transform={`translate(${margin.left},${margin.top})`}>
         {/* Main content */}
         {children}

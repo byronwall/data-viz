@@ -71,7 +71,10 @@ export function PlotChartPanel({
       className="bg-card border rounded-lg "
       style={{ width: width, height: height }}
     >
-      <div className="flex items-center justify-between" style={{ height: 24 }}>
+      <div
+        className="flex items-center justify-between select-none"
+        style={{ height: 24 }}
+      >
         <div className="drag-handle cursor-move flex items-center gap-2">
           <GripVertical className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-medium">{settings.title}</h3>

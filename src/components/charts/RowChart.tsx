@@ -85,7 +85,7 @@ export function RowChart({ settings, width, height }: RowChartProps) {
         xScale={xScale}
         yScale={yScale}
       >
-        <g>
+        <g className="select-none">
           {/* Bars */}
           {displayCounts.map(({ label, count }) => (
             <rect

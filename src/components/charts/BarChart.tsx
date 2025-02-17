@@ -90,7 +90,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
         xScale={xScale}
         yScale={yScale}
       >
-        <g>
+        <g className="select-none">
           {/* Grid lines */}
           {yScale.ticks(5).map((tick) => (
             <line

@@ -1,13 +1,17 @@
-import { BaseChartProps } from "@/types/ChartTypes";
+import { BaseChartProps, BarChartSettings } from "@/types/ChartTypes";
 import { useChartData } from "@/hooks/useChartData";
 import { scaleBand, scaleLinear } from "d3-scale";
 import { useMemo } from "react";
+import { BaseChart } from "./BaseChart";
 
-type BarChartProps = BaseChartProps;
+type BarChartProps = BaseChartProps & {
+  settings: BarChartSettings;
+};
 
 export function BarChart({ settings, width, height }: BarChartProps) {
   const { getColumnData } = useChartData();
   const data = getColumnData(settings.field);
+
   // Chart dimensions
   const margin = { top: 20, right: 20, bottom: 30, left: 40 };
   const innerWidth = width - margin.left - margin.right;
@@ -78,58 +82,54 @@ export function BarChart({ settings, width, height }: BarChartProps) {
   }, [chartData, innerHeight]);
 
   return (
-    <svg width={width} height={height}>
-      <g transform={`translate(${margin.left},${margin.top})`}>
-        {/* Y-axis */}
-        {yScale.ticks(5).map((tick) => (
-          <g key={tick} transform={`translate(0,${yScale(tick)})`}>
+    <div style={{ width, height }}>
+      <BaseChart
+        width={width}
+        height={height}
+        margin={margin}
+        xScale={xScale}
+        yScale={yScale}
+      >
+        <g>
+          {/* Grid lines */}
+          {yScale.ticks(5).map((tick) => (
             <line
+              key={tick}
+              x1={0}
               x2={innerWidth}
+              y1={yScale(tick)}
+              y2={yScale(tick)}
               className="stroke-gray-200"
               strokeDasharray="5,5"
             />
-            <text
-              x={-8}
-              y={4}
-              className="text-xs fill-gray-500"
-              textAnchor="end"
-            >
-              {tick}
-            </text>
-          </g>
-        ))}
+          ))}
 
-        {/* Bars */}
-        {chartData.map((d, i) => (
-          <g key={i}>
+          {/* Bars */}
+          {chartData.map((d, i) => (
             <rect
+              key={i}
               x={xScale(d.label)}
               y={yScale(d.value)}
               width={xScale.bandwidth()}
               height={innerHeight - yScale(d.value)}
-              className="fill-blue-500 hover:fill-blue-600 transition-colors"
+              className="fill-primary/80 hover:fill-primary transition-colors"
             />
-          </g>
-        ))}
+          ))}
 
-        {/* X-axis */}
-        {chartData.map((d) => (
-          <g
-            key={d.label}
-            transform={`translate(${
-              xScale(d.label)! + xScale.bandwidth() / 2
-            },${innerHeight + 8})`}
-          >
+          {/* Value labels */}
+          {chartData.map((d) => (
             <text
-              className="text-xs fill-gray-500"
+              key={d.label}
+              x={xScale(d.label)! + xScale.bandwidth() / 2}
+              y={yScale(d.value) - 5}
+              className="text-xs fill-foreground"
               textAnchor="middle"
-              transform="rotate(45)"
             >
-              {d.label}
+              {d.value}
             </text>
-          </g>
-        ))}
-      </g>
-    </svg>
+          ))}
+        </g>
+      </BaseChart>
+    </div>
   );
 }

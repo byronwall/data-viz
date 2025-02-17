@@ -4,6 +4,7 @@ import { Input } from "./ui/input";
 import { ComboBox } from "./ComboBox";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
+import { FieldSelector } from "./FieldSelector";
 
 interface ChartSettingsContentProps {
   settings: ChartSettings;
@@ -23,11 +24,6 @@ export function ChartSettingsContent({
   useEffect(() => {
     setLocalSettings(settings);
   }, [settings]);
-
-  const fieldOptions = availableFields.map((field) => ({
-    value: field,
-    label: field,
-  }));
 
   const handleUpdate = () => {
     onSettingsChange(localSettings);
@@ -50,48 +46,60 @@ export function ChartSettingsContent({
         <Label htmlFor="chartType">Chart Type</Label>
         <ComboBox
           value={localSettings.type}
-          options={CHART_TYPES.map((type) => type.value)}
-          onChange={(value) =>
+          options={CHART_TYPES.map((type) => ({
+            value: type.value,
+            label: type.value,
+          }))}
+          onChange={(option) =>
             setLocalSettings({
               ...localSettings,
-              type: value || localSettings.type,
+              type:
+                (option?.value as ChartSettings["type"]) || localSettings.type,
             })
           }
           placeholder="Select chart type"
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="field">Data Field</Label>
-        <ComboBox
-          value={fieldOptions.find((opt) => opt.value === localSettings.field)}
-          options={fieldOptions}
-          onChange={(value) =>
-            setLocalSettings({
-              ...localSettings,
-              field: value?.value || localSettings.field,
-            })
-          }
-          placeholder="Select data field"
-        />
-      </div>
+
+      <FieldSelector
+        label="Data Field"
+        value={localSettings.field}
+        availableFields={availableFields}
+        onChange={(value) =>
+          setLocalSettings({
+            ...localSettings,
+            field: value,
+          })
+        }
+      />
+
       {localSettings.type === "scatter" && (
-        <div className="space-y-2">
-          <Label htmlFor="yField">Y Axis Field</Label>
-          <ComboBox
-            value={fieldOptions.find(
-              (opt) => opt.value === localSettings.yField
-            )}
-            options={fieldOptions}
+        <>
+          <FieldSelector
+            label="X Axis Field"
+            value={localSettings.field}
+            availableFields={availableFields}
             onChange={(value) =>
               setLocalSettings({
                 ...localSettings,
-                yField: value?.value || localSettings.yField,
+                field: value,
               })
             }
-            placeholder="Select Y axis field"
           />
-        </div>
+          <FieldSelector
+            label="Y Axis Field"
+            value={localSettings.yField || ""}
+            availableFields={availableFields}
+            onChange={(value) =>
+              setLocalSettings({
+                ...localSettings,
+                yField: value,
+              })
+            }
+          />
+        </>
       )}
+
       <Button className="w-full" onClick={handleUpdate}>
         Update Chart
       </Button>

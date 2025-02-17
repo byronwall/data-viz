@@ -73,6 +73,43 @@ export function ChartSettingsContent({
         />
       )}
 
+      {localSettings.type === "row" && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="minRowHeight">Minimum Row Height (px)</Label>
+            <Input
+              id="minRowHeight"
+              type="number"
+              min={20}
+              max={100}
+              value={(localSettings as any).minRowHeight || 30}
+              onChange={(e) =>
+                setLocalSettings({
+                  ...localSettings,
+                  minRowHeight: Math.max(20, parseInt(e.target.value) || 30),
+                })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxRowHeight">Maximum Row Height (px)</Label>
+            <Input
+              id="maxRowHeight"
+              type="number"
+              min={30}
+              max={200}
+              value={(localSettings as any).maxRowHeight || 50}
+              onChange={(e) =>
+                setLocalSettings({
+                  ...localSettings,
+                  maxRowHeight: Math.max(30, parseInt(e.target.value) || 50),
+                })
+              }
+            />
+          </div>
+        </>
+      )}
+
       {localSettings.type === "scatter" && (
         <>
           <FieldSelector

@@ -36,8 +36,6 @@ export function PlotManager() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
-  console.log("containerWidth", containerWidth);
-
   // Add useEffect to measure container
   useEffect(() => {
     const updateWidth = () => {
@@ -111,7 +109,7 @@ export function PlotManager() {
 
   const duplicateChart = (id: string) => {
     const chart = charts.find((chart) => chart.id === id);
-    console.log("chart", chart);
+
     if (chart) {
       const newChart: ChartSettings = {
         ...chart,

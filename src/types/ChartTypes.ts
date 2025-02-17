@@ -23,6 +23,8 @@ export interface BaseChartSettings {
 export interface RowChartSettings extends BaseChartSettings {
   type: "row";
   sortBy?: "count" | "label";
+  minRowHeight: number; // Minimum height of each row in pixels
+  maxRowHeight: number; // Maximum height of each row in pixels
 }
 
 export interface BarChartSettings extends BaseChartSettings {

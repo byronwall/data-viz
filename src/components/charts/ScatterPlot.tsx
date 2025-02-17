@@ -1,6 +1,8 @@
 import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
 import { useEffect, useRef } from "react";
 import { useChartData } from "@/hooks/useChartData";
+import { BaseChart } from "./BaseChart";
+import { scaleLinear } from "d3-scale";
 
 // Update the props type to use ScatterChartSettings
 interface ScatterPlotProps extends BaseChartProps {
@@ -20,6 +22,20 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
     throw new Error("X and Y arrays must have the same length");
   }
 
+  // Calculate data bounds
+  const xMin = Math.min(...xValues);
+  const xMax = Math.max(...xValues);
+  const yMin = Math.min(...yValues);
+  const yMax = Math.max(...yValues);
+
+  // Create scales for BaseChart
+  const xScale = scaleLinear()
+    .domain([xMin, xMax])
+    .range([0, width - 80]);
+  const yScale = scaleLinear()
+    .domain([yMin, yMax])
+    .range([height - 50, 20]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || xValues.length === 0) return;
@@ -36,59 +52,47 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
     // Clear canvas using provided dimensions
     ctx.clearRect(0, 0, width, height);
 
-    // Calculate data bounds
-    const xMin = Math.min(...xValues);
-    const xMax = Math.max(...xValues);
-    const yMin = Math.min(...yValues);
-    const yMax = Math.max(...yValues);
-
-    // Add padding to bounds
-    const padding = 40;
-    const plotWidth = width - padding * 2;
-    const plotHeight = height - padding * 2;
-
-    // Scale function to convert data values to canvas coordinates
-    const scaleX = (x: number) => {
-      return padding + (plotWidth * (x - xMin)) / (xMax - xMin);
-    };
-    const scaleY = (y: number) => {
-      return height - (padding + (plotHeight * (y - yMin)) / (yMax - yMin));
-    };
-
-    // Draw axes
-    ctx.beginPath();
-    ctx.strokeStyle = "#666";
-    ctx.lineWidth = 1;
-
-    // X-axis
-    ctx.moveTo(padding, height - padding);
-    ctx.lineTo(width - padding, height - padding);
-
-    // Y-axis
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, height - padding);
-    ctx.stroke();
-
-    // Draw points using a for loop
+    // Draw points using the same scales as BaseChart
     ctx.fillStyle = "rgb(99, 102, 241)"; // indigo-500
+    ctx.translate(60, 20); // Match the margin from BaseChart
+
     for (let i = 0; i < xValues.length; i++) {
-      const x = scaleX(xValues[i]);
-      const y = scaleY(yValues[i]);
+      const x = xScale(xValues[i]);
+      const y = yScale(yValues[i]);
 
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);
       ctx.fill();
     }
-  }, [xValues, yValues, settings.xField, settings.yField, width, height]);
+  }, [
+    xValues,
+    yValues,
+    settings.xField,
+    settings.yField,
+    width,
+    height,
+    xScale,
+    yScale,
+  ]);
 
   return (
     <div style={{ width, height }} className="relative">
       {xValues.length > 0 ? (
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0"
-          style={{ width, height }}
-        />
+        <>
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0"
+            style={{ width, height }}
+          />
+          <BaseChart
+            width={width}
+            height={height}
+            xScale={xScale}
+            yScale={yScale}
+          >
+            <g /> {/* Empty group element as children */}
+          </BaseChart>
+        </>
       ) : (
         <div className="flex items-center justify-center h-full text-muted-foreground">
           No data available

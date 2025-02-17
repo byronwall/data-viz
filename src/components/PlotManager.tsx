@@ -176,7 +176,11 @@ export function PlotManager() {
         </div>
       </div>
 
-      <ChartGridLayout charts={charts} onLayoutChange={handleLayoutChange}>
+      <ChartGridLayout
+        charts={charts}
+        onLayoutChange={handleLayoutChange}
+        containerWidth={containerWidth}
+      >
         {charts.map((chart) => {
           if (!chart.layout) return null;
           const dimensions = gridToPixels(chart.layout, containerWidth);

@@ -1,36 +1,42 @@
-import { ChartSettings } from "@/types/ChartTypes";
-import type { Layout } from "react-grid-layout";
-import ReactGridLayout from "react-grid-layout";
+import { ReactNode } from "react";
+import GridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
+import type { Layout } from "react-grid-layout";
+import type { ChartSettings } from "@/types/ChartTypes";
 
 interface ChartGridLayoutProps {
+  children: ReactNode;
   charts: ChartSettings[];
   onLayoutChange: (layout: Layout[]) => void;
-  children: React.ReactNode;
+  containerWidth: number;
 }
 
 export function ChartGridLayout({
+  children,
   charts,
   onLayoutChange,
-  children,
+  containerWidth,
 }: ChartGridLayoutProps) {
-  const layouts = charts.map((chart) => ({
-    ...chart.layout,
-    i: chart.id, // Use chart.id as the grid item identifier
+  const layout = charts.map((chart) => ({
+    i: chart.id,
+    x: chart.layout?.x || 0,
+    y: chart.layout?.y || 0,
+    w: chart.layout?.w || 6,
+    h: chart.layout?.h || 4,
   }));
 
   return (
-    <ReactGridLayout
+    <GridLayout
       className="layout"
-      layout={layouts}
-      onLayoutChange={onLayoutChange}
+      layout={layout}
       cols={12}
       rowHeight={100}
-      width={1200}
+      width={containerWidth}
+      onLayoutChange={onLayoutChange}
       draggableHandle=".drag-handle"
     >
       {children}
-    </ReactGridLayout>
+    </GridLayout>
   );
 }

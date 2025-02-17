@@ -37,8 +37,6 @@ export function PlotChartPanel({
   width,
   height,
 }: PlotChartPanelProps) {
-  console.log("height", height);
-
   const renderChart = () => {
     switch (settings.type) {
       case "row":

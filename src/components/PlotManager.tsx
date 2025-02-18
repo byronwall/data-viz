@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { useChartData } from "@/hooks/useChartData";
-import { ChartSettings } from "@/types/ChartTypes";
+import {
+  ChartSettings,
+  RowChartSettings,
+  BarChartSettings,
+  ScatterChartSettings,
+} from "@/types/ChartTypes";
 import {
   BarChartHorizontal,
   BarChart as BarChartIcon,
@@ -11,6 +16,7 @@ import { PlotChartPanel } from "./PlotChartPanel";
 import { ChartGridLayout } from "./ChartGridLayout";
 import type { ChartLayout } from "@/types/ChartTypes";
 import type { Layout } from "react-grid-layout";
+import { createRowChartSettings } from "@/types/createRowChartSettings";
 // Add these constants at the top of the file, after imports
 const GRID_ROW_HEIGHT = 100; // pixels per grid row
 const GRID_COLS = 12; // number of grid columns
@@ -26,7 +32,8 @@ const gridToPixels = (layout: ChartLayout, containerWidth: number) => {
 };
 
 export function PlotManager() {
-  const { getColumns, charts, setCharts } = useChartData();
+  const { getColumns, charts, addChart, removeChart, updateChart } =
+    useChartData();
 
   // Get column names
   const columns = getColumns();
@@ -49,24 +56,22 @@ export function PlotManager() {
   }, []);
 
   const addRowChart = (field: string) => {
-    const newChart: ChartSettings = {
-      id: crypto.randomUUID(),
-      type: "row",
-      title: `Row Chart - ${field}`,
-      field,
-      layout: {
-        x: (charts.length * 2) % 12,
-        y: Math.floor(charts.length / 6) * 4,
-        w: 6,
-        h: 4,
-      },
+    const newChart: Omit<RowChartSettings, "id"> = createRowChartSettings();
+
+    newChart.title = `Row Chart - ${field}`;
+    newChart.field = field;
+    newChart.layout = {
+      x: (charts.length * 2) % 12,
+      y: Math.floor(charts.length / 6) * 4,
+      w: 6,
+      h: 4,
     };
-    setCharts([...charts, newChart]);
+
+    addChart(newChart);
   };
 
   const addBarChart = (field: string) => {
-    const newChart: ChartSettings = {
-      id: crypto.randomUUID(),
+    const newChart: Omit<BarChartSettings, "id"> = {
       type: "bar",
       title: `Bar Chart - ${field}`,
       field,
@@ -77,12 +82,11 @@ export function PlotManager() {
         h: 4,
       },
     };
-    setCharts([...charts, newChart]);
+    addChart(newChart);
   };
 
   const addScatterPlot = (xField: string) => {
-    const newChart: ChartSettings = {
-      id: crypto.randomUUID(),
+    const newChart: Omit<ScatterChartSettings, "id"> = {
       type: "scatter",
       title: `Scatter Plot - ${xField} vs Y`,
       field: xField,
@@ -95,46 +99,24 @@ export function PlotManager() {
         h: 4,
       },
     };
-    setCharts([...charts, newChart]);
-  };
-
-  const deleteChart = (id: string) => {
-    setCharts(charts.filter((chart) => chart.id !== id));
-  };
-
-  const handleSettingsChange = (id: string, settings: ChartSettings) => {
-    setCharts(charts.map((chart) => (chart.id === id ? settings : chart)));
-  };
-
-  const duplicateChart = (id: string) => {
-    const chart = charts.find((chart) => chart.id === id);
-
-    if (chart) {
-      const newChart: ChartSettings = {
-        ...chart,
-        id: crypto.randomUUID(),
-      };
-      setCharts([...charts, newChart]);
-    }
+    addChart(newChart);
   };
 
   const handleLayoutChange = (newLayout: Layout[]) => {
-    setCharts(
-      charts.map((chart) => {
-        const updatedLayout = newLayout.find((l) => l.i === chart.id);
-        return {
+    charts.forEach((chart) => {
+      const updatedLayout = newLayout.find((l) => l.i === chart.id);
+      if (updatedLayout) {
+        updateChart(chart.id, {
           ...chart,
-          layout: updatedLayout
-            ? {
-                x: updatedLayout.x,
-                y: updatedLayout.y,
-                w: updatedLayout.w,
-                h: updatedLayout.h,
-              }
-            : chart.layout,
-        };
-      })
-    );
+          layout: {
+            x: updatedLayout.x,
+            y: updatedLayout.y,
+            w: updatedLayout.w,
+            h: updatedLayout.h,
+          },
+        });
+      }
+    });
   };
 
   return (
@@ -185,12 +167,13 @@ export function PlotManager() {
             <div key={chart.id}>
               <PlotChartPanel
                 settings={chart}
-                onDelete={() => deleteChart(chart.id)}
-                onSettingsChange={(settings) =>
-                  handleSettingsChange(chart.id, settings)
-                }
+                onDelete={() => removeChart(chart.id)}
+                onSettingsChange={(settings) => updateChart(chart.id, settings)}
                 availableFields={columns}
-                onDuplicate={() => duplicateChart(chart.id)}
+                onDuplicate={() => {
+                  const { id, ...chartWithoutId } = chart;
+                  addChart(chartWithoutId);
+                }}
                 width={dimensions.width}
                 height={dimensions.height}
               />

@@ -1,6 +1,7 @@
 import { createStore } from "zustand";
 import { createContext, useContext, useRef } from "react";
 import { useStore } from "zustand";
+import { ChartSettings } from "@/types/ChartTypes";
 
 // Props and State interfaces
 interface DataLayerProps<T> {
@@ -13,6 +14,16 @@ export type HasId = { __ID: number };
 interface DataLayerState<T> extends DataLayerProps<T> {
   data: (T & HasId)[];
   setData: (data: T[]) => void;
+
+  // Chart state
+  charts: ChartSettings[];
+  addChart: (chart: Omit<ChartSettings, "id">) => void;
+  removeChart: (id: string) => void;
+  updateChart: (id: string, settings: ChartSettings) => void;
+
+  // Filter state (placeholder)
+  updateFilter: (field: string, value: unknown) => void;
+  clearFilters: () => void;
 }
 
 // Store type
@@ -23,6 +34,12 @@ const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
   const DEFAULT_PROPS: DataLayerState<T> = {
     data: [] as (T & HasId)[],
     setData: () => {},
+    charts: [],
+    addChart: () => {},
+    removeChart: () => {},
+    updateChart: () => {},
+    updateFilter: () => {},
+    clearFilters: () => {},
   };
 
   return createStore<DataLayerState<T>>()((set) => ({
@@ -37,6 +54,39 @@ const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
         __ID: index,
       }));
       set({ data: dataWithIds });
+    },
+
+    // Chart management
+    charts: [],
+    addChart: (chartSettings) => {
+      const newChart = {
+        ...chartSettings,
+        id: crypto.randomUUID(),
+      };
+      set((state) => ({ charts: [...state.charts, newChart] }));
+    },
+    removeChart: (id) => {
+      set((state) => ({
+        charts: state.charts.filter((chart) => chart.id !== id),
+      }));
+    },
+    updateChart: (id, settings) => {
+      set((state) => ({
+        charts: state.charts.map((chart) =>
+          chart.id === id ? settings : chart
+        ),
+      }));
+    },
+
+    // Filter management (placeholder implementation)
+    filters: {},
+    updateFilter: (field, value) => {
+      set((state) => ({
+        // do nothing
+      }));
+    },
+    clearFilters: () => {
+      // do nothing
     },
   }));
 };

@@ -1,23 +1,45 @@
-import { BaseChartProps } from "@/types/ChartTypes";
+import { BaseChartProps, RowChartSettings } from "@/types/ChartTypes";
 import { useChartData } from "@/hooks/useChartData";
 import { scaleLinear, scaleBand } from "d3-scale";
 import { useMemo } from "react";
 import { BaseChart } from "./BaseChart";
+import { useDataLayer } from "@/providers/DataLayerProvider";
+import { rowChartPureFilter } from "@/hooks/rowChartPureFilter";
 
 type RowChartProps = BaseChartProps & {
-  settings: {
-    field: string;
-    minRowHeight: number;
-    maxRowHeight: number;
-  };
+  settings: RowChartSettings;
 };
 
 export function RowChart({ settings, width, height }: RowChartProps) {
-  const { getColumnData } = useChartData();
-  const data = getColumnData(settings.field);
+  const { getColumnData, getLiveIdsForDimension } = useChartData();
+
+  const liveIds = getLiveIdsForDimension(settings);
+
+  const _data = getColumnData(settings.field);
+
+  const data = liveIds.map((id) => _data[id]);
+
+  const updateChart = useDataLayer((s) => s.updateChart);
+
+  const filters = settings.rowFilters?.values ?? [];
+
+  const handleBarClick = (label: string) => {
+    if (label === "Others") {
+      return;
+    } // Don't allow filtering on "Others" category
+
+    const newValues = filters.includes(label)
+      ? filters.filter((f) => f !== label)
+      : [...filters, label];
+
+    updateChart(settings.id, {
+      ...settings,
+      rowFilters: { values: newValues },
+    });
+  };
 
   // Chart dimensions
-  const margin = { top: 20, right: 20, bottom: 30, left: 100 };
+  const margin = { top: 20, right: 40, bottom: 30, left: 100 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
@@ -66,6 +88,8 @@ export function RowChart({ settings, width, height }: RowChartProps) {
     settings.maxRowHeight,
   ]);
 
+  console.log("displayCounts", displayCounts);
+
   // Scales
   const xScale = scaleLinear()
     .domain([0, Math.max(...displayCounts.map((d) => d.count))])
@@ -87,20 +111,27 @@ export function RowChart({ settings, width, height }: RowChartProps) {
       >
         <g className="select-none">
           {/* Bars */}
-          {displayCounts.map(({ label, count }) => (
-            <rect
-              key={label}
-              x={0}
-              y={yScale(label)}
-              width={xScale(count)}
-              height={yScale.bandwidth()}
-              className={`${
-                label === "Others"
-                  ? "fill-muted/80 hover:fill-muted"
-                  : "fill-primary/80 hover:fill-primary"
-              }`}
-            />
-          ))}
+          {displayCounts.map(({ label, count }) => {
+            const isFiltered = rowChartPureFilter(filters, label);
+
+            return (
+              <rect
+                key={label}
+                x={0}
+                y={yScale(label)}
+                width={xScale(count)}
+                height={yScale.bandwidth()}
+                className={`${
+                  label === "Others"
+                    ? "fill-muted/80 hover:fill-muted"
+                    : isFiltered
+                    ? "fill-primary hover:fill-primary/90"
+                    : "fill-primary/80 hover:fill-primary"
+                } cursor-pointer`}
+                onClick={() => handleBarClick(label)}
+              />
+            );
+          })}
 
           {/* Count labels */}
           {displayCounts.map(({ label, count }) => (

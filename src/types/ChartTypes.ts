@@ -25,6 +25,7 @@ export interface RowChartSettings extends BaseChartSettings {
   sortBy?: "count" | "label";
   minRowHeight: number; // Minimum height of each row in pixels
   maxRowHeight: number; // Maximum height of each row in pixels
+  rowFilters: FilterValues;
 }
 
 export interface BarChartSettings extends BaseChartSettings {
@@ -48,3 +49,21 @@ export interface BaseChartProps {
   width: number;
   height: number;
 }
+
+export type datum = string | number | boolean | undefined;
+
+type FilterValues = {
+  values: datum[];
+};
+
+type FilterRange = {
+  min: datum;
+  max: datum;
+};
+
+type Filter2dRange = {
+  x: FilterRange;
+  y: FilterRange;
+};
+
+export type Filter = FilterValues | FilterRange | Filter2dRange;

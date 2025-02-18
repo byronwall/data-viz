@@ -11,13 +11,21 @@ type RowChartProps = BaseChartProps & {
 };
 
 export function RowChart({ settings, width, height }: RowChartProps) {
-  const { getColumnData, getLiveIdsForDimension } = useChartData();
+  const { getColumnData } = useChartData();
+
+  const getLiveIdsForDimension = useDataLayer((s) => s.getLiveIdsForDimension);
 
   const liveIds = getLiveIdsForDimension(settings);
 
   const _data = getColumnData(settings.field);
 
   const data = liveIds.map((id) => _data[id]);
+
+  console.log("data", {
+    liveIds,
+    _data,
+    data,
+  });
 
   const updateChart = useDataLayer((s) => s.updateChart);
 
@@ -124,9 +132,11 @@ export function RowChart({ settings, width, height }: RowChartProps) {
                 className={`${
                   label === "Others"
                     ? "fill-muted/80 hover:fill-muted"
-                    : isFiltered
-                    ? "fill-primary hover:fill-primary/90"
-                    : "fill-primary/80 hover:fill-primary"
+                    : filters.length > 0
+                    ? isFiltered
+                      ? "fill-amber-800"
+                      : "fill-amber-200"
+                    : "fill-blue-800"
                 } cursor-pointer`}
                 onClick={() => handleBarClick(label)}
               />

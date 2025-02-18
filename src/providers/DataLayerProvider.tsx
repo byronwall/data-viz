@@ -2,6 +2,7 @@ import { createStore } from "zustand";
 import { createContext, useContext, useRef } from "react";
 import { useStore } from "zustand";
 import { ChartSettings } from "@/types/ChartTypes";
+import { CrossfilterWrapper } from "@/hooks/CrossfilterWrapper";
 
 // Props and State interfaces
 interface DataLayerProps<T> {
@@ -24,6 +25,11 @@ interface DataLayerState<T> extends DataLayerProps<T> {
   // Filter state (placeholder)
   updateFilter: (field: string, value: unknown) => void;
   clearFilters: () => void;
+  clearFilter: (chart: ChartSettings) => void;
+
+  crossfilterWrapper: CrossfilterWrapper<T & HasId>;
+  nonce: number;
+  getLiveIdsForDimension: (dimension: ChartSettings) => number[];
 }
 
 // Store type
@@ -31,46 +37,54 @@ type DataLayerStore<T> = ReturnType<typeof createDataLayerStore<T>>;
 
 // Store creator
 const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
-  const DEFAULT_PROPS: DataLayerState<T> = {
-    data: [] as (T & HasId)[],
-    setData: () => {},
-    charts: [],
-    addChart: () => {},
-    removeChart: () => {},
-    updateChart: () => {},
-    updateFilter: () => {},
-    clearFilters: () => {},
-  };
+  function getDataAndCrossfilterWrapper(data: T[]) {
+    const dataWithIds = data.map((row, index) => ({
+      ...row,
+      __ID: index,
+    }));
+    return {
+      data: dataWithIds,
+      crossfilterWrapper: new CrossfilterWrapper<T & HasId>(
+        dataWithIds,
+        (d) => d.__ID
+      ),
+    };
+  }
 
-  return createStore<DataLayerState<T>>()((set) => ({
-    ...DEFAULT_PROPS,
-    data: initProps?.data
-      ? initProps.data.map((d, i) => ({ ...d, __ID: i }))
-      : [],
+  const { data: initData, crossfilterWrapper } = getDataAndCrossfilterWrapper(
+    initProps?.data ?? []
+  );
+
+  return createStore<DataLayerState<T>>()((set, get) => ({
+    data: initData,
+    crossfilterWrapper,
     setData: (rawData) => {
-      // Add __ID to each row
-      const dataWithIds = rawData.map((row, index) => ({
-        ...row,
-        __ID: index,
-      }));
-      set({ data: dataWithIds });
+      set({
+        ...getDataAndCrossfilterWrapper(rawData),
+      });
     },
 
     // Chart management
     charts: [],
     addChart: (chartSettings) => {
+      const { crossfilterWrapper } = get();
       const newChart = {
         ...chartSettings,
         id: crypto.randomUUID(),
       };
+      crossfilterWrapper.addChart(newChart);
       set((state) => ({ charts: [...state.charts, newChart] }));
     },
     removeChart: (id) => {
+      const { crossfilterWrapper } = get();
+      crossfilterWrapper.removeChart(id);
       set((state) => ({
         charts: state.charts.filter((chart) => chart.id !== id),
       }));
     },
     updateChart: (id, settings) => {
+      const { crossfilterWrapper } = get();
+      crossfilterWrapper.updateChart(settings);
       set((state) => ({
         charts: state.charts.map((chart) =>
           chart.id === id ? settings : chart
@@ -78,8 +92,6 @@ const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
       }));
     },
 
-    // Filter management (placeholder implementation)
-    filters: {},
     updateFilter: (field, value) => {
       set((state) => ({
         // do nothing
@@ -87,6 +99,47 @@ const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
     },
     clearFilters: () => {
       // do nothing
+    },
+    clearFilter: (chart) => {
+      const { updateChart } = get();
+
+      const chartDim = crossfilterWrapper.charts.get(chart.id);
+      if (chartDim) {
+        chartDim.dimension.filterAll();
+        // Update the chart to reflect the cleared state
+        if (chart.type === "row") {
+          updateChart(chart.id, {
+            ...chart,
+            rowFilters: { values: [] },
+          });
+        } else {
+          updateChart(chart.id, chart);
+        }
+      }
+    },
+    nonce: 0,
+    getLiveIdsForDimension: (chart) => {
+      const { crossfilterWrapper } = get();
+
+      const dimension = crossfilterWrapper.charts.get(chart.id)?.dimension;
+      if (!dimension) {
+        console.error("getLiveIdsForDimension: dimension not found", {
+          chart,
+        });
+        return [];
+      }
+      const _all = dimension.group().all();
+
+      const all = _all.filter((c) => c.value > 0).map((d) => d.key);
+
+      console.warn("getLiveIdsForDimension", {
+        name: chart.title,
+        filters: chart.rowFilters,
+        all,
+        _all,
+      });
+
+      return all as number[];
     },
   }));
 };
@@ -117,6 +170,8 @@ export function useDataLayer<T, U>(
   selector: (state: DataLayerState<T>) => U
 ): U {
   const store = useContext(DataLayerContext);
-  if (!store) throw new Error("Missing DataLayerContext.Provider in the tree");
+  if (!store) {
+    throw new Error("Missing DataLayerContext.Provider in the tree");
+  }
   return useStore(store, selector);
 }

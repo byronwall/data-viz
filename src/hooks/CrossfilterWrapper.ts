@@ -79,7 +79,7 @@ export class CrossfilterWrapper<T> {
     console.log("[CrossfilterWrapper] Old chart:", oldChart);
     if (oldChart) {
       console.log("[CrossfilterWrapper] Check filters:", {
-        oldFilters: oldChart.rowFilters,
+        oldFilters: oldChart.chart.rowFilters,
         newFilters: chart.rowFilters,
       });
       // TODO: do a proper diff
@@ -110,28 +110,33 @@ export class CrossfilterWrapper<T> {
       return;
     }
 
-    dimension.filterFunction(filterFunc);
+    console.log(
+      "Data before filter is applied:",
+      dimension
+        .group()
+        .all()
+        .filter((c) => c.value > 0)
+    );
 
-    const filteredIds = new Set<IdField>();
-    const allItems = dimension.group().all();
+    const newDim = dimension.filterFunction(filterFunc);
 
-    console.log("[CrossfilterWrapper] All items:", {
-      allItems,
+    this.charts.set(chart.id, {
+      ...this.charts.get(chart.id)!,
+      dimension: newDim,
     });
+
+    console.log(
+      "Data after filter is applied:",
+      newDim
+        .group()
+        .all()
+        .filter((c) => c.value > 0)
+    );
 
     // this gives an object with key + value
     // the value will be 1 if the item should be rendered
     // will still need to check the value = 1 items in the actual chart with the filter func again
     // ideally wire up the hook to the raw crossfilter obj so charts can get IDs to render per dim
-
-    for (const item of allItems) {
-      filteredIds.add(item.key);
-    }
-
-    this.charts.set(chart.id, {
-      ...this.charts.get(chart.id)!,
-      filteredIds,
-    });
   }
 
   addChart(chart: ChartSettings) {
@@ -187,7 +192,7 @@ export class CrossfilterWrapper<T> {
     );
   }
 
-  getFilterFunction<T>(chart: ChartSettings): (d: IdField) => boolean {
+  getFilterFunction(chart: ChartSettings): (d: IdField) => boolean {
     console.log(
       "[CrossfilterWrapper] Creating filter function for chart type:",
       chart.type

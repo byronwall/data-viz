@@ -17,6 +17,7 @@ import { ChartGridLayout } from "./ChartGridLayout";
 import type { ChartLayout } from "@/types/ChartTypes";
 import type { Layout } from "react-grid-layout";
 import { createRowChartSettings } from "@/types/createRowChartSettings";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 // Add these constants at the top of the file, after imports
 const GRID_ROW_HEIGHT = 100; // pixels per grid row
 const GRID_COLS = 12; // number of grid columns
@@ -32,8 +33,8 @@ const gridToPixels = (layout: ChartLayout, containerWidth: number) => {
 };
 
 export function PlotManager() {
-  const { getColumns, charts, addChart, removeChart, updateChart } =
-    useChartData();
+  const { getColumns, charts, addChart, removeChart } = useChartData();
+  const updateChart = useDataLayer((state) => state.updateChart);
 
   // Get column names
   const columns = getColumns();
@@ -161,7 +162,9 @@ export function PlotManager() {
         containerWidth={containerWidth}
       >
         {charts.map((chart) => {
-          if (!chart.layout) return null;
+          if (!chart.layout) {
+            return null;
+          }
           const dimensions = gridToPixels(chart.layout, containerWidth);
           return (
             <div key={chart.id}>

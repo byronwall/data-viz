@@ -1,9 +1,10 @@
 import { ChartSettings } from "@/types/ChartTypes";
-import { Copy, GripVertical, Settings2, X } from "lucide-react";
+import { Copy, GripVertical, Settings2, X, FilterX } from "lucide-react";
 import { BarChart } from "./charts/BarChart";
 import { RowChart } from "./charts/RowChart";
 import { ScatterPlot } from "./charts/ScatterPlot";
 import { ChartSettingsContent } from "./ChartSettingsContent";
+import { useChartData } from "@/hooks/useChartData";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +38,8 @@ export function PlotChartPanel({
   width,
   height,
 }: PlotChartPanelProps) {
+  const { clearFilter } = useChartData();
+
   const renderChart = () => {
     switch (settings.type) {
       case "row":
@@ -82,6 +85,13 @@ export function PlotChartPanel({
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={onDuplicate}>
             <Copy className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => clearFilter(settings)}
+          >
+            <FilterX className="h-4 w-4" />
           </Button>
           <Popover>
             <PopoverTrigger asChild>

@@ -117,6 +117,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
         margin={margin}
         xScale={xScale}
         yScale={yScale}
+        brushingMode="horizontal"
       >
         <g className="select-none">
           {/* Grid lines */}
@@ -154,7 +155,8 @@ export function BarChart({ settings, width, height }: BarChartProps) {
                 y={yScale(d.value)}
                 width={barWidth}
                 height={innerHeight - yScale(d.value)}
-                className="fill-primary/80 hover:fill-primary transition-colors"
+                // TODO: only do pointer none if dragging
+                className="fill-primary/80 hover:fill-primary transition-colors pointer-events-none"
               />
             );
           })}
@@ -178,7 +180,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
                 key={d.label}
                 x={labelX}
                 y={yScale(d.value) - 5}
-                className="text-xs fill-foreground"
+                className="text-xs fill-foreground pointer-events-none"
                 textAnchor="middle"
               >
                 {d.value}

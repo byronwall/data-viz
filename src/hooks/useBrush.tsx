@@ -1,11 +1,4 @@
-import {
-  MouseEvent,
-  ReactNode,
-  RefObject,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import { MouseEvent, RefObject, useCallback, useMemo, useState } from "react";
 
 type BrushState =
   | { state: "idle" }
@@ -99,7 +92,7 @@ export function useBrush({
         }
       }
     },
-    [brushState, marginLeft]
+    [brushState, marginLeft, svgRef]
   );
 
   const handleMouseMove = useCallback(
@@ -148,7 +141,7 @@ export function useBrush({
           break;
       }
     },
-    [brushState, innerWidth, marginLeft]
+    [brushState, innerWidth, marginLeft, svgRef]
   );
 
   const handleMouseUp = useCallback(() => {

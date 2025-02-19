@@ -14,7 +14,7 @@ interface DataLayerProps<T extends DatumObject> {
 type IdType = number;
 export type HasId = { __ID: IdType };
 
-type LiveItem = { key: datum; value: number };
+type LiveItem = { key: number; value: number };
 
 interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   data: (T & HasId)[];

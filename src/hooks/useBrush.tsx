@@ -1,39 +1,34 @@
 import { MouseEvent, RefObject, useCallback, useMemo, useState } from "react";
 
+interface Point {
+  x: number;
+  y: number;
+}
+
 type BrushState =
   | { state: "idle" }
   | {
       state: "dragging";
-      startX: number;
-      startY: number;
-      currentX: number;
-      currentY: number;
+      start: Point;
+      current: Point;
     }
   | {
       state: "moving";
-      startX: number;
-      startY: number;
-      brushStartX: number;
-      brushStartY: number;
-      brushEndX: number;
-      brushEndY: number;
+      start: Point;
+      brushStart: Point;
+      brushEnd: Point;
     }
   | {
       state: "resizing";
       edge: "left" | "right" | "top" | "bottom";
-      startX: number;
-      startY: number;
-      brushStartX: number;
-      brushStartY: number;
-      brushEndX: number;
-      brushEndY: number;
+      start: Point;
+      brushStart: Point;
+      brushEnd: Point;
     }
   | {
       state: "brushed";
-      brushStartX: number;
-      brushStartY: number;
-      brushEndX: number;
-      brushEndY: number;
+      brushStart: Point;
+      brushEnd: Point;
     };
 
 interface BrushOptions {
@@ -81,84 +76,65 @@ export function useBrush({
       if (brushState.state === "idle") {
         setBrushState({
           state: "dragging",
-          startX: x,
-          startY: y,
-          currentX: x,
-          currentY: y,
+          start: { x, y },
+          current: { x, y },
         });
         return;
       }
 
       if (brushState.state === "brushed") {
-        const brushStart = brushState.brushStartX;
-        const brushEnd = brushState.brushEndX;
-        const brushStartY = brushState.brushStartY;
-        const brushEndY = brushState.brushEndY;
+        const brushStart = brushState.brushStart;
+        const brushEnd = brushState.brushEnd;
 
         // Check if we're near the edges (within BRUSH_EDGE_THRESHOLD_PX)
-        if (Math.abs(x - brushStart) <= BRUSH_EDGE_THRESHOLD_PX) {
+        if (Math.abs(x - brushStart.x) <= BRUSH_EDGE_THRESHOLD_PX) {
           setBrushState({
             state: "resizing",
             edge: "left",
-            startX: x,
-            startY: y,
-            brushStartX: brushStart,
-            brushStartY: brushStartY,
-            brushEndX: brushEnd,
-            brushEndY: brushEndY,
+            start: { x, y },
+            brushStart: brushStart,
+            brushEnd: brushEnd,
           });
-        } else if (Math.abs(x - brushEnd) <= BRUSH_EDGE_THRESHOLD_PX) {
+        } else if (Math.abs(x - brushEnd.x) <= BRUSH_EDGE_THRESHOLD_PX) {
           setBrushState({
             state: "resizing",
             edge: "right",
-            startX: x,
-            startY: y,
-            brushStartX: brushStart,
-            brushStartY: brushStartY,
-            brushEndX: brushEnd,
-            brushEndY: brushEndY,
+            start: { x, y },
+            brushStart: brushStart,
+            brushEnd: brushEnd,
           });
         } else if (
-          Math.abs(y - brushStartY) <= BRUSH_EDGE_THRESHOLD_PX &&
+          Math.abs(y - brushStart.y) <= BRUSH_EDGE_THRESHOLD_PX &&
           mode === "2d"
         ) {
           setBrushState({
             state: "resizing",
             edge: "top",
-            startX: x,
-            startY: y,
-            brushStartX: brushStart,
-            brushStartY: brushStartY,
-            brushEndX: brushEnd,
-            brushEndY: brushEndY,
+            start: { x, y },
+            brushStart: brushStart,
+            brushEnd: brushEnd,
           });
         } else if (
-          Math.abs(y - brushEndY) <= BRUSH_EDGE_THRESHOLD_PX &&
+          Math.abs(y - brushEnd.y) <= BRUSH_EDGE_THRESHOLD_PX &&
           mode === "2d"
         ) {
           setBrushState({
             state: "resizing",
             edge: "bottom",
-            startX: x,
-            startY: y,
-            brushStartX: brushStart,
-            brushStartY: brushStartY,
-            brushEndX: brushEnd,
-            brushEndY: brushEndY,
+            start: { x, y },
+            brushStart: brushStart,
+            brushEnd: brushEnd,
           });
         } else if (
-          x >= brushStart &&
-          x <= brushEnd &&
-          (mode === "horizontal" || (y >= brushStartY && y <= brushEndY))
+          x >= brushStart.x &&
+          x <= brushEnd.x &&
+          (mode === "horizontal" || (y >= brushStart.y && y <= brushEnd.y))
         ) {
           setBrushState({
             state: "moving",
-            startX: x,
-            startY: y,
-            brushStartX: brushStart,
-            brushStartY: brushStartY,
-            brushEndX: brushEnd,
-            brushEndY: brushEndY,
+            start: { x, y },
+            brushStart: brushStart,
+            brushEnd: brushEnd,
           });
         } else {
           setBrushState({ state: "idle" });
@@ -188,45 +164,59 @@ export function useBrush({
         case "dragging":
           setBrushState({
             ...brushState,
-            currentX: clampedX,
-            currentY: mode === "2d" ? clampedY : innerHeight,
+            current: { x: clampedX, y: mode === "2d" ? clampedY : innerHeight },
           });
           break;
         case "moving": {
-          const brushWidth = brushState.brushEndX - brushState.brushStartX;
-          const brushHeight = brushState.brushEndY - brushState.brushStartY;
-          const deltaX = clampedX - brushState.startX;
-          const deltaY = mode === "2d" ? clampedY - brushState.startY : 0;
+          const brushWidth = brushState.brushEnd.x - brushState.brushStart.x;
+          const brushHeight = brushState.brushEnd.y - brushState.brushStart.y;
+          const deltaX = clampedX - brushState.start.x;
+          const deltaY = mode === "2d" ? clampedY - brushState.start.y : 0;
 
           const newStartX = Math.max(
             0,
-            Math.min(brushState.brushStartX + deltaX, innerWidth - brushWidth)
+            Math.min(brushState.brushStart.x + deltaX, innerWidth - brushWidth)
           );
           const newStartY = Math.max(
             0,
-            Math.min(brushState.brushStartY + deltaY, innerHeight - brushHeight)
+            Math.min(
+              brushState.brushStart.y + deltaY,
+              innerHeight - brushHeight
+            )
           );
 
           setBrushState({
             state: "moving",
-            startX: clampedX,
-            startY: clampedY,
-            brushStartX: newStartX,
-            brushStartY: mode === "2d" ? newStartY : 0,
-            brushEndX: newStartX + brushWidth,
-            brushEndY: mode === "2d" ? newStartY + brushHeight : innerHeight,
+            start: { x: clampedX, y: clampedY },
+            brushStart: { x: newStartX, y: mode === "2d" ? newStartY : 0 },
+            brushEnd: {
+              x: newStartX + brushWidth,
+              y: mode === "2d" ? newStartY + brushHeight : innerHeight,
+            },
           });
           break;
         }
         case "resizing":
           if (brushState.edge === "left") {
-            setBrushState({ ...brushState, brushStartX: clampedX });
+            setBrushState({
+              ...brushState,
+              brushStart: { x: clampedX, y: brushState.brushStart.y },
+            });
           } else if (brushState.edge === "right") {
-            setBrushState({ ...brushState, brushEndX: clampedX });
+            setBrushState({
+              ...brushState,
+              brushEnd: { x: clampedX, y: brushState.brushEnd.y },
+            });
           } else if (brushState.edge === "top" && mode === "2d") {
-            setBrushState({ ...brushState, brushStartY: clampedY });
+            setBrushState({
+              ...brushState,
+              brushStart: { x: brushState.brushStart.x, y: clampedY },
+            });
           } else if (brushState.edge === "bottom" && mode === "2d") {
-            setBrushState({ ...brushState, brushEndY: clampedY });
+            setBrushState({
+              ...brushState,
+              brushEnd: { x: brushState.brushEnd.x, y: clampedY },
+            });
           }
           break;
       }
@@ -236,46 +226,45 @@ export function useBrush({
 
   const handleMouseUp = useCallback(() => {
     if (brushState.state === "dragging") {
-      const width = Math.abs(brushState.currentX - brushState.startX);
-      const height = Math.abs(brushState.currentY - brushState.startY);
+      const width = Math.abs(brushState.current.x - brushState.start.x);
+      const height = Math.abs(brushState.current.y - brushState.start.y);
 
       if (width < 5 || (mode === "2d" && height < 5)) {
         setBrushState({
           state: "idle",
         });
       } else {
-        const brushStartX = Math.min(brushState.startX, brushState.currentX);
-        const brushEndX = Math.max(brushState.startX, brushState.currentX);
+        const brushStartX = Math.min(brushState.start.x, brushState.current.x);
+        const brushEndX = Math.max(brushState.start.x, brushState.current.x);
         const brushStartY =
-          mode === "2d" ? Math.min(brushState.startY, brushState.currentY) : 0;
+          mode === "2d"
+            ? Math.min(brushState.start.y, brushState.current.y)
+            : 0;
         const brushEndY =
           mode === "2d"
-            ? Math.max(brushState.startY, brushState.currentY)
+            ? Math.max(brushState.start.y, brushState.current.y)
             : innerHeight;
 
         setBrushState({
           state: "brushed",
-          brushStartX,
-          brushStartY,
-          brushEndX,
-          brushEndY,
+          brushStart: { x: brushStartX, y: brushStartY },
+          brushEnd: { x: brushEndX, y: brushEndY },
         });
       }
     } else if (
       brushState.state === "moving" ||
       brushState.state === "resizing"
     ) {
-      const start = brushState.brushStartX;
-      const end = brushState.brushEndX;
-      const startY = brushState.brushStartY;
-      const endY = brushState.brushEndY;
+      const start = brushState.brushStart;
+      const end = brushState.brushEnd;
 
       setBrushState({
         state: "brushed",
-        brushStartX: Math.min(start, end),
-        brushStartY: Math.min(startY, endY),
-        brushEndX: Math.max(start, end),
-        brushEndY: Math.max(startY, endY),
+        brushStart: {
+          x: Math.min(start.x, end.x),
+          y: Math.min(start.y, end.y),
+        },
+        brushEnd: { x: Math.max(start.x, end.x), y: Math.max(start.y, end.y) },
       });
     }
   }, [brushState, mode, innerHeight]);
@@ -291,28 +280,29 @@ export function useBrush({
     let height: number;
 
     if (brushState.state === "dragging") {
-      x = Math.min(brushState.startX, brushState.currentX);
-      y = mode === "2d" ? Math.min(brushState.startY, brushState.currentY) : 0;
-      width = Math.abs(brushState.currentX - brushState.startX);
+      x = Math.min(brushState.start.x, brushState.current.x);
+      y =
+        mode === "2d" ? Math.min(brushState.start.y, brushState.current.y) : 0;
+      width = Math.abs(brushState.current.x - brushState.start.x);
       height =
         mode === "2d"
-          ? Math.abs(brushState.currentY - brushState.startY)
+          ? Math.abs(brushState.current.y - brushState.start.y)
           : innerHeight;
     } else if (brushState.state === "moving") {
-      x = brushState.brushStartX;
-      y = brushState.brushStartY;
-      width = Math.abs(brushState.brushEndX - brushState.brushStartX);
-      height = Math.abs(brushState.brushEndY - brushState.brushStartY);
+      x = brushState.brushStart.x;
+      y = brushState.brushStart.y;
+      width = Math.abs(brushState.brushEnd.x - brushState.brushStart.x);
+      height = Math.abs(brushState.brushEnd.y - brushState.brushStart.y);
     } else if (brushState.state === "resizing") {
-      x = Math.min(brushState.brushStartX, brushState.brushEndX);
-      y = Math.min(brushState.brushStartY, brushState.brushEndY);
-      width = Math.abs(brushState.brushEndX - brushState.brushStartX);
-      height = Math.abs(brushState.brushEndY - brushState.brushStartY);
+      x = Math.min(brushState.brushStart.x, brushState.brushEnd.x);
+      y = Math.min(brushState.brushStart.y, brushState.brushEnd.y);
+      width = Math.abs(brushState.brushEnd.x - brushState.brushStart.x);
+      height = Math.abs(brushState.brushEnd.y - brushState.brushStart.y);
     } else if (brushState.state === "brushed") {
-      x = brushState.brushStartX;
-      y = brushState.brushStartY;
-      width = brushState.brushEndX - brushState.brushStartX;
-      height = brushState.brushEndY - brushState.brushStartY;
+      x = brushState.brushStart.x;
+      y = brushState.brushStart.y;
+      width = brushState.brushEnd.x - brushState.brushStart.x;
+      height = brushState.brushEnd.y - brushState.brushStart.y;
     } else {
       return null;
     }

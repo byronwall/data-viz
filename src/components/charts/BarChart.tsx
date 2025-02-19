@@ -1,8 +1,9 @@
 import { BaseChartProps, BarChartSettings } from "@/types/ChartTypes";
-import { useChartData } from "@/hooks/useChartData";
+
 import { scaleBand, scaleLinear, ScaleLinear, ScaleBand } from "d3-scale";
 import { useMemo } from "react";
 import { BaseChart } from "./BaseChart";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 
 type NumericBin = {
   label: string;
@@ -25,7 +26,7 @@ type BarChartProps = BaseChartProps & {
 };
 
 export function BarChart({ settings, width, height }: BarChartProps) {
-  const { getColumnData } = useChartData();
+  const getColumnData = useDataLayer((s) => s.getColumnData);
   const data = getColumnData(settings.field);
 
   // Chart dimensions

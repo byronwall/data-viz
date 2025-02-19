@@ -9,7 +9,8 @@ interface DataLayerProps<T> {
 }
 
 // Add ID to the data type
-export type HasId = { __ID: number };
+type IdType = number;
+export type HasId = { __ID: IdType };
 
 type LiveItem = { key: datum; value: number };
 
@@ -31,10 +32,16 @@ interface DataLayerState<T> extends DataLayerProps<T> {
   crossfilterWrapper: CrossfilterWrapper<T & HasId>;
   nonce: number;
   getLiveItems: (chart: ChartSettings) => LiveItem[];
+
+  // data and key functions
+  getColumnData: (field: string) => { [key: IdType]: datum };
+  getColumnNames: () => string[];
 }
 
 // Store type
-type DataLayerStore<T> = ReturnType<typeof createDataLayerStore<T>>;
+type DataLayerStore<T extends datum> = ReturnType<
+  typeof createDataLayerStore<T>
+>;
 
 function getDataAndCrossfilterWrapper<T>(data: T[]) {
   const dataWithIds = data.map((row, index) => ({
@@ -51,7 +58,9 @@ function getDataAndCrossfilterWrapper<T>(data: T[]) {
 }
 
 // Store creator
-const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
+const createDataLayerStore = <T extends datum>(
+  initProps?: Partial<DataLayerProps<T>>
+) => {
   const { data: initData, crossfilterWrapper } = getDataAndCrossfilterWrapper(
     initProps?.data ?? []
   );
@@ -132,6 +141,14 @@ const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
 
       return _all;
     },
+
+    getColumnNames() {
+      return Object.keys(get().data[0]);
+    },
+
+    getColumnData(field: string) {
+      return get().data.map((row) => row[field as keyof datum]);
+    },
   }));
 };
 
@@ -141,7 +158,7 @@ export const DataLayerContext = createContext<DataLayerStore<any> | null>(null);
 // Provider wrapper
 type DataLayerProviderProps<T> = React.PropsWithChildren<DataLayerProps<T>>;
 
-export function DataLayerProvider<T>({
+export function DataLayerProvider<T extends datum>({
   children,
   ...props
 }: DataLayerProviderProps<T>) {

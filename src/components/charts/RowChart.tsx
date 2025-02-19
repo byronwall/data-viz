@@ -1,5 +1,5 @@
 import { BaseChartProps, datum, RowChartSettings } from "@/types/ChartTypes";
-import { useChartData } from "@/hooks/useChartData";
+
 import { scaleLinear, scaleBand } from "d3-scale";
 import { useMemo } from "react";
 import { BaseChart } from "./BaseChart";
@@ -11,13 +11,13 @@ type RowChartProps = BaseChartProps & {
 };
 
 export function RowChart({ settings, width, height }: RowChartProps) {
-  const { getColumnData } = useChartData();
+  const getColumnData = useDataLayer((s) => s.getColumnData);
 
-  const getLiveIdsForDimension = useDataLayer((s) => s.getLiveItems);
+  const getLiveItems = useDataLayer((s) => s.getLiveItems);
 
-  const _liveIds = getLiveIdsForDimension(settings);
+  const liveItems = getLiveItems(settings);
 
-  const liveIds = _liveIds.filter((c) => c.value > 0).map((d) => d.key);
+  const liveIds = liveItems.filter((c) => c.value > 0).map((d) => d.key);
 
   const _data = getColumnData(settings.field);
 

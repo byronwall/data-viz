@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useChartData } from "@/hooks/useChartData";
+
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { ChartLayout } from "@/types/ChartTypes";
 import {
@@ -32,13 +32,14 @@ const gridToPixels = (layout: ChartLayout, containerWidth: number) => {
 };
 
 export function PlotManager() {
-  const { getColumns, charts } = useChartData();
+  const getColumnNames = useDataLayer((state) => state.getColumnNames);
+  const charts = useDataLayer((state) => state.charts);
   const updateChart = useDataLayer((state) => state.updateChart);
   const addChart = useDataLayer((state) => state.addChart);
   const removeChart = useDataLayer((state) => state.removeChart);
 
   // Get column names
-  const columns = getColumns();
+  const columns = getColumnNames();
 
   // Add ref and state for container dimensions
   const containerRef = useRef<HTMLDivElement>(null);

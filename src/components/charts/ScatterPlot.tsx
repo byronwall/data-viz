@@ -1,6 +1,6 @@
 import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
 import { useEffect, useRef } from "react";
-import { useChartData } from "@/hooks/useChartData";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 import { BaseChart } from "./BaseChart";
 import { scaleLinear } from "d3-scale";
 
@@ -11,7 +11,7 @@ interface ScatterPlotProps extends BaseChartProps {
 
 export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { getColumnData } = useChartData();
+  const getColumnData = useDataLayer((s) => s.getColumnData);
 
   // Get data for both x and y fields
   const xValues = getColumnData(settings.xField).map(Number);
@@ -38,10 +38,14 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || xValues.length === 0) return;
+    if (!canvas || xValues.length === 0) {
+      return;
+    }
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     // Use provided width and height instead of getBoundingClientRect
     const dpr = window.devicePixelRatio || 1;

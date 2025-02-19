@@ -156,7 +156,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
                 width={barWidth}
                 height={innerHeight - yScale(d.value)}
                 // TODO: only do pointer none if dragging
-                className="fill-primary/80 hover:fill-primary transition-colors pointer-events-none"
+                className="fill-primary/80 hover:fill-primary transition-colors "
               />
             );
           })}
@@ -180,7 +180,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
                 key={d.label}
                 x={labelX}
                 y={yScale(d.value) - 5}
-                className="text-xs fill-foreground pointer-events-none"
+                className="text-xs fill-foreground "
                 textAnchor="middle"
               >
                 {d.value}

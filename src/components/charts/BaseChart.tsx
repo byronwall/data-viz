@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useState, MouseEvent } from "react";
+import { ReactNode, useCallback, useState, MouseEvent, useRef } from "react";
 import { ScaleBand, ScaleLinear } from "d3-scale";
 import { XAxis, YAxis } from "./Axis";
 
@@ -38,6 +38,8 @@ interface BaseChartProps {
   children: ReactNode;
 }
 
+const BRUSH_EDGE_THRESHOLD_PX = 5;
+
 export function BaseChart({
   width,
   height,
@@ -49,23 +51,33 @@ export function BaseChart({
 }: BaseChartProps) {
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
+  const svgRef = useRef<SVGSVGElement>(null);
 
   const [brushState, setBrushState] = useState<BrushState>({ state: "idle" });
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
-      const rect = (e.target as SVGElement).getBoundingClientRect();
+      e.stopPropagation();
+
+      if (!svgRef.current) {
+        return;
+      }
+
+      const rect = svgRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left - margin.left;
 
       // Check if we're clicking near the brush edges or in the middle
       if (brushState.state === "idle") {
         setBrushState({ state: "dragging", startX: x, currentX: x });
-      } else if (brushState.state === "brushed") {
+        return;
+      }
+
+      if (brushState.state === "brushed") {
         const brushStart = brushState.brushStartX;
         const brushEnd = brushState.brushEndX;
 
-        // Check if we're near the edges (within 5px)
-        if (Math.abs(x - brushStart) <= 5) {
+        // Check if we're near the edges (within BRUSH_EDGE_THRESHOLD_PX)
+        if (Math.abs(x - brushStart) <= BRUSH_EDGE_THRESHOLD_PX) {
           setBrushState({
             state: "resizing",
             edge: "left",
@@ -73,7 +85,7 @@ export function BaseChart({
             brushStartX: brushStart,
             brushEndX: brushEnd,
           });
-        } else if (Math.abs(x - brushEnd) <= 5) {
+        } else if (Math.abs(x - brushEnd) <= BRUSH_EDGE_THRESHOLD_PX) {
           setBrushState({
             state: "resizing",
             edge: "right",
@@ -88,6 +100,9 @@ export function BaseChart({
             brushStartX: brushStart,
             brushEndX: brushEnd,
           });
+        } else {
+          // go to idle
+          setBrushState({ state: "idle" });
         }
       }
     },
@@ -96,11 +111,15 @@ export function BaseChart({
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      if (brushState.state === "idle") {
+      if (brushState.state === "idle" || brushState.state === "brushed") {
         return;
       }
 
-      const rect = (e.target as SVGElement).getBoundingClientRect();
+      if (!svgRef.current) {
+        return;
+      }
+
+      const rect = svgRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left - margin.left;
       const clampedX = Math.max(0, Math.min(x, innerWidth));
 
@@ -198,27 +217,63 @@ export function BaseChart({
     }
 
     return (
-      <rect
-        x={x}
-        y={0}
-        width={width}
-        height={innerHeight}
-        fill="rgba(255, 0, 0, 0.2)"
-        stroke="rgba(255, 0, 0, 0.8)"
-        strokeWidth={1}
-        pointerEvents="none"
-      />
+      <>
+        {/* Main brush rectangle */}
+        <rect
+          x={x}
+          y={0}
+          width={width}
+          height={innerHeight}
+          fill="rgba(255, 0, 0, 0.2)"
+          stroke="rgba(255, 0, 0, 0.8)"
+          strokeWidth={1}
+          style={{ cursor: "move" }}
+        />
+        {/* Left resize handle - only show for brushed state */}
+        {brushState.state === "brushed" && (
+          <rect
+            x={x - BRUSH_EDGE_THRESHOLD_PX}
+            y={0}
+            width={BRUSH_EDGE_THRESHOLD_PX * 2}
+            height={innerHeight}
+            fill="transparent"
+            style={{ cursor: "ew-resize" }}
+          />
+        )}
+        {/* Right resize handle - only show for brushed state */}
+        {brushState.state === "brushed" && (
+          <rect
+            x={x + width - BRUSH_EDGE_THRESHOLD_PX}
+            y={0}
+            width={BRUSH_EDGE_THRESHOLD_PX * 2}
+            height={innerHeight}
+            fill="transparent"
+            style={{ cursor: "ew-resize" }}
+          />
+        )}
+      </>
     );
   };
 
   return (
     <svg
+      ref={svgRef}
       width={width}
       height={height}
       className="select-none"
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      style={{
+        cursor:
+          brushState.state === "idle"
+            ? "default"
+            : brushState.state === "moving"
+            ? "move"
+            : brushState.state === "resizing"
+            ? "ew-resize"
+            : undefined,
+      }}
+      onMouseDownCapture={handleMouseDown}
+      onMouseMoveCapture={handleMouseMove}
+      onMouseUpCapture={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
       <g transform={`translate(${margin.left},${margin.top})`}>

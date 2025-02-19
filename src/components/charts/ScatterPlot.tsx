@@ -85,7 +85,7 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
         <>
           <canvas
             ref={canvasRef}
-            className="absolute inset-0"
+            className="absolute inset-0 pointer-events-none"
             style={{ width, height }}
           />
           <BaseChart
@@ -93,6 +93,7 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
             height={height}
             xScale={xScale}
             yScale={yScale}
+            brushingMode="2d"
           >
             <g /> {/* Empty group element as children */}
           </BaseChart>

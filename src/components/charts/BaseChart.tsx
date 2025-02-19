@@ -38,8 +38,10 @@ export function BaseChart({
   const brush = useBrush({
     svgRef,
     marginLeft: margin.left,
+    marginTop: margin.top,
     innerWidth,
     innerHeight,
+    mode: brushingMode,
   });
 
   return (
@@ -59,7 +61,7 @@ export function BaseChart({
         {children}
 
         {/* Brush overlay */}
-        {brushingMode === "horizontal" && brush.renderBrush}
+        {brush.renderBrush}
 
         {/* Axes */}
         <XAxis scale={xScale} transform={`translate(0,${innerHeight})`} />

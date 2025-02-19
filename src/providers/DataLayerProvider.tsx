@@ -149,7 +149,7 @@ const createDataLayerStore = <T extends DatumObject>(
     },
 
     getColumnData(field: string) {
-      return get().data.map((row) => row[field as keyof datum]);
+      return get().data.map((row) => row[field]);
     },
   }));
 };

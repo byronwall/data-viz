@@ -120,7 +120,7 @@ const createDataLayerStore = <T extends DatumObject>(
         if (chart.type === "row") {
           updateChart({
             ...chart,
-            rowFilters: { values: [] },
+            filterValues: { values: [] },
           });
         } else {
           updateChart(chart);

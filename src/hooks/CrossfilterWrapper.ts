@@ -116,7 +116,7 @@ export class CrossfilterWrapper<T> {
       case "row":
         return (d: IdField) => {
           // check if value is in the filters
-          const filters = chart.rowFilters?.values;
+          const filters = chart.filterValues?.values;
 
           const dataum = this.dataHash[d];
 

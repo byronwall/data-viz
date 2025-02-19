@@ -25,7 +25,7 @@ export function RowChart({ settings, width, height }: RowChartProps) {
 
   const updateChart = useDataLayer((s) => s.updateChart);
 
-  const filters = settings.rowFilters?.values ?? [];
+  const filters = settings.filterValues?.values ?? [];
 
   const handleBarClick = (label: datum) => {
     if (label === "Others") {
@@ -39,7 +39,7 @@ export function RowChart({ settings, width, height }: RowChartProps) {
 
     updateChart({
       ...settings,
-      rowFilters: { values: newValues },
+      filterValues: { values: newValues },
     });
   };
 

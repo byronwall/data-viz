@@ -13,7 +13,7 @@ export function createRowChartSettings(): RowChartSettings {
     },
     minRowHeight: 10,
     maxRowHeight: 100,
-    rowFilters: {
+    filterValues: {
       values: [],
     },
     type: "row",

@@ -25,12 +25,16 @@ export interface RowChartSettings extends BaseChartSettings {
   sortBy?: "count" | "label";
   minRowHeight: number; // Minimum height of each row in pixels
   maxRowHeight: number; // Maximum height of each row in pixels
-  rowFilters: FilterValues;
+
+  filterValues: FilterValues;
 }
 
 export interface BarChartSettings extends BaseChartSettings {
   type: "bar";
   binCount?: number;
+
+  filterValues: FilterValues;
+  filterRange: FilterRange;
 }
 
 export interface ScatterChartSettings extends BaseChartSettings {

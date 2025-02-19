@@ -22,10 +22,12 @@ interface BaseChartProps {
   children: ReactNode;
 }
 
+const defaultMargin: Margin = { top: 20, right: 20, bottom: 30, left: 60 };
+
 export function BaseChart({
   width,
   height,
-  margin = { top: 20, right: 20, bottom: 30, left: 60 },
+  margin = defaultMargin,
   xScale,
   yScale,
   brushingMode = "horizontal",

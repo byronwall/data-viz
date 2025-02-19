@@ -10,7 +10,7 @@ interface Margin {
   left: number;
 }
 
-type BrushMode = "horizontal" | "2d";
+type BrushMode = "horizontal" | "2d" | "none";
 
 interface BaseChartProps {
   width: number;
@@ -30,7 +30,7 @@ export function BaseChart({
   margin = defaultMargin,
   xScale,
   yScale,
-  brushingMode = "horizontal",
+  brushingMode = "none",
   children,
 }: BaseChartProps) {
   const innerWidth = width - margin.left - margin.right;
@@ -43,7 +43,7 @@ export function BaseChart({
     marginTop: margin.top,
     innerWidth,
     innerHeight,
-    mode: brushingMode,
+    mode: brushingMode as "horizontal" | "2d" | "none",
   });
 
   return (

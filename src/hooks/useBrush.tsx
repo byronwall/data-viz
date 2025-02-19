@@ -45,7 +45,7 @@ interface BrushOptions {
   marginTop: number;
   innerWidth: number;
   innerHeight: number;
-  mode: "horizontal" | "2d";
+  mode: "horizontal" | "2d" | "none";
 }
 
 interface BrushRenderProps {
@@ -70,6 +70,9 @@ export function useBrush({
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
+      if (mode === "none") {
+        return;
+      }
       e.stopPropagation();
 
       if (!svgRef.current) {
@@ -208,6 +211,9 @@ export function useBrush({
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
+      if (mode === "none") {
+        return;
+      }
       if (brushState.state === "idle" || brushState.state === "brushed") {
         return;
       }
@@ -312,6 +318,9 @@ export function useBrush({
   );
 
   const handleMouseUp = useCallback(() => {
+    if (mode === "none") {
+      return;
+    }
     if (brushState.state === "dragging") {
       const width = Math.abs(brushState.current.x - brushState.start.x);
       const height = Math.abs(brushState.current.y - brushState.start.y);
@@ -404,6 +413,9 @@ export function useBrush({
   }, [brushState, mode, innerHeight]);
 
   const getCursor = useCallback(() => {
+    if (mode === "none") {
+      return "default";
+    }
     if (brushState.state === "idle") {
       return "default";
     }
@@ -435,6 +447,9 @@ export function useBrush({
   const brushProps = getBrushRenderProps();
 
   const renderBrush = useMemo(() => {
+    if (mode === "none" || brushState.state === "idle") {
+      return null;
+    }
     if (!brushProps) {
       return null;
     }

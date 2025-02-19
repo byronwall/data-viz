@@ -20,7 +20,15 @@ type BrushState =
     }
   | {
       state: "resizing";
-      edge: "left" | "right" | "top" | "bottom";
+      edge:
+        | "left"
+        | "right"
+        | "top"
+        | "bottom"
+        | "topLeft"
+        | "topRight"
+        | "bottomLeft"
+        | "bottomRight";
       start: Point;
       brushStart: Point;
       brushEnd: Point;
@@ -86,7 +94,61 @@ export function useBrush({
         const brushStart = brushState.brushStart;
         const brushEnd = brushState.brushEnd;
 
-        // Check if we're near the edges (within BRUSH_EDGE_THRESHOLD_PX)
+        // First check corners (only in 2D mode)
+        if (mode === "2d") {
+          const nearTopLeft =
+            Math.abs(x - brushStart.x) <= BRUSH_EDGE_THRESHOLD_PX &&
+            Math.abs(y - brushStart.y) <= BRUSH_EDGE_THRESHOLD_PX;
+          const nearTopRight =
+            Math.abs(x - brushEnd.x) <= BRUSH_EDGE_THRESHOLD_PX &&
+            Math.abs(y - brushStart.y) <= BRUSH_EDGE_THRESHOLD_PX;
+          const nearBottomLeft =
+            Math.abs(x - brushStart.x) <= BRUSH_EDGE_THRESHOLD_PX &&
+            Math.abs(y - brushEnd.y) <= BRUSH_EDGE_THRESHOLD_PX;
+          const nearBottomRight =
+            Math.abs(x - brushEnd.x) <= BRUSH_EDGE_THRESHOLD_PX &&
+            Math.abs(y - brushEnd.y) <= BRUSH_EDGE_THRESHOLD_PX;
+
+          if (nearTopLeft) {
+            setBrushState({
+              state: "resizing",
+              edge: "topLeft",
+              start: { x, y },
+              brushStart,
+              brushEnd,
+            });
+            return;
+          } else if (nearTopRight) {
+            setBrushState({
+              state: "resizing",
+              edge: "topRight",
+              start: { x, y },
+              brushStart,
+              brushEnd,
+            });
+            return;
+          } else if (nearBottomLeft) {
+            setBrushState({
+              state: "resizing",
+              edge: "bottomLeft",
+              start: { x, y },
+              brushStart,
+              brushEnd,
+            });
+            return;
+          } else if (nearBottomRight) {
+            setBrushState({
+              state: "resizing",
+              edge: "bottomRight",
+              start: { x, y },
+              brushStart,
+              brushEnd,
+            });
+            return;
+          }
+        }
+
+        // Then check edges as before
         if (Math.abs(x - brushStart.x) <= BRUSH_EDGE_THRESHOLD_PX) {
           setBrushState({
             state: "resizing",
@@ -217,6 +279,31 @@ export function useBrush({
               ...brushState,
               brushEnd: { x: brushState.brushEnd.x, y: clampedY },
             });
+          } else if (mode === "2d") {
+            // Handle corner resizing
+            if (brushState.edge === "topLeft") {
+              setBrushState({
+                ...brushState,
+                brushStart: { x: clampedX, y: clampedY },
+              });
+            } else if (brushState.edge === "topRight") {
+              setBrushState({
+                ...brushState,
+                brushStart: { x: brushState.brushStart.x, y: clampedY },
+                brushEnd: { x: clampedX, y: brushState.brushEnd.y },
+              });
+            } else if (brushState.edge === "bottomLeft") {
+              setBrushState({
+                ...brushState,
+                brushStart: { x: clampedX, y: brushState.brushStart.y },
+                brushEnd: { x: brushState.brushEnd.x, y: clampedY },
+              });
+            } else if (brushState.edge === "bottomRight") {
+              setBrushState({
+                ...brushState,
+                brushEnd: { x: clampedX, y: clampedY },
+              });
+            }
           }
           break;
       }
@@ -332,6 +419,12 @@ export function useBrush({
           case "top":
           case "bottom":
             return "ns-resize";
+          case "topLeft":
+          case "bottomRight":
+            return "nwse-resize";
+          case "topRight":
+          case "bottomLeft":
+            return "nesw-resize";
         }
       }
       return "ew-resize";
@@ -395,6 +488,39 @@ export function useBrush({
                   height={BRUSH_EDGE_THRESHOLD_PX * 2}
                   fill="transparent"
                   style={{ cursor: "ns-resize" }}
+                />
+                {/* Corner handles */}
+                <rect
+                  x={x - BRUSH_EDGE_THRESHOLD_PX}
+                  y={y - BRUSH_EDGE_THRESHOLD_PX}
+                  width={BRUSH_EDGE_THRESHOLD_PX * 2}
+                  height={BRUSH_EDGE_THRESHOLD_PX * 2}
+                  fill="transparent"
+                  style={{ cursor: "nwse-resize" }}
+                />
+                <rect
+                  x={x + width - BRUSH_EDGE_THRESHOLD_PX}
+                  y={y - BRUSH_EDGE_THRESHOLD_PX}
+                  width={BRUSH_EDGE_THRESHOLD_PX * 2}
+                  height={BRUSH_EDGE_THRESHOLD_PX * 2}
+                  fill="transparent"
+                  style={{ cursor: "nesw-resize" }}
+                />
+                <rect
+                  x={x - BRUSH_EDGE_THRESHOLD_PX}
+                  y={y + height - BRUSH_EDGE_THRESHOLD_PX}
+                  width={BRUSH_EDGE_THRESHOLD_PX * 2}
+                  height={BRUSH_EDGE_THRESHOLD_PX * 2}
+                  fill="transparent"
+                  style={{ cursor: "nesw-resize" }}
+                />
+                <rect
+                  x={x + width - BRUSH_EDGE_THRESHOLD_PX}
+                  y={y + height - BRUSH_EDGE_THRESHOLD_PX}
+                  width={BRUSH_EDGE_THRESHOLD_PX * 2}
+                  height={BRUSH_EDGE_THRESHOLD_PX * 2}
+                  fill="transparent"
+                  style={{ cursor: "nwse-resize" }}
                 />
               </>
             )}

@@ -55,16 +55,7 @@ export function BaseChart({
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
       const rect = (e.target as SVGElement).getBoundingClientRect();
-      const rawX = e.clientX;
       const x = e.clientX - rect.left - margin.left;
-
-      console.log("MouseDown", {
-        rawX,
-        rectLeft: rect.left,
-        marginLeft: margin.left,
-        calculatedX: x,
-        state: brushState.state,
-      });
 
       // Check if we're clicking near the brush edges or in the middle
       if (brushState.state === "idle") {
@@ -72,14 +63,6 @@ export function BaseChart({
       } else if (brushState.state === "brushed") {
         const brushStart = brushState.brushStartX;
         const brushEnd = brushState.brushEndX;
-
-        console.log("Brush edges check", {
-          x,
-          brushStart,
-          brushEnd,
-          distanceToStart: Math.abs(x - brushStart),
-          distanceToEnd: Math.abs(x - brushEnd),
-        });
 
         // Check if we're near the edges (within 5px)
         if (Math.abs(x - brushStart) <= 5) {
@@ -118,19 +101,8 @@ export function BaseChart({
       }
 
       const rect = (e.target as SVGElement).getBoundingClientRect();
-      const rawX = e.clientX;
       const x = e.clientX - rect.left - margin.left;
       const clampedX = Math.max(0, Math.min(x, innerWidth));
-
-      console.log("MouseMove", {
-        rawX,
-        rectLeft: rect.left,
-        marginLeft: margin.left,
-        calculatedX: x,
-        clampedX,
-        state: brushState.state,
-        innerWidth,
-      });
 
       switch (brushState.state) {
         case "dragging":
@@ -147,14 +119,6 @@ export function BaseChart({
             Math.min(brushState.brushStartX + delta, innerWidth - brushWidth)
           );
 
-          console.log("Moving brush", {
-            brushWidth,
-            delta,
-            newStart,
-            newEnd: newStart + brushWidth,
-            currentX: clampedX,
-          });
-
           setBrushState({
             state: "moving",
             startX: clampedX,
@@ -164,13 +128,6 @@ export function BaseChart({
           break;
         }
         case "resizing":
-          console.log("Resizing brush", {
-            edge: brushState.edge,
-            currentX: clampedX,
-            brushStartX: brushState.brushStartX,
-            brushEndX: brushState.brushEndX,
-          });
-
           if (brushState.edge === "left") {
             setBrushState({ ...brushState, brushStartX: clampedX });
           } else {
@@ -192,11 +149,6 @@ export function BaseChart({
           state: "idle",
         });
       } else {
-        console.log("Converting dragging to brushed", {
-          startX: brushState.startX,
-          currentX: brushState.currentX,
-          width,
-        });
         // Convert dragging to a stable brush position
         const brushStart = Math.min(brushState.startX, brushState.currentX);
         const brushEnd = Math.max(brushState.startX, brushState.currentX);
@@ -219,10 +171,6 @@ export function BaseChart({
         brushEndX: Math.max(start, end),
       });
     }
-
-    console.log("MouseUp", {
-      state: brushState.state,
-    });
   }, [brushState]);
 
   const renderBrush = () => {
@@ -248,13 +196,6 @@ export function BaseChart({
     } else {
       return null;
     }
-
-    console.log("Rendering brush", {
-      state: brushState.state,
-      x,
-      width,
-      innerHeight,
-    });
 
     return (
       <rect

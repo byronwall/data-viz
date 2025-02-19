@@ -1,4 +1,11 @@
-import { MouseEvent, RefObject, useCallback, useState } from "react";
+import {
+  MouseEvent,
+  ReactNode,
+  RefObject,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 
 type BrushState =
   | { state: "idle" }
@@ -220,6 +227,52 @@ export function useBrush({
       : undefined;
   }, [brushState.state]);
 
+  const brushProps = getBrushRenderProps();
+
+  const renderBrush = useMemo(() => {
+    if (!brushProps) {
+      return null;
+    }
+
+    const { x, width, height, state } = brushProps;
+    return (
+      <>
+        <rect
+          x={x}
+          y={0}
+          width={width}
+          height={height}
+          fill="rgba(255, 0, 0, 0.2)"
+          stroke="rgba(255, 0, 0, 0.8)"
+          strokeWidth={1}
+          style={{ cursor: "move" }}
+        />
+
+        {state === "brushed" && (
+          <rect
+            x={x - BRUSH_EDGE_THRESHOLD_PX}
+            y={0}
+            width={BRUSH_EDGE_THRESHOLD_PX * 2}
+            height={height}
+            fill="transparent"
+            style={{ cursor: "ew-resize" }}
+          />
+        )}
+
+        {state === "brushed" && (
+          <rect
+            x={x + width - BRUSH_EDGE_THRESHOLD_PX}
+            y={0}
+            width={BRUSH_EDGE_THRESHOLD_PX * 2}
+            height={height}
+            fill="transparent"
+            style={{ cursor: "ew-resize" }}
+          />
+        )}
+      </>
+    );
+  }, [brushProps]);
+
   return {
     brushState,
     handleMouseDown,
@@ -227,5 +280,6 @@ export function useBrush({
     handleMouseUp,
     getBrushRenderProps,
     getCursor,
+    renderBrush,
   };
 }

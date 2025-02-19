@@ -22,8 +22,6 @@ interface BaseChartProps {
   children: ReactNode;
 }
 
-const BRUSH_EDGE_THRESHOLD_PX = 5;
-
 export function BaseChart({
   width,
   height,
@@ -37,65 +35,12 @@ export function BaseChart({
   const innerHeight = height - margin.top - margin.bottom;
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const {
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    getBrushRenderProps,
-    getCursor,
-  } = useBrush({
+  const brush = useBrush({
     svgRef,
     marginLeft: margin.left,
     innerWidth,
     innerHeight,
   });
-
-  const renderBrush = () => {
-    const brushProps = getBrushRenderProps();
-    if (!brushProps) {
-      return null;
-    }
-
-    const { x, width, height, state } = brushProps;
-
-    return (
-      <>
-        {/* Main brush rectangle */}
-        <rect
-          x={x}
-          y={0}
-          width={width}
-          height={height}
-          fill="rgba(255, 0, 0, 0.2)"
-          stroke="rgba(255, 0, 0, 0.8)"
-          strokeWidth={1}
-          style={{ cursor: "move" }}
-        />
-        {/* Left resize handle - only show for brushed state */}
-        {state === "brushed" && (
-          <rect
-            x={x - BRUSH_EDGE_THRESHOLD_PX}
-            y={0}
-            width={BRUSH_EDGE_THRESHOLD_PX * 2}
-            height={height}
-            fill="transparent"
-            style={{ cursor: "ew-resize" }}
-          />
-        )}
-        {/* Right resize handle - only show for brushed state */}
-        {state === "brushed" && (
-          <rect
-            x={x + width - BRUSH_EDGE_THRESHOLD_PX}
-            y={0}
-            width={BRUSH_EDGE_THRESHOLD_PX * 2}
-            height={height}
-            fill="transparent"
-            style={{ cursor: "ew-resize" }}
-          />
-        )}
-      </>
-    );
-  };
 
   return (
     <svg
@@ -103,18 +48,18 @@ export function BaseChart({
       width={width}
       height={height}
       className="select-none"
-      style={{ cursor: getCursor() }}
-      onMouseDownCapture={handleMouseDown}
-      onMouseMoveCapture={handleMouseMove}
-      onMouseUpCapture={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      style={{ cursor: brush.getCursor() }}
+      onMouseDownCapture={brush.handleMouseDown}
+      onMouseMoveCapture={brush.handleMouseMove}
+      onMouseUpCapture={brush.handleMouseUp}
+      onMouseLeave={brush.handleMouseUp}
     >
       <g transform={`translate(${margin.left},${margin.top})`}>
         {/* Main content */}
         {children}
 
         {/* Brush overlay */}
-        {brushingMode === "horizontal" && renderBrush()}
+        {brushingMode === "horizontal" && brush.renderBrush}
 
         {/* Axes */}
         <XAxis scale={xScale} transform={`translate(0,${innerHeight})`} />

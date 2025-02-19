@@ -1,8 +1,7 @@
-import { createStore } from "zustand";
-import { createContext, useContext, useRef } from "react";
-import { useStore } from "zustand";
-import { ChartSettings } from "@/types/ChartTypes";
 import { CrossfilterWrapper } from "@/hooks/CrossfilterWrapper";
+import { ChartSettings } from "@/types/ChartTypes";
+import { createContext, useContext, useRef } from "react";
+import { createStore, useStore } from "zustand";
 
 // Props and State interfaces
 interface DataLayerProps<T> {
@@ -35,22 +34,22 @@ interface DataLayerState<T> extends DataLayerProps<T> {
 // Store type
 type DataLayerStore<T> = ReturnType<typeof createDataLayerStore<T>>;
 
+function getDataAndCrossfilterWrapper<T>(data: T[]) {
+  const dataWithIds = data.map((row, index) => ({
+    ...row,
+    __ID: index,
+  }));
+  return {
+    data: dataWithIds,
+    crossfilterWrapper: new CrossfilterWrapper<T & HasId>(
+      dataWithIds,
+      (d) => d.__ID
+    ),
+  };
+}
+
 // Store creator
 const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
-  function getDataAndCrossfilterWrapper(data: T[]) {
-    const dataWithIds = data.map((row, index) => ({
-      ...row,
-      __ID: index,
-    }));
-    return {
-      data: dataWithIds,
-      crossfilterWrapper: new CrossfilterWrapper<T & HasId>(
-        dataWithIds,
-        (d) => d.__ID
-      ),
-    };
-  }
-
   const { data: initData, crossfilterWrapper } = getDataAndCrossfilterWrapper(
     initProps?.data ?? []
   );
@@ -97,9 +96,7 @@ const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
         // do nothing
       }));
     },
-    clearFilters: () => {
-      // do nothing
-    },
+    clearFilters: () => {},
     clearFilter: (chart) => {
       const { updateChart } = get();
 
@@ -121,25 +118,17 @@ const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
     getLiveIdsForDimension: (chart) => {
       const { crossfilterWrapper } = get();
 
-      const dimension = crossfilterWrapper.charts.get(chart.id)?.dimension;
-      if (!dimension) {
+      const dim = crossfilterWrapper.charts.get(chart.id)?.dimension;
+      if (!dim) {
         console.error("getLiveIdsForDimension: dimension not found", {
           chart,
         });
         return [];
       }
-      const _all = dimension.group().all();
 
-      const all = _all.filter((c) => c.value > 0).map((d) => d.key);
+      const _all = dim.group().all();
 
-      console.warn("getLiveIdsForDimension", {
-        name: chart.title,
-        filters: chart.rowFilters,
-        all,
-        _all,
-      });
-
-      return all as number[];
+      return _all;
     },
   }));
 };

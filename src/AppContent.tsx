@@ -4,6 +4,7 @@ import { useDataLayer } from "./providers/DataLayerProvider";
 
 export function AppContent() {
   const data = useDataLayer((state) => state.data);
+  console.log("source data", data);
   const hasData = data.length > 0;
 
   return (
@@ -15,7 +16,7 @@ export function AppContent() {
       <div className={`w-full max-w-xl ${hasData ? "hidden" : ""}`}>
         <CsvUpload />
       </div>
-      {hasData && <PlotManager data={data} />}
+      {hasData && <PlotManager />}
     </div>
   );
 }

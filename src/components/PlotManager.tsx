@@ -1,23 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { useChartData } from "@/hooks/useChartData";
+import { useDataLayer } from "@/providers/DataLayerProvider";
+import type { ChartLayout } from "@/types/ChartTypes";
 import {
-  ChartSettings,
-  RowChartSettings,
   BarChartSettings,
+  RowChartSettings,
   ScatterChartSettings,
 } from "@/types/ChartTypes";
+import { createRowChartSettings } from "@/types/createRowChartSettings";
 import {
   BarChartHorizontal,
   BarChart as BarChartIcon,
   ScatterChart,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
-import { PlotChartPanel } from "./PlotChartPanel";
-import { ChartGridLayout } from "./ChartGridLayout";
-import type { ChartLayout } from "@/types/ChartTypes";
+import { useEffect, useRef, useState } from "react";
 import type { Layout } from "react-grid-layout";
-import { createRowChartSettings } from "@/types/createRowChartSettings";
-import { useDataLayer } from "@/providers/DataLayerProvider";
+import { ChartGridLayout } from "./ChartGridLayout";
+import { PlotChartPanel } from "./PlotChartPanel";
 // Add these constants at the top of the file, after imports
 const GRID_ROW_HEIGHT = 100; // pixels per grid row
 const GRID_COLS = 12; // number of grid columns

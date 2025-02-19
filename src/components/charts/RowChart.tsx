@@ -1,4 +1,4 @@
-import { BaseChartProps, RowChartSettings } from "@/types/ChartTypes";
+import { BaseChartProps, datum, RowChartSettings } from "@/types/ChartTypes";
 import { useChartData } from "@/hooks/useChartData";
 import { scaleLinear, scaleBand } from "d3-scale";
 import { useMemo } from "react";
@@ -15,13 +15,18 @@ export function RowChart({ settings, width, height }: RowChartProps) {
 
   const getLiveIdsForDimension = useDataLayer((s) => s.getLiveIdsForDimension);
 
-  const liveIds = getLiveIdsForDimension(settings);
+  const _liveIds = getLiveIdsForDimension(settings);
+
+  console.log("liveIds", _liveIds);
+  const liveIds = _liveIds.filter((c) => c.value > 0).map((d) => d.key);
+
+  console.log("truly liveIds", liveIds);
 
   const _data = getColumnData(settings.field);
 
   const data = liveIds.map((id) => _data[id]);
 
-  console.log("data", {
+  console.log("data for row chart", settings.layout.x, {
     liveIds,
     _data,
     data,
@@ -31,10 +36,11 @@ export function RowChart({ settings, width, height }: RowChartProps) {
 
   const filters = settings.rowFilters?.values ?? [];
 
-  const handleBarClick = (label: string) => {
+  const handleBarClick = (label: datum) => {
     if (label === "Others") {
+      // Don't allow filtering on "Others" category
       return;
-    } // Don't allow filtering on "Others" category
+    }
 
     const newValues = filters.includes(label)
       ? filters.filter((f) => f !== label)
@@ -53,9 +59,9 @@ export function RowChart({ settings, width, height }: RowChartProps) {
 
   // Calculate counts and handle overflow
   const { displayCounts } = useMemo(() => {
-    const countMap = new Map<string, number>();
+    const countMap = new Map<datum, number>();
     data.forEach((value) => {
-      const key = String(value);
+      const key = value;
       countMap.set(key, (countMap.get(key) || 0) + 1);
     });
 
@@ -104,7 +110,7 @@ export function RowChart({ settings, width, height }: RowChartProps) {
     .range([0, innerWidth]);
 
   const yScale = scaleBand()
-    .domain(displayCounts.map((d) => d.label))
+    .domain(displayCounts.map((d) => String(d.label)))
     .range([0, innerHeight])
     .padding(0.1);
 
@@ -121,12 +127,13 @@ export function RowChart({ settings, width, height }: RowChartProps) {
           {/* Bars */}
           {displayCounts.map(({ label, count }) => {
             const isFiltered = rowChartPureFilter(filters, label);
+            console.log("test filter", filters, label, isFiltered);
 
             return (
               <rect
-                key={label}
+                key={String(label)}
                 x={0}
-                y={yScale(label)}
+                y={yScale(String(label))}
                 width={xScale(count)}
                 height={yScale.bandwidth()}
                 className={`${
@@ -146,9 +153,9 @@ export function RowChart({ settings, width, height }: RowChartProps) {
           {/* Count labels */}
           {displayCounts.map(({ label, count }) => (
             <text
-              key={label}
+              key={String(label)}
               x={xScale(count) + 5}
-              y={yScale(label)! + yScale.bandwidth() / 2}
+              y={yScale(String(label))! + yScale.bandwidth() / 2}
               dominantBaseline="middle"
               className="text-sm fill-foreground"
             >

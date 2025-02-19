@@ -11,8 +11,6 @@ export function useChartData<T extends HasId>() {
   const addChart = useDataLayer((state) => state.addChart);
   const removeChart = useDataLayer((state) => state.removeChart);
 
-  const crossfilterWrapper = useDataLayer((state) => state.crossfilterWrapper);
-
   const columnCache = useMemo(() => {
     const cache: { [key: string]: { [key: string]: number | string } } = {};
     if (data.length === 0) {
@@ -40,11 +38,6 @@ export function useChartData<T extends HasId>() {
   const getColumns = () => {
     return Object.keys(columnCache);
   };
-
-  console.log("all", {
-    all: crossfilterWrapper.ref.all(),
-    filtered: crossfilterWrapper.ref.allFiltered(),
-  });
 
   return {
     data,

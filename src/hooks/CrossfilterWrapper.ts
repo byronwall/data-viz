@@ -1,4 +1,4 @@
-import { ChartSettings } from "@/types/ChartTypes";
+import { ChartSettings, datum } from "@/types/ChartTypes";
 import crossfilter from "crossfilter2";
 import isEqual from "react-fast-compare";
 import { rowChartPureFilter } from "./rowChartPureFilter";
@@ -8,7 +8,6 @@ type IdField = number | string;
 type ChartDimension<TData, TId extends IdField> = {
   dimension: crossfilter.Dimension<TData, TId>;
   chart: ChartSettings;
-  filteredIds: Set<TId>;
 };
 
 export class CrossfilterWrapper<T> {
@@ -17,7 +16,7 @@ export class CrossfilterWrapper<T> {
   idFunction: (item: T) => IdField;
   dataHash: Record<string, T> = {};
 
-  constructor(private data: T[], idFunction: (item: T) => IdField) {
+  constructor(data: T[], idFunction: (item: T) => IdField) {
     console.log("[CrossfilterWrapper] Initializing with data:", {
       dataLength: data.length,
       sampleData: data.slice(0, 2),
@@ -110,28 +109,7 @@ export class CrossfilterWrapper<T> {
       return;
     }
 
-    console.log(
-      "Data before filter is applied:",
-      dimension
-        .group()
-        .all()
-        .filter((c) => c.value > 0)
-    );
-
-    const newDim = dimension.filterFunction(filterFunc);
-
-    this.charts.set(chart.id, {
-      ...this.charts.get(chart.id)!,
-      dimension: newDim,
-    });
-
-    console.log(
-      "Data after filter is applied:",
-      newDim
-        .group()
-        .all()
-        .filter((c) => c.value > 0)
-    );
+    dimension.filterFunction(filterFunc);
 
     // this gives an object with key + value
     // the value will be 1 if the item should be rendered
@@ -148,22 +126,15 @@ export class CrossfilterWrapper<T> {
 
     // need to create a dimension for the chart
     const dimension = this.ref.dimension(this.idFunction);
-    console.log("[CrossfilterWrapper] Created dimension");
 
-    const filteredIds = new Set<IdField>();
+    console.log("[CrossfilterWrapper] Created dimension");
 
     const chartDimension: ChartDimension<T, IdField> = {
       dimension,
       chart,
-      filteredIds: filteredIds,
     };
 
     this.updateChartFilters(chart);
-
-    console.log("[CrossfilterWrapper] Collected filtered IDs:", {
-      filteredCount: filteredIds.size,
-      sampleIds: Array.from(filteredIds).slice(0, 3),
-    });
 
     this.charts.set(chart.id, chartDimension);
     console.log(
@@ -185,6 +156,7 @@ export class CrossfilterWrapper<T> {
     }
 
     savedChart.dimension.filterAll();
+    savedChart.dimension.dispose();
     this.charts.delete(chart.id);
     console.log(
       "[CrossfilterWrapper] Chart removed successfully. Remaining charts:",
@@ -206,7 +178,7 @@ export class CrossfilterWrapper<T> {
 
           const dataum = this.dataHash[d];
 
-          const value = dataum[chart.field];
+          const value = dataum[chart.field as keyof T] as datum;
 
           return rowChartPureFilter(filters, value);
         };

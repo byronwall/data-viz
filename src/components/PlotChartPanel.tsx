@@ -1,10 +1,10 @@
+import { useDataLayer } from "@/providers/DataLayerProvider";
 import { ChartSettings } from "@/types/ChartTypes";
-import { Copy, GripVertical, Settings2, X, FilterX } from "lucide-react";
+import { Copy, FilterX, GripVertical, Settings2, X } from "lucide-react";
 import { BarChart } from "./charts/BarChart";
 import { RowChart } from "./charts/RowChart";
 import { ScatterPlot } from "./charts/ScatterPlot";
 import { ChartSettingsContent } from "./ChartSettingsContent";
-import { useChartData } from "@/hooks/useChartData";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +38,7 @@ export function PlotChartPanel({
   width,
   height,
 }: PlotChartPanelProps) {
-  const { clearFilter } = useChartData();
+  const clearFilter = useDataLayer((state) => state.clearFilter);
 
   const renderChart = () => {
     switch (settings.type) {

@@ -32,8 +32,10 @@ const gridToPixels = (layout: ChartLayout, containerWidth: number) => {
 };
 
 export function PlotManager() {
-  const { getColumns, charts, addChart, removeChart } = useChartData();
+  const { getColumns, charts } = useChartData();
   const updateChart = useDataLayer((state) => state.updateChart);
+  const addChart = useDataLayer((state) => state.addChart);
+  const removeChart = useDataLayer((state) => state.removeChart);
 
   // Get column names
   const columns = getColumns();
@@ -106,7 +108,7 @@ export function PlotManager() {
     charts.forEach((chart) => {
       const updatedLayout = newLayout.find((l) => l.i === chart.id);
       if (updatedLayout) {
-        updateChart(chart.id, {
+        updateChart({
           ...chart,
           layout: {
             x: updatedLayout.x,
@@ -169,8 +171,8 @@ export function PlotManager() {
             <div key={chart.id}>
               <PlotChartPanel
                 settings={chart}
-                onDelete={() => removeChart(chart.id)}
-                onSettingsChange={(settings) => updateChart(chart.id, settings)}
+                onDelete={() => removeChart(chart)}
+                onSettingsChange={(settings) => updateChart(settings)}
                 availableFields={columns}
                 onDuplicate={() => {
                   const { id, ...chartWithoutId } = chart;

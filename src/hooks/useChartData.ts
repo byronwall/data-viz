@@ -1,15 +1,13 @@
-import { HasId, useDataLayer } from "@/providers/DataLayerProvider";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useMemo } from "react";
 
 type ColumnCache = {
   [key: string]: { [key: string]: number | string };
 };
 
-export function useChartData<T extends HasId>() {
+export function useChartData() {
   const data = useDataLayer((state) => state.data);
   const charts = useDataLayer((state) => state.charts);
-  const addChart = useDataLayer((state) => state.addChart);
-  const removeChart = useDataLayer((state) => state.removeChart);
 
   const columnCache = useMemo(() => {
     const cache: { [key: string]: { [key: string]: number | string } } = {};
@@ -44,7 +42,5 @@ export function useChartData<T extends HasId>() {
     getColumnData,
     getColumns,
     charts,
-    addChart,
-    removeChart,
   };
 }

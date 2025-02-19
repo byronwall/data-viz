@@ -1,5 +1,5 @@
 import { CrossfilterWrapper } from "@/hooks/CrossfilterWrapper";
-import { ChartSettings } from "@/types/ChartTypes";
+import { ChartSettings, datum } from "@/types/ChartTypes";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
 
@@ -11,6 +11,8 @@ interface DataLayerProps<T> {
 // Add ID to the data type
 export type HasId = { __ID: number };
 
+type LiveItem = { key: datum; value: number };
+
 interface DataLayerState<T> extends DataLayerProps<T> {
   data: (T & HasId)[];
   setData: (data: T[]) => void;
@@ -18,8 +20,8 @@ interface DataLayerState<T> extends DataLayerProps<T> {
   // Chart state
   charts: ChartSettings[];
   addChart: (chart: Omit<ChartSettings, "id">) => void;
-  removeChart: (id: string) => void;
-  updateChart: (id: string, settings: ChartSettings) => void;
+  removeChart: (chart: ChartSettings) => void;
+  updateChart: (chart: ChartSettings) => void;
 
   // Filter state (placeholder)
   updateFilter: (field: string, value: unknown) => void;
@@ -28,7 +30,7 @@ interface DataLayerState<T> extends DataLayerProps<T> {
 
   crossfilterWrapper: CrossfilterWrapper<T & HasId>;
   nonce: number;
-  getLiveIdsForDimension: (dimension: ChartSettings) => number[];
+  getLiveItems: (chart: ChartSettings) => LiveItem[];
 }
 
 // Store type
@@ -74,19 +76,19 @@ const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
       crossfilterWrapper.addChart(newChart);
       set((state) => ({ charts: [...state.charts, newChart] }));
     },
-    removeChart: (id) => {
+    removeChart: (chart) => {
       const { crossfilterWrapper } = get();
-      crossfilterWrapper.removeChart(id);
+      crossfilterWrapper.removeChart(chart);
       set((state) => ({
-        charts: state.charts.filter((chart) => chart.id !== id),
+        charts: state.charts.filter((ogChart) => ogChart.id !== chart.id),
       }));
     },
-    updateChart: (id, settings) => {
+    updateChart: (settings) => {
       const { crossfilterWrapper } = get();
       crossfilterWrapper.updateChart(settings);
       set((state) => ({
         charts: state.charts.map((chart) =>
-          chart.id === id ? settings : chart
+          chart.id === settings.id ? settings : chart
         ),
       }));
     },
@@ -105,17 +107,17 @@ const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
         chartDim.dimension.filterAll();
         // Update the chart to reflect the cleared state
         if (chart.type === "row") {
-          updateChart(chart.id, {
+          updateChart({
             ...chart,
             rowFilters: { values: [] },
           });
         } else {
-          updateChart(chart.id, chart);
+          updateChart(chart);
         }
       }
     },
     nonce: 0,
-    getLiveIdsForDimension: (chart) => {
+    getLiveItems: (chart) => {
       const { crossfilterWrapper } = get();
 
       const dim = crossfilterWrapper.charts.get(chart.id)?.dimension;
@@ -126,7 +128,7 @@ const createDataLayerStore = <T,>(initProps?: Partial<DataLayerProps<T>>) => {
         return [];
       }
 
-      const _all = dim.group().all();
+      const _all = dim.group().all() as LiveItem[];
 
       return _all;
     },

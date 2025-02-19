@@ -17,24 +17,15 @@ export class CrossfilterWrapper<T> {
   dataHash: Record<string, T> = {};
 
   constructor(data: T[], idFunction: (item: T) => IdField) {
-    console.log("[CrossfilterWrapper] Initializing with data:", {
-      dataLength: data.length,
-      sampleData: data.slice(0, 2),
-    });
     this.ref = crossfilter(data);
     this.idFunction = idFunction;
     this.dataHash = data.reduce((acc, item) => {
       acc[idFunction(item)] = item;
       return acc;
     }, {} as Record<string, T>);
-    console.log("[CrossfilterWrapper] Initialization complete");
   }
 
   updateCharts(updatedCharts: ChartSettings[]) {
-    console.log("[CrossfilterWrapper] Updating charts:", {
-      chartsLength: updatedCharts.length,
-    });
-
     // do some work to diff before and after - determine which charts added, removed or filters that change
     // need a dim for each chart.
 
@@ -67,45 +58,23 @@ export class CrossfilterWrapper<T> {
   }
 
   updateChart(chart: ChartSettings) {
-    console.log("[CrossfilterWrapper] Updating chart:", {
-      chartId: chart.id,
-      chartType: chart.type,
-      settings: chart,
-    });
-
     // check if the filters have changed
     const oldChart = this.charts.get(chart.id);
-    console.log("[CrossfilterWrapper] Old chart:", oldChart);
     if (oldChart) {
-      console.log("[CrossfilterWrapper] Check filters:", {
-        oldFilters: oldChart.chart.rowFilters,
-        newFilters: chart.rowFilters,
-      });
       // TODO: do a proper diff
       if (oldChart.rowFilters !== chart.rowFilters) {
-        console.log("[CrossfilterWrapper] Filters changed:", {
-          oldFilters: oldChart.rowFilters,
-          newFilters: chart.rowFilters,
-        });
         this.updateChartFilters(chart);
       }
     }
   }
 
   updateChartFilters(chart: ChartSettings) {
-    console.log("[CrossfilterWrapper] Updating chart filters:", {
-      chartId: chart.id,
-      chartType: chart.type,
-      settings: chart,
-    });
-
     // get the filters from the chart
     const filterFunc = this.getFilterFunction<T>(chart);
 
     // apply the filters to the dimension
     const dimension = this.charts.get(chart.id)?.dimension;
     if (!dimension) {
-      console.error("[CrossfilterWrapper] Dimension not found:", chart.id);
       return;
     }
 
@@ -118,16 +87,8 @@ export class CrossfilterWrapper<T> {
   }
 
   addChart(chart: ChartSettings) {
-    console.log("[CrossfilterWrapper] Adding chart:", {
-      chartId: chart.id,
-      chartType: chart.type,
-      settings: chart,
-    });
-
     // need to create a dimension for the chart
     const dimension = this.ref.dimension(this.idFunction);
-
-    console.log("[CrossfilterWrapper] Created dimension");
 
     const chartDimension: ChartDimension<T, IdField> = {
       dimension,
@@ -137,39 +98,20 @@ export class CrossfilterWrapper<T> {
     this.updateChartFilters(chart);
 
     this.charts.set(chart.id, chartDimension);
-    console.log(
-      "[CrossfilterWrapper] Chart added successfully. Total charts:",
-      this.charts.size
-    );
   }
 
   removeChart(chart: ChartSettings) {
-    console.log("[CrossfilterWrapper] Removing chart:", {
-      chartId: chart.id,
-      chartType: chart.type,
-    });
-
     const savedChart = this.charts.get(chart.id);
     if (!savedChart) {
-      console.error("[CrossfilterWrapper] Chart not found:", chart.id);
       throw new Error(`Chart ${chart.id} not found`);
     }
 
     savedChart.dimension.filterAll();
     savedChart.dimension.dispose();
     this.charts.delete(chart.id);
-    console.log(
-      "[CrossfilterWrapper] Chart removed successfully. Remaining charts:",
-      this.charts.size
-    );
   }
 
   getFilterFunction(chart: ChartSettings): (d: IdField) => boolean {
-    console.log(
-      "[CrossfilterWrapper] Creating filter function for chart type:",
-      chart.type
-    );
-
     switch (chart.type) {
       case "row":
         return (d: IdField) => {
@@ -184,15 +126,10 @@ export class CrossfilterWrapper<T> {
         };
       case "bar":
         return (d: IdField) => {
-          console.log("[CrossfilterWrapper] Bar filter applied to data:", d);
           return true;
         };
       case "scatter":
         return (d: IdField) => {
-          console.log(
-            "[CrossfilterWrapper] Scatter filter applied to data:",
-            d
-          );
           return true;
         };
     }

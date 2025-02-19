@@ -13,24 +13,15 @@ type RowChartProps = BaseChartProps & {
 export function RowChart({ settings, width, height }: RowChartProps) {
   const { getColumnData } = useChartData();
 
-  const getLiveIdsForDimension = useDataLayer((s) => s.getLiveIdsForDimension);
+  const getLiveIdsForDimension = useDataLayer((s) => s.getLiveItems);
 
   const _liveIds = getLiveIdsForDimension(settings);
 
-  console.log("liveIds", _liveIds);
   const liveIds = _liveIds.filter((c) => c.value > 0).map((d) => d.key);
-
-  console.log("truly liveIds", liveIds);
 
   const _data = getColumnData(settings.field);
 
   const data = liveIds.map((id) => _data[id]);
-
-  console.log("data for row chart", settings.layout.x, {
-    liveIds,
-    _data,
-    data,
-  });
 
   const updateChart = useDataLayer((s) => s.updateChart);
 
@@ -46,7 +37,7 @@ export function RowChart({ settings, width, height }: RowChartProps) {
       ? filters.filter((f) => f !== label)
       : [...filters, label];
 
-    updateChart(settings.id, {
+    updateChart({
       ...settings,
       rowFilters: { values: newValues },
     });
@@ -102,8 +93,6 @@ export function RowChart({ settings, width, height }: RowChartProps) {
     settings.maxRowHeight,
   ]);
 
-  console.log("displayCounts", displayCounts);
-
   // Scales
   const xScale = scaleLinear()
     .domain([0, Math.max(...displayCounts.map((d) => d.count))])
@@ -127,7 +116,6 @@ export function RowChart({ settings, width, height }: RowChartProps) {
           {/* Bars */}
           {displayCounts.map(({ label, count }) => {
             const isFiltered = rowChartPureFilter(filters, label);
-            console.log("test filter", filters, label, isFiltered);
 
             return (
               <rect

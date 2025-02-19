@@ -3,8 +3,10 @@ import { ChartSettings, datum } from "@/types/ChartTypes";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
 
+type DatumObject = { [key: string]: datum };
+
 // Props and State interfaces
-interface DataLayerProps<T> {
+interface DataLayerProps<T extends DatumObject> {
   data?: T[];
 }
 
@@ -14,7 +16,7 @@ export type HasId = { __ID: IdType };
 
 type LiveItem = { key: datum; value: number };
 
-interface DataLayerState<T> extends DataLayerProps<T> {
+interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   data: (T & HasId)[];
   setData: (data: T[]) => void;
 
@@ -39,7 +41,7 @@ interface DataLayerState<T> extends DataLayerProps<T> {
 }
 
 // Store type
-type DataLayerStore<T extends datum> = ReturnType<
+type DataLayerStore<T extends DatumObject> = ReturnType<
   typeof createDataLayerStore<T>
 >;
 
@@ -58,7 +60,7 @@ function getDataAndCrossfilterWrapper<T>(data: T[]) {
 }
 
 // Store creator
-const createDataLayerStore = <T extends datum>(
+const createDataLayerStore = <T extends DatumObject>(
   initProps?: Partial<DataLayerProps<T>>
 ) => {
   const { data: initData, crossfilterWrapper } = getDataAndCrossfilterWrapper(
@@ -158,7 +160,7 @@ export const DataLayerContext = createContext<DataLayerStore<any> | null>(null);
 // Provider wrapper
 type DataLayerProviderProps<T> = React.PropsWithChildren<DataLayerProps<T>>;
 
-export function DataLayerProvider<T extends datum>({
+export function DataLayerProvider<T extends DatumObject>({
   children,
   ...props
 }: DataLayerProviderProps<T>) {
@@ -174,7 +176,7 @@ export function DataLayerProvider<T extends datum>({
 }
 
 // Custom hook that mimics the hook returned by `create`
-export function useDataLayer<T, U>(
+export function useDataLayer<T extends DatumObject, U>(
   selector: (state: DataLayerState<T>) => U
 ): U {
   const store = useContext(DataLayerContext);

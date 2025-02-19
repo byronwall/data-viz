@@ -167,7 +167,7 @@ export function PlotManager() {
           if (!chart.layout) {
             return null;
           }
-          const dimensions = gridToPixels(chart.layout, containerWidth);
+          const size = gridToPixels(chart.layout, containerWidth);
           return (
             <div key={chart.id}>
               <PlotChartPanel
@@ -179,8 +179,8 @@ export function PlotManager() {
                   const { id, ...chartWithoutId } = chart;
                   addChart(chartWithoutId);
                 }}
-                width={dimensions.width}
-                height={dimensions.height}
+                width={size.width}
+                height={size.height}
               />
             </div>
           );

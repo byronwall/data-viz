@@ -37,6 +37,11 @@ export function RowChart({ settings, width, height }: RowChartProps) {
       ? filters.filter((f) => f !== label)
       : [...filters, label];
 
+    console.log("handleBarClick", {
+      settings,
+      newValues,
+    });
+
     updateChart({
       ...settings,
       filterValues: { values: newValues },

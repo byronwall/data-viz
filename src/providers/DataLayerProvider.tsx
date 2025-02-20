@@ -96,6 +96,7 @@ const createDataLayerStore = <T extends DatumObject>(
     },
     updateChart: (settings) => {
       const { crossfilterWrapper } = get();
+
       crossfilterWrapper.updateChart(settings);
       set((state) => ({
         charts: state.charts.map((chart) =>

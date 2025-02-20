@@ -2,9 +2,8 @@
 
 ## Major work remaining
 
-- Filtering via `crossfilter`
 - Add filter funcs for bar + scatter plots
-- Need to support brushing on charts to define filters
+- Brushing logic needs to generate a filter
 - Global color scales for data
 - Global color themes
 - Add pivot tables

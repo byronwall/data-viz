@@ -2,7 +2,7 @@ import { RowChartSettings } from "./ChartTypes";
 
 export function createRowChartSettings(): RowChartSettings {
   return {
-    id: "row-chart",
+    id: crypto.randomUUID(),
     title: "Row Chart",
     field: "value",
     layout: {

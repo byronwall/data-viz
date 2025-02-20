@@ -60,12 +60,23 @@ export class CrossfilterWrapper<T> {
   updateChart(chart: ChartSettings) {
     // check if the filters have changed
     const oldChart = this.charts.get(chart.id);
-    if (oldChart) {
-      // TODO: do a proper diff
-      if (oldChart.rowFilters !== chart.rowFilters) {
-        this.updateChartFilters(chart);
-      }
+
+    if (!oldChart) {
+      return;
     }
+
+    const oldFilterValues = getFilterValues(oldChart.chart);
+    const newFilterValues = getFilterValues(chart);
+
+    if (!isEqual(oldFilterValues, newFilterValues)) {
+      this.updateChartFilters(chart);
+    }
+
+    // need to update internal defs so diff works again
+    this.charts.set(chart.id, {
+      ...oldChart,
+      chart,
+    });
   }
 
   updateChartFilters(chart: ChartSettings) {
@@ -75,6 +86,9 @@ export class CrossfilterWrapper<T> {
     // apply the filters to the dimension
     const dimension = this.charts.get(chart.id)?.dimension;
     if (!dimension) {
+      console.error("updateChartFilters: dimension not found", {
+        chart,
+      });
       return;
     }
 
@@ -133,5 +147,12 @@ export class CrossfilterWrapper<T> {
           return true;
         };
     }
+  }
+}
+
+function getFilterValues(chart: ChartSettings) {
+  switch (chart.type) {
+    case "row":
+      return chart.filterValues?.values;
   }
 }

@@ -33,6 +33,8 @@ export interface BarChartSettings extends BaseChartSettings {
   type: "bar";
   binCount?: number;
 
+  forceString?: boolean;
+
   filterValues: FilterValues;
   filterRange: FilterRange;
 }
@@ -56,18 +58,18 @@ export interface BaseChartProps {
 
 export type datum = string | number | boolean | undefined;
 
-type FilterValues = {
+export type FilterValues = {
   values: datum[];
 };
 
-type FilterRange = {
+export type FilterRange = {
   min: datum;
   max: datum;
-};
+} | null;
 
-type Filter2dRange = {
+export type Filter2dRange = {
   x: FilterRange;
   y: FilterRange;
-};
+} | null;
 
-export type Filter = FilterValues | FilterRange | Filter2dRange;
+export type Filter = FilterValues | FilterRange | Filter2dRange | undefined;

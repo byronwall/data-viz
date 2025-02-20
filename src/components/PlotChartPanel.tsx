@@ -22,7 +22,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 interface PlotChartPanelProps {
   settings: ChartSettings;
   onDelete: () => void;
-  onSettingsChange: (settings: ChartSettings) => void;
   onDuplicate: () => void;
   availableFields: string[];
   width: number;
@@ -32,7 +31,6 @@ interface PlotChartPanelProps {
 export function PlotChartPanel({
   settings,
   onDelete,
-  onSettingsChange,
   onDuplicate,
   availableFields,
   width,
@@ -102,7 +100,6 @@ export function PlotChartPanel({
             <PopoverContent className="w-80">
               <ChartSettingsContent
                 settings={settings}
-                onSettingsChange={onSettingsChange}
                 availableFields={availableFields}
               />
             </PopoverContent>

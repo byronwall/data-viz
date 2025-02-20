@@ -109,8 +109,7 @@ export function PlotManager() {
     charts.forEach((chart) => {
       const updatedLayout = newLayout.find((l) => l.i === chart.id);
       if (updatedLayout) {
-        updateChart({
-          ...chart,
+        updateChart(chart.id, {
           layout: {
             x: updatedLayout.x,
             y: updatedLayout.y,
@@ -173,7 +172,6 @@ export function PlotManager() {
               <PlotChartPanel
                 settings={chart}
                 onDelete={() => removeChart(chart)}
-                onSettingsChange={(settings) => updateChart(settings)}
                 availableFields={columns}
                 onDuplicate={() => {
                   const { id, ...chartWithoutId } = chart;

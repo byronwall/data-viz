@@ -19,6 +19,7 @@ interface BaseChartProps {
   xScale: ScaleLinear<number, number> | ScaleBand<string>;
   yScale: ScaleLinear<number, number> | ScaleBand<string>;
   brushingMode?: BrushMode;
+  onBrushChange?: (extent: [[number, number], [number, number]] | null) => void;
   children: ReactNode;
 }
 
@@ -31,6 +32,7 @@ export function BaseChart({
   xScale,
   yScale,
   brushingMode = "none",
+  onBrushChange,
   children,
 }: BaseChartProps) {
   const innerWidth = width - margin.left - margin.right;
@@ -44,6 +46,7 @@ export function BaseChart({
     innerWidth,
     innerHeight,
     mode: brushingMode as "horizontal" | "2d" | "none",
+    onBrushChange,
   });
 
   return (

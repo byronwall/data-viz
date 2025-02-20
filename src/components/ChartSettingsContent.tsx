@@ -5,20 +5,21 @@ import { ComboBox } from "./ComboBox";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { FieldSelector } from "./FieldSelector";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 
 interface ChartSettingsContentProps {
   settings: ChartSettings;
-  onSettingsChange: (settings: ChartSettings) => void;
   availableFields: string[];
 }
 
 export function ChartSettingsContent({
   settings,
-  onSettingsChange,
   availableFields,
 }: ChartSettingsContentProps) {
   // Local state for settings
   const [localSettings, setLocalSettings] = useState<ChartSettings>(settings);
+
+  const updateChart = useDataLayer((s) => s.updateChart);
 
   // Update local settings when prop changes
   useEffect(() => {
@@ -26,7 +27,7 @@ export function ChartSettingsContent({
   }, [settings]);
 
   const handleUpdate = () => {
-    onSettingsChange(localSettings);
+    updateChart(settings.id, localSettings);
   };
 
   const hasDataField = localSettings.type !== "scatter";

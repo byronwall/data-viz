@@ -1,4 +1,11 @@
-import { MouseEvent, RefObject, useCallback, useMemo, useState } from "react";
+import {
+  MouseEvent,
+  RefObject,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
 
 interface Point {
   x: number;
@@ -46,6 +53,7 @@ interface BrushOptions {
   innerWidth: number;
   innerHeight: number;
   mode: "horizontal" | "2d" | "none";
+  onBrushChange?: (extent: [[number, number], [number, number]] | null) => void;
 }
 
 interface BrushRenderProps {
@@ -65,8 +73,25 @@ export function useBrush({
   innerWidth,
   innerHeight,
   mode,
+  onBrushChange,
 }: BrushOptions) {
   const [brushState, setBrushState] = useState<BrushState>({ state: "idle" });
+
+  // Call onBrushChange when brush state changes
+  useEffect(() => {
+    if (!onBrushChange) {
+      return;
+    }
+
+    if (brushState.state === "brushed") {
+      onBrushChange([
+        [brushState.brushStart.x, brushState.brushStart.y],
+        [brushState.brushEnd.x, brushState.brushEnd.y],
+      ]);
+    } else if (brushState.state === "idle") {
+      onBrushChange(null);
+    }
+  }, [brushState, onBrushChange]);
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {

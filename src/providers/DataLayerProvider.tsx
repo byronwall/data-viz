@@ -24,7 +24,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   charts: ChartSettings[];
   addChart: (chart: Omit<ChartSettings, "id">) => void;
   removeChart: (chart: ChartSettings) => void;
-  updateChart: (chart: ChartSettings) => void;
+  updateChart: (id: string, settings: Partial<ChartSettings>) => void;
 
   // Filter state (placeholder)
   updateFilter: (field: string, value: unknown) => void;
@@ -38,6 +38,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   // data and key functions
   getColumnData: (field: string) => { [key: IdType]: datum };
   getColumnNames: () => string[];
+  columnCache: Record<string, { [key: IdType]: datum }>;
 }
 
 // Store type
@@ -94,13 +95,27 @@ const createDataLayerStore = <T extends DatumObject>(
         charts: state.charts.filter((ogChart) => ogChart.id !== chart.id),
       }));
     },
-    updateChart: (settings) => {
+    updateChart: (id, settings) => {
       const { crossfilterWrapper } = get();
 
-      crossfilterWrapper.updateChart(settings);
+      console.log("updateChart", { id, settings });
+
+      const chart = get().charts.find((chart) => chart.id === id);
+
+      if (!chart) {
+        console.error("updateChart: chart not found", { id });
+        return;
+      }
+
+      const updatedChart: ChartSettings = {
+        ...chart,
+        ...settings,
+      } as ChartSettings;
+
+      crossfilterWrapper.updateChart(updatedChart);
       set((state) => ({
         charts: state.charts.map((chart) =>
-          chart.id === settings.id ? settings : chart
+          chart.id === id ? updatedChart : chart
         ),
       }));
     },
@@ -119,12 +134,13 @@ const createDataLayerStore = <T extends DatumObject>(
         chartDim.dimension.filterAll();
         // Update the chart to reflect the cleared state
         if (chart.type === "row") {
-          updateChart({
-            ...chart,
+          updateChart(chart.id, {
             filterValues: { values: [] },
           });
         } else {
-          updateChart(chart);
+          updateChart(chart.id, {
+            filterRange: null,
+          });
         }
       }
     },
@@ -150,8 +166,19 @@ const createDataLayerStore = <T extends DatumObject>(
     },
 
     getColumnData(field: string) {
-      return get().data.map((row) => row[field]);
+      const { columnCache } = get();
+
+      if (columnCache[field]) {
+        return columnCache[field];
+      }
+
+      const data = get().data.map((row) => row[field]);
+      columnCache[field] = data;
+
+      return data;
     },
+
+    columnCache: {},
   }));
 };
 

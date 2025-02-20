@@ -1,27 +1,18 @@
 import { BaseChartProps, datum, RowChartSettings } from "@/types/ChartTypes";
 
-import { scaleLinear, scaleBand } from "d3-scale";
+import { rowChartPureFilter } from "@/hooks/rowChartPureFilter";
+import { useDataLayer } from "@/providers/DataLayerProvider";
+import { scaleBand, scaleLinear } from "d3-scale";
 import { useMemo } from "react";
 import { BaseChart } from "./BaseChart";
-import { useDataLayer } from "@/providers/DataLayerProvider";
-import { rowChartPureFilter } from "@/hooks/rowChartPureFilter";
+import { useGetLiveData } from "./useGetLiveData";
 
 type RowChartProps = BaseChartProps & {
   settings: RowChartSettings;
 };
 
 export function RowChart({ settings, width, height }: RowChartProps) {
-  const getColumnData = useDataLayer((s) => s.getColumnData);
-
-  const getLiveItems = useDataLayer((s) => s.getLiveItems);
-
-  const liveItems = getLiveItems(settings);
-
-  const liveIds = liveItems.filter((c) => c.value > 0).map((d) => d.key);
-
-  const _data = getColumnData(settings.field);
-
-  const data = liveIds.map((id) => _data[id]);
+  const data = useGetLiveData(settings);
 
   const updateChart = useDataLayer((s) => s.updateChart);
 
@@ -37,13 +28,7 @@ export function RowChart({ settings, width, height }: RowChartProps) {
       ? filters.filter((f) => f !== label)
       : [...filters, label];
 
-    console.log("handleBarClick", {
-      settings,
-      newValues,
-    });
-
-    updateChart({
-      ...settings,
+    updateChart(settings.id, {
       filterValues: { values: newValues },
     });
   };

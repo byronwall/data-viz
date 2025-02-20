@@ -1,9 +1,12 @@
 import { BaseChartProps, BarChartSettings } from "@/types/ChartTypes";
 
 import { scaleBand, scaleLinear, ScaleLinear, ScaleBand } from "d3-scale";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { BaseChart } from "./BaseChart";
 import { useDataLayer } from "@/providers/DataLayerProvider";
+import { useWhatChanged } from "./useWhatChanged";
+import { getFilterObj } from "@/hooks/getFilterValues";
+import { useGetLiveData } from "./useGetLiveData";
 
 type NumericBin = {
   label: string;
@@ -26,8 +29,9 @@ type BarChartProps = BaseChartProps & {
 };
 
 export function BarChart({ settings, width, height }: BarChartProps) {
-  const getColumnData = useDataLayer((s) => s.getColumnData);
-  const data = getColumnData(settings.field);
+  const allColData = useGetLiveData(settings);
+
+  const updateChart = useDataLayer((s) => s.updateChart);
 
   // Chart dimensions
   const margin = { top: 20, right: 20, bottom: 30, left: 40 };
@@ -35,7 +39,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
   const innerHeight = height - margin.top - margin.bottom;
 
   const chartData = useMemo((): ChartDataItem[] => {
-    const values = data.map((item) => Number(item));
+    const values = allColData.map((item) => Number(item));
 
     // Check if the data is numeric
     const isNumeric = values.every((v) => !isNaN(v));
@@ -71,7 +75,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
       return bins;
     } else {
       // Use original categorical logic for non-numeric data
-      const counts = data.reduce((acc, item) => {
+      const counts = allColData.reduce((acc, item) => {
         const value = String(item);
         acc[value] = (acc[value] || 0) + 1;
         return acc;
@@ -85,7 +89,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
         })
       );
     }
-  }, [data, settings.binCount]);
+  }, [allColData, settings.binCount]);
 
   // Create scales
   const xScale = useMemo(() => {
@@ -104,10 +108,59 @@ export function BarChart({ settings, width, height }: BarChartProps) {
     | ScaleLinear<number, number>
     | ScaleBand<string>;
 
+  useWhatChanged([chartData, innerWidth], `[chartData, innerWidth]`);
+
   const yScale = useMemo(() => {
     const maxValue = Math.max(...chartData.map((d) => d.value));
     return scaleLinear().domain([0, maxValue]).range([innerHeight, 0]).nice();
   }, [chartData, innerHeight]);
+
+  const isBandScale = "bandwidth" in xScale;
+
+  const activeFilters = getFilterObj(settings);
+
+  const hasActiveFilters = activeFilters !== null;
+
+  const handleBrushChange = useCallback(
+    (extent: [[number, number], [number, number]] | null) => {
+      if (!extent) {
+        updateChart(settings.id, {
+          filterValues: { values: [] },
+          filterRange: null,
+        });
+
+        return;
+      }
+
+      if (isBandScale) {
+        return;
+      }
+
+      const xStart = extent?.[0]?.[0];
+      const xEnd = extent?.[1]?.[0];
+
+      console.log("xStart", xStart);
+      console.log("xEnd", xEnd);
+      // run those values through the scale to get the engineering units
+
+      const linearScale = xScale as ScaleLinear<number, number>;
+      const start = linearScale.invert(xStart);
+      const end = linearScale.invert(xEnd);
+
+      updateChart(settings.id, {
+        filterRange: { min: start, max: end },
+      });
+
+      console.log("start", start);
+      console.log("end", end);
+    },
+    [isBandScale, settings.id, updateChart, xScale]
+  );
+
+  useWhatChanged(
+    [hasActiveFilters, isBandScale, settings.id, updateChart, xScale],
+    `[hasActiveFilters, isBandScale, settings.id, updateChart, xScale]`
+  );
 
   return (
     <div style={{ width, height }}>
@@ -117,7 +170,8 @@ export function BarChart({ settings, width, height }: BarChartProps) {
         margin={margin}
         xScale={xScale}
         yScale={yScale}
-        brushingMode="horizontal"
+        brushingMode={isBandScale ? "none" : "horizontal"}
+        onBrushChange={handleBrushChange}
       >
         <g className="select-none">
           {/* Grid lines */}

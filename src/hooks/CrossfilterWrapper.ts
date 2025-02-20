@@ -2,6 +2,8 @@ import { ChartSettings, datum } from "@/types/ChartTypes";
 import crossfilter from "crossfilter2";
 import isEqual from "react-fast-compare";
 import { rowChartPureFilter } from "./rowChartPureFilter";
+import { getFilterObj } from "./getFilterValues";
+import { barChartPureFilter } from "./barChartPureFilter";
 
 type IdField = number | string;
 
@@ -65,8 +67,8 @@ export class CrossfilterWrapper<T> {
       return;
     }
 
-    const oldFilterValues = getFilterValues(oldChart.chart);
-    const newFilterValues = getFilterValues(chart);
+    const oldFilterValues = getFilterObj(oldChart.chart);
+    const newFilterValues = getFilterObj(chart);
 
     if (!isEqual(oldFilterValues, newFilterValues)) {
       this.updateChartFilters(chart);
@@ -140,19 +142,18 @@ export class CrossfilterWrapper<T> {
         };
       case "bar":
         return (d: IdField) => {
-          return true;
+          const filters = getFilterObj(chart);
+
+          const dataum = this.dataHash[d];
+
+          const value = dataum[chart.field as keyof T] as datum;
+
+          return barChartPureFilter(filters, value);
         };
       case "scatter":
         return (d: IdField) => {
           return true;
         };
     }
-  }
-}
-
-function getFilterValues(chart: ChartSettings) {
-  switch (chart.type) {
-    case "row":
-      return chart.filterValues?.values;
   }
 }

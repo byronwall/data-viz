@@ -4,6 +4,7 @@ import isEqual from "react-fast-compare";
 import { rowChartPureFilter } from "./rowChartPureFilter";
 import { getFilterObj } from "./getFilterValues";
 import { barChartPureFilter } from "./barChartPureFilter";
+import { scatterChartPureFilter } from "./scatterChartPureFilter";
 
 type IdField = number | string;
 
@@ -155,7 +156,17 @@ export class CrossfilterWrapper<T> {
         };
       case "scatter":
         return (d: IdField) => {
-          return true;
+          const dataObj = this.dataHash[d];
+
+          const xValue = dataObj[chart.xField as keyof T] as datum;
+          const yValue = dataObj[chart.yField as keyof T] as datum;
+
+          return scatterChartPureFilter(
+            chart.xFilterRange,
+            chart.yFilterRange,
+            xValue,
+            yValue
+          );
         };
     }
   }

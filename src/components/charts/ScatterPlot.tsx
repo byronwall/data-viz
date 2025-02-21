@@ -1,8 +1,9 @@
 import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { BaseChart } from "./BaseChart";
-import { scaleLinear } from "d3-scale";
+import { ScaleLinear, scaleLinear } from "d3-scale";
+import { scatterChartPureFilter } from "@/hooks/scatterChartPureFilter";
 
 // Update the props type to use ScatterChartSettings
 interface ScatterPlotProps extends BaseChartProps {
@@ -12,10 +13,15 @@ interface ScatterPlotProps extends BaseChartProps {
 export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const getColumnData = useDataLayer((s) => s.getColumnData);
+  const updateChart = useDataLayer((s) => s.updateChart);
 
   // Get data for both x and y fields
-  const xValues = getColumnData(settings.xField).map(Number);
-  const yValues = getColumnData(settings.yField).map(Number);
+  const xData = getColumnData(settings.xField);
+  const yData = getColumnData(settings.yField);
+
+  // Convert object to array and map to numbers
+  const xValues = Object.values(xData).map(Number);
+  const yValues = Object.values(yData).map(Number);
 
   // Validate array lengths
   if (xValues.length !== yValues.length) {
@@ -29,12 +35,21 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
   const yMax = Math.max(...yValues);
 
   // Create scales for BaseChart
-  const xScale = scaleLinear()
-    .domain([xMin, xMax])
-    .range([0, width - 80]);
-  const yScale = scaleLinear()
-    .domain([yMin, yMax])
-    .range([height - 50, 20]);
+  const xScale = useMemo(
+    () =>
+      scaleLinear()
+        .domain([xMin, xMax])
+        .range([0, width - 80]),
+    [xMin, xMax, width]
+  ) as ScaleLinear<number, number>;
+
+  const yScale = useMemo(
+    () =>
+      scaleLinear()
+        .domain([yMin, yMax])
+        .range([height - 50, 20]),
+    [yMin, yMax, height]
+  ) as ScaleLinear<number, number>;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -57,12 +72,25 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
     ctx.clearRect(0, 0, width, height);
 
     // Draw points using the same scales as BaseChart
-    ctx.fillStyle = "rgb(99, 102, 241)"; // indigo-500
     ctx.translate(60, 20); // Match the margin from BaseChart
 
     for (let i = 0; i < xValues.length; i++) {
       const x = xScale(xValues[i]);
       const y = yScale(yValues[i]);
+
+      const isFiltered = scatterChartPureFilter(
+        settings.xFilterRange,
+        settings.yFilterRange,
+        xValues[i],
+        yValues[i]
+      );
+
+      ctx.fillStyle =
+        settings.xFilterRange || settings.yFilterRange
+          ? isFiltered
+            ? "rgb(146, 64, 14)" // amber-800
+            : "rgb(253, 230, 138)" // amber-200
+          : "rgb(99, 102, 241)"; // indigo-500
 
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);
@@ -73,11 +101,45 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
     yValues,
     settings.xField,
     settings.yField,
+    settings.xFilterRange,
+    settings.yFilterRange,
     width,
     height,
     xScale,
     yScale,
   ]);
+
+  const handleBrushChange = useCallback(
+    (extent: [[number, number], [number, number]] | null) => {
+      if (!extent) {
+        updateChart(settings.id, {
+          xFilterRange: null,
+          yFilterRange: null,
+        });
+        return;
+      }
+
+      const [[x0, y0], [x1, y1]] = extent;
+
+      // Convert pixel coordinates back to data values
+      const xStart = xScale.invert(x0); // Adjust for translation
+      const xEnd = xScale.invert(x1);
+      const yStart = yScale.invert(y0);
+      const yEnd = yScale.invert(y1);
+
+      updateChart(settings.id, {
+        xFilterRange: {
+          min: Math.min(xStart, xEnd),
+          max: Math.max(xStart, xEnd),
+        },
+        yFilterRange: {
+          min: Math.min(yStart, yEnd),
+          max: Math.max(yStart, yEnd),
+        },
+      });
+    },
+    [settings.id, updateChart, xScale, yScale]
+  );
 
   return (
     <div style={{ width, height }} className="relative">
@@ -94,6 +156,7 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
             xScale={xScale}
             yScale={yScale}
             brushingMode="2d"
+            onBrushChange={handleBrushChange}
           >
             <g /> {/* Empty group element as children */}
           </BaseChart>

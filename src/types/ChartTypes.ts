@@ -43,6 +43,9 @@ export interface ScatterChartSettings extends BaseChartSettings {
   type: "scatter";
   xField: string;
   yField: string;
+
+  xFilterRange: FilterRange;
+  yFilterRange: FilterRange;
 }
 
 export type ChartSettings =

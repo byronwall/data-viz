@@ -1,4 +1,8 @@
-import { CrossfilterWrapper } from "@/hooks/CrossfilterWrapper";
+import {
+  CrossfilterWrapper,
+  LiveItem,
+  LiveItemMap,
+} from "@/hooks/CrossfilterWrapper";
 import { ChartSettings, datum } from "@/types/ChartTypes";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
@@ -14,11 +18,11 @@ interface DataLayerProps<T extends DatumObject> {
 type IdType = number;
 export type HasId = { __ID: IdType };
 
-type LiveItem = { key: number; value: number };
-
 interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   data: (T & HasId)[];
   setData: (data: T[]) => void;
+
+  liveItems: LiveItemMap;
 
   // Chart state
   charts: ChartSettings[];
@@ -33,7 +37,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
 
   crossfilterWrapper: CrossfilterWrapper<T & HasId>;
   nonce: number;
-  getLiveItems: (chart: ChartSettings) => LiveItem[];
+  getLiveItems: (chart: ChartSettings) => LiveItem;
 
   // data and key functions
   getColumnData: (field: string) => { [key: IdType]: datum };
@@ -76,6 +80,7 @@ const createDataLayerStore = <T extends DatumObject>(
         ...getDataAndCrossfilterWrapper(rawData),
       });
     },
+    liveItems: {},
 
     // Chart management
     charts: [],
@@ -84,9 +89,13 @@ const createDataLayerStore = <T extends DatumObject>(
       const newChart = {
         ...chartSettings,
         id: crypto.randomUUID(),
-      };
+      } as ChartSettings;
+
       crossfilterWrapper.addChart(newChart);
-      set((state) => ({ charts: [...state.charts, newChart] }));
+      set((state) => ({
+        charts: [...state.charts, newChart],
+        liveItems: crossfilterWrapper.getAllData(),
+      }));
     },
     removeChart: (chart) => {
       const { crossfilterWrapper } = get();
@@ -98,7 +107,7 @@ const createDataLayerStore = <T extends DatumObject>(
     updateChart: (id, settings) => {
       const { crossfilterWrapper } = get();
 
-      console.log("updateChart", { id, settings });
+      console.warn("updateChart", { id, settings });
 
       const chart = get().charts.find((chart) => chart.id === id);
 
@@ -118,6 +127,12 @@ const createDataLayerStore = <T extends DatumObject>(
           chart.id === id ? updatedChart : chart
         ),
       }));
+
+      // ideally would determine what changed and only update the liveItems for the chart that changed
+      // for now, just update all liveItems
+      set({
+        liveItems: crossfilterWrapper.getAllData(),
+      });
     },
 
     updateFilter: (field, value) => {
@@ -146,19 +161,11 @@ const createDataLayerStore = <T extends DatumObject>(
     },
     nonce: 0,
     getLiveItems: (chart) => {
-      const { crossfilterWrapper } = get();
+      const { liveItems } = get();
 
-      const dim = crossfilterWrapper.charts.get(chart.id)?.dimension;
-      if (!dim) {
-        console.error("getLiveIdsForDimension: dimension not found", {
-          chart,
-        });
-        return [];
-      }
+      const liveItemsForChart = liveItems[chart.id];
 
-      const _all = dim.group().all() as LiveItem[];
-
-      return _all;
+      return liveItemsForChart;
     },
 
     getColumnNames() {

@@ -85,11 +85,21 @@ export class CrossfilterWrapper<T> {
     // get the filters from the chart
     const filterFunc = this.getFilterFunction<T>(chart);
 
+    console.log("updateChartFilters", {
+      chart,
+      charts: this.charts,
+    });
+
+    const foundChart = this.charts.get(chart.id);
+
+    console.log("foundChart", foundChart);
+
     // apply the filters to the dimension
-    const dimension = this.charts.get(chart.id)?.dimension;
+    const dimension = foundChart?.dimension;
     if (!dimension) {
       console.error("updateChartFilters: dimension not found", {
         chart,
+        charts: this.charts,
       });
       return;
     }
@@ -111,9 +121,9 @@ export class CrossfilterWrapper<T> {
       chart,
     };
 
-    this.updateChartFilters(chart);
-
     this.charts.set(chart.id, chartDimension);
+
+    this.updateChartFilters(chart);
   }
 
   removeChart(chart: ChartSettings) {
@@ -156,4 +166,29 @@ export class CrossfilterWrapper<T> {
         };
     }
   }
+
+  getAllData() {
+    // obj with key as id and value as datum
+
+    // id -> count
+    const data: LiveItemMap = {};
+
+    const commonNonce = new Date().getTime();
+
+    for (const chart of this.charts.values()) {
+      data[chart.chart.id] = {
+        items: chart.dimension.group<IdField, number>().all(),
+        nonce: commonNonce,
+      };
+    }
+
+    return data;
+  }
 }
+
+export type LiveItem = {
+  items: readonly crossfilter.Grouping<IdField, number>[];
+  nonce: number;
+};
+
+export type LiveItemMap = Record<string, LiveItem>;

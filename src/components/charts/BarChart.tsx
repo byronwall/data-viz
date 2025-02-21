@@ -1,5 +1,5 @@
 import { BaseChartProps, BarChartSettings } from "@/types/ChartTypes";
-
+import { useCustomCompareMemo } from "use-custom-compare";
 import { scaleBand, scaleLinear, ScaleLinear, ScaleBand } from "d3-scale";
 import { useMemo, useCallback } from "react";
 import { BaseChart } from "./BaseChart";
@@ -7,6 +7,7 @@ import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useWhatChanged } from "./useWhatChanged";
 import { getFilterObj } from "@/hooks/getFilterValues";
 import { useGetLiveData } from "./useGetLiveData";
+import isEqual from "react-fast-compare";
 
 type NumericBin = {
   label: string;
@@ -91,24 +92,39 @@ export function BarChart({ settings, width, height }: BarChartProps) {
     }
   }, [allColData, settings.binCount]);
 
-  // Create scales
-  const xScale = useMemo(() => {
+  const { min, max, uniqueValues } = useMemo(() => {
     if (chartData[0]?.isNumeric) {
       const numericData = chartData as NumericBin[];
-      const minStart = Math.min(...numericData.map((d) => d.start));
-      const maxEnd = Math.max(...numericData.map((d) => d.end));
-      return scaleLinear().domain([minStart, maxEnd]).range([0, innerWidth]);
-    } else {
-      return scaleBand()
-        .domain(chartData.map((d) => d.label))
-        .range([0, innerWidth])
-        .padding(0.3);
+      return {
+        min: Math.min(...numericData.map((d) => d.start)),
+        max: Math.max(...numericData.map((d) => d.end)),
+        uniqueValues: undefined,
+      };
     }
-  }, [chartData, innerWidth]) as
-    | ScaleLinear<number, number>
-    | ScaleBand<string>;
 
-  useWhatChanged([chartData, innerWidth], `[chartData, innerWidth]`);
+    const categoryData = chartData as CategoryBin[];
+    return {
+      min: undefined,
+      max: undefined,
+      uniqueValues: categoryData.map((d) => d.label),
+    };
+  }, [chartData]);
+
+  // Create scales
+  const xScale = useCustomCompareMemo(
+    () => {
+      if (min !== undefined && max !== undefined) {
+        return scaleLinear().domain([min, max]).range([0, innerWidth]);
+      } else {
+        return scaleBand()
+          .domain(uniqueValues)
+          .range([0, innerWidth])
+          .padding(0.3);
+      }
+    },
+    [innerWidth, max, min, uniqueValues],
+    isEqual
+  ) as ScaleLinear<number, number> | ScaleBand<string>;
 
   const yScale = useMemo(() => {
     const maxValue = Math.max(...chartData.map((d) => d.value));

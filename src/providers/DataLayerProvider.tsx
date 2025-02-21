@@ -6,6 +6,7 @@ import {
 import { ChartSettings, datum } from "@/types/ChartTypes";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
+import { saveProject } from "@/utils/localStorage";
 
 type DatumObject = { [key: string]: datum };
 export type { DatumObject };
@@ -206,6 +207,10 @@ const createDataLayerStore = <T extends DatumObject>(
     currentProject: null,
     setCurrentProject: (project: SavedProject) => {
       set({ currentProject: project });
+      // Only save to storage if the project is marked as saved
+      if (project.isSaved) {
+        saveProject(project);
+      }
     },
     saveCurrentView: (name: string) => {
       const { charts, currentProject } = get();
@@ -227,6 +232,10 @@ const createDataLayerStore = <T extends DatumObject>(
       };
 
       set({ currentProject: updatedProject });
+      // Only save to storage if the project is marked as saved
+      if (updatedProject.isSaved) {
+        saveProject(updatedProject);
+      }
     },
     loadView: (view: SavedView) => {
       const { crossfilterWrapper } = get();
@@ -292,6 +301,7 @@ type SavedProject = {
   name: string;
   sourceDataPath: string;
   views: SavedView[];
+  isSaved: boolean;
 };
 
 export type { SavedView, SavedProject };

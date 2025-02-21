@@ -23,12 +23,13 @@ export function CsvUpload({ compact = false }: CsvUploadProps) {
         complete: (results) => {
           setData(results.data as DatumObject[], file.name);
 
-          // Create a new project when data is loaded
+          // Create a new project with a random name when data is loaded
           const newProject: SavedProject = {
             version: 1,
-            name: file.name,
+            name: `Project ${Math.random().toString(36).substring(2, 7)}`,
             sourceDataPath: file.name,
             views: [],
+            isSaved: false, // Add this flag to track if it's been explicitly saved
           };
           setCurrentProject(newProject);
         },
@@ -54,6 +55,7 @@ export function CsvUpload({ compact = false }: CsvUploadProps) {
       name: "",
       sourceDataPath: "",
       views: [],
+      isSaved: false,
     });
   };
 

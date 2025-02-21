@@ -35,7 +35,6 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   updateChart: (id: string, settings: Partial<ChartSettings>) => void;
 
   // Filter state (placeholder)
-  updateFilter: (field: string, value: unknown) => void;
   clearAllFilters: () => void;
   clearFilter: (chart: ChartSettings) => void;
 
@@ -150,11 +149,6 @@ const createDataLayerStore = <T extends DatumObject>(
       // for now, just update all liveItems
     },
 
-    updateFilter: (field, value) => {
-      set((state) => ({
-        // do nothing
-      }));
-    },
     clearAllFilters: () => {
       const { charts, crossfilterWrapper } = get();
 

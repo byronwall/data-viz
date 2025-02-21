@@ -85,14 +85,7 @@ export class CrossfilterWrapper<T> {
     // get the filters from the chart
     const filterFunc = this.getFilterFunction<T>(chart);
 
-    console.log("updateChartFilters", {
-      chart,
-      charts: this.charts,
-    });
-
     const foundChart = this.charts.get(chart.id);
-
-    console.log("foundChart", foundChart);
 
     // apply the filters to the dimension
     const dimension = foundChart?.dimension;

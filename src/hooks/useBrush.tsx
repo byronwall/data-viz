@@ -1,11 +1,10 @@
-import { useWhatChanged } from "@/components/charts/useWhatChanged";
 import {
   MouseEvent,
   RefObject,
   useCallback,
+  useEffect,
   useMemo,
   useState,
-  useEffect,
 } from "react";
 
 interface Point {

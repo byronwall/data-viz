@@ -1,13 +1,12 @@
-import { BaseChartProps, BarChartSettings } from "@/types/ChartTypes";
-import { useCustomCompareMemo } from "use-custom-compare";
-import { scaleBand, scaleLinear, ScaleLinear, ScaleBand } from "d3-scale";
-import { useMemo, useCallback } from "react";
-import { BaseChart } from "./BaseChart";
-import { useDataLayer } from "@/providers/DataLayerProvider";
-import { useWhatChanged } from "./useWhatChanged";
 import { getFilterObj } from "@/hooks/getFilterValues";
-import { useGetLiveData } from "./useGetLiveData";
+import { useDataLayer } from "@/providers/DataLayerProvider";
+import { BarChartSettings, BaseChartProps } from "@/types/ChartTypes";
+import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from "d3-scale";
+import { useCallback, useMemo } from "react";
 import isEqual from "react-fast-compare";
+import { useCustomCompareMemo } from "use-custom-compare";
+import { BaseChart } from "./BaseChart";
+import { useGetLiveData } from "./useGetLiveData";
 
 type NumericBin = {
   label: string;
@@ -155,8 +154,6 @@ export function BarChart({ settings, width, height }: BarChartProps) {
       const xStart = extent?.[0]?.[0];
       const xEnd = extent?.[1]?.[0];
 
-      console.log("xStart", xStart);
-      console.log("xEnd", xEnd);
       // run those values through the scale to get the engineering units
 
       const linearScale = xScale as ScaleLinear<number, number>;
@@ -166,16 +163,8 @@ export function BarChart({ settings, width, height }: BarChartProps) {
       updateChart(settings.id, {
         filterRange: { min: start, max: end },
       });
-
-      console.log("start", start);
-      console.log("end", end);
     },
     [isBandScale, settings.id, updateChart, xScale]
-  );
-
-  useWhatChanged(
-    [hasActiveFilters, isBandScale, settings.id, updateChart, xScale],
-    `[hasActiveFilters, isBandScale, settings.id, updateChart, xScale]`
   );
 
   return (

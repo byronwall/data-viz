@@ -5,6 +5,7 @@ import { Plus, Upload } from "lucide-react";
 import Papa from "papaparse";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
+import type { SavedProject } from "@/providers/DataLayerProvider";
 
 interface CsvUploadProps {
   compact?: boolean;
@@ -12,6 +13,7 @@ interface CsvUploadProps {
 
 export function CsvUpload({ compact = false }: CsvUploadProps) {
   const setData = useDataLayer((state) => state.setData);
+  const setCurrentProject = useDataLayer((state) => state.setCurrentProject);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -20,12 +22,21 @@ export function CsvUpload({ compact = false }: CsvUploadProps) {
       Papa.parse(file, {
         complete: (results) => {
           setData(results.data as DatumObject[], file.name);
+
+          // Create a new project when data is loaded
+          const newProject: SavedProject = {
+            version: 1,
+            name: file.name,
+            sourceDataPath: file.name,
+            views: [],
+          };
+          setCurrentProject(newProject);
         },
         header: true,
         skipEmptyLines: true,
       });
     },
-    [setData]
+    [setData, setCurrentProject]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -38,6 +49,12 @@ export function CsvUpload({ compact = false }: CsvUploadProps) {
 
   const handleClear = () => {
     setData([], undefined);
+    setCurrentProject({
+      version: 1,
+      name: "",
+      sourceDataPath: "",
+      views: [],
+    });
   };
 
   if (compact) {

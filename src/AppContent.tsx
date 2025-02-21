@@ -1,5 +1,6 @@
 import { CsvUpload } from "./components/CsvUpload";
 import { PlotManager } from "./components/PlotManager";
+import { ProjectViewManager } from "./components/ProjectViewManager";
 import { useDataLayer } from "./providers/DataLayerProvider";
 
 export function AppContent() {
@@ -15,6 +16,7 @@ export function AppContent() {
           <>
             <span className="text-gray-600">({fileName})</span>
             <CsvUpload compact />
+            <ProjectViewManager />
           </>
         )}
       </div>

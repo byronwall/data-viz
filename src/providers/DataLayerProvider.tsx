@@ -45,6 +45,12 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   getColumnData: (field: string) => { [key: IdType]: datum };
   getColumnNames: () => string[];
   columnCache: Record<string, { [key: IdType]: datum }>;
+
+  // Project and View Management
+  currentProject: SavedProject | null;
+  setCurrentProject: (project: SavedProject) => void;
+  saveCurrentView: (name: string) => void;
+  loadView: (view: SavedView) => void;
 }
 
 // Store type
@@ -195,6 +201,51 @@ const createDataLayerStore = <T extends DatumObject>(
     },
 
     columnCache: {},
+
+    // Project and View Management
+    currentProject: null,
+    setCurrentProject: (project: SavedProject) => {
+      set({ currentProject: project });
+    },
+    saveCurrentView: (name: string) => {
+      const { charts, currentProject } = get();
+
+      if (!currentProject) {
+        console.error("No project selected");
+        return;
+      }
+
+      const newView: SavedView = {
+        version: 1,
+        name,
+        charts: [...charts],
+      };
+
+      const updatedProject: SavedProject = {
+        ...currentProject,
+        views: [...currentProject.views, newView],
+      };
+
+      set({ currentProject: updatedProject });
+    },
+    loadView: (view: SavedView) => {
+      const { crossfilterWrapper } = get();
+
+      // Clear existing charts
+      crossfilterWrapper.charts.forEach((_, chartId) => {
+        crossfilterWrapper.removeChart({ id: chartId } as ChartSettings);
+      });
+
+      // Load new charts
+      set({ charts: view.charts });
+
+      // Initialize crossfilter for new charts
+      view.charts.forEach((chart) => {
+        crossfilterWrapper.addChart(chart);
+      });
+
+      set({ liveItems: crossfilterWrapper.getAllData() });
+    },
   }));
 };
 
@@ -229,3 +280,18 @@ export function useDataLayer<T extends DatumObject, U>(
   }
   return useStore(store, selector);
 }
+
+type SavedView = {
+  version: 1;
+  charts: ChartSettings[];
+  name: string;
+};
+
+type SavedProject = {
+  version: 1;
+  name: string;
+  sourceDataPath: string;
+  views: SavedView[];
+};
+
+export type { SavedView, SavedProject };

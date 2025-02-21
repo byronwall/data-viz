@@ -7,5 +7,11 @@ export function getFilterObj(chart: ChartSettings) {
 
     case "bar":
       return chart.filterValues ?? chart.filterRange;
+
+    case "scatter":
+      return {
+        xFilterRange: chart.xFilterRange,
+        yFilterRange: chart.yFilterRange,
+      };
   }
 }

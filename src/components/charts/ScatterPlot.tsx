@@ -18,8 +18,8 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
   const yData = useGetLiveData(settings, "yField");
 
   // Convert object to array and map to numbers
-  const xValues = Object.values(xData).map(Number);
-  const yValues = Object.values(yData).map(Number);
+  const xValues = xData.map(Number);
+  const yValues = yData.map(Number);
 
   // Validate array lengths
   if (xValues.length !== yValues.length) {
@@ -155,6 +155,7 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
             yScale={yScale}
             brushingMode="2d"
             onBrushChange={handleBrushChange}
+            className="absolute"
           >
             <g /> {/* Empty group element as children */}
           </BaseChart>

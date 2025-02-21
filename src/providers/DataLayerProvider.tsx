@@ -50,7 +50,9 @@ type DataLayerStore<T extends DatumObject> = ReturnType<
   typeof createDataLayerStore<T>
 >;
 
-function getDataAndCrossfilterWrapper<T>(data: T[]) {
+function getDataAndCrossfilterWrapper<T extends DatumObject>(
+  data: T[]
+): Partial<DataLayerState<T>> {
   const dataWithIds = data.map((row, index) => ({
     ...row,
     __ID: index,
@@ -61,6 +63,7 @@ function getDataAndCrossfilterWrapper<T>(data: T[]) {
       dataWithIds,
       (d) => d.__ID
     ),
+    charts: [],
   };
 }
 

@@ -2,7 +2,7 @@ import { ReactNode, useRef } from "react";
 import { ScaleBand, ScaleLinear } from "d3-scale";
 import { XAxis, YAxis } from "./Axis";
 import { useBrush } from "@/hooks/useBrush";
-
+import { cn } from "@/lib/utils";
 interface Margin {
   top: number;
   right: number;
@@ -21,6 +21,7 @@ interface BaseChartProps {
   brushingMode?: BrushMode;
   onBrushChange?: (extent: [[number, number], [number, number]] | null) => void;
   children: ReactNode;
+  className?: string;
 }
 
 const defaultMargin: Margin = { top: 20, right: 20, bottom: 30, left: 60 };
@@ -34,6 +35,7 @@ export function BaseChart({
   brushingMode = "none",
   onBrushChange,
   children,
+  className,
 }: BaseChartProps) {
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
@@ -54,7 +56,7 @@ export function BaseChart({
       ref={svgRef}
       width={width}
       height={height}
-      className="select-none"
+      className={cn("select-none", className)}
       style={{ cursor: brush.getCursor() }}
       onMouseDownCapture={brush.handleMouseDown}
       onMouseMoveCapture={brush.handleMouseMove}

@@ -7,7 +7,7 @@ export function barChartPureFilter(filters: Filter, value: datum) {
   }
 
   if (isFilterValues(filters)) {
-    return filters.values.includes(value);
+    return filters.values.length === 0 || filters.values.includes(value);
   }
 
   if (isFilterRange(filters)) {

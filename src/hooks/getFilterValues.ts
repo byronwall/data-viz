@@ -6,6 +6,6 @@ export function getFilterObj(chart: ChartSettings) {
       return chart.filterValues;
 
     case "bar":
-      return chart.forceString ? chart.filterValues : chart.filterRange;
+      return chart.filterValues ?? chart.filterRange;
   }
 }

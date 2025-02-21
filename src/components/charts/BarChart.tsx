@@ -1,12 +1,13 @@
 import { getFilterObj } from "@/hooks/getFilterValues";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { BarChartSettings, BaseChartProps } from "@/types/ChartTypes";
+import { BarChartSettings, BaseChartProps, datum } from "@/types/ChartTypes";
 import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from "d3-scale";
 import { useCallback, useMemo } from "react";
 import isEqual from "react-fast-compare";
 import { useCustomCompareMemo } from "use-custom-compare";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
+import { barChartPureFilter } from "@/hooks/barChartPureFilter";
 
 type NumericBin = {
   label: string;
@@ -134,10 +135,29 @@ export function BarChart({ settings, width, height }: BarChartProps) {
 
   const activeFilters = getFilterObj(settings);
 
-  const hasActiveFilters = activeFilters !== null;
+  const handleBarClick = useCallback(
+    (label: string) => {
+      console.log("handleBarClick", label);
+      if (!isBandScale) {
+        return;
+      }
+
+      const filters = settings.filterValues?.values ?? [];
+      const newValues = filters.includes(label)
+        ? filters.filter((f) => f !== label)
+        : [...filters, label];
+
+      updateChart(settings.id, {
+        filterValues: { values: newValues },
+        filterRange: undefined,
+      });
+    },
+    [isBandScale, settings.id, updateChart, settings.filterValues?.values]
+  );
 
   const handleBrushChange = useCallback(
     (extent: [[number, number], [number, number]] | null) => {
+      console.log("handleBrushChange", extent);
       if (!extent) {
         updateChart(settings.id, {
           filterValues: { values: [] },
@@ -162,6 +182,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
 
       updateChart(settings.id, {
         filterRange: { min: start, max: end },
+        filterValues: undefined,
       });
     },
     [isBandScale, settings.id, updateChart, xScale]
@@ -207,6 +228,9 @@ export function BarChart({ settings, width, height }: BarChartProps) {
               barWidth = bandScale.bandwidth();
             }
 
+            const isFiltered =
+              !d.isNumeric && barChartPureFilter(activeFilters, d.label);
+
             return (
               <rect
                 key={i}
@@ -214,8 +238,14 @@ export function BarChart({ settings, width, height }: BarChartProps) {
                 y={yScale(d.value)}
                 width={barWidth}
                 height={innerHeight - yScale(d.value)}
-                // TODO: only do pointer none if dragging
-                className="fill-primary/80 hover:fill-primary transition-colors "
+                className={`${
+                  !d.isNumeric && activeFilters
+                    ? isFiltered
+                      ? "fill-amber-800"
+                      : "fill-amber-200"
+                    : "fill-primary/80 hover:fill-primary"
+                } transition-colors ${isBandScale ? "cursor-pointer" : ""}`}
+                onClick={() => isBandScale && handleBarClick(d.label)}
               />
             );
           })}

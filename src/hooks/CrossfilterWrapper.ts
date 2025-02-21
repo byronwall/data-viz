@@ -83,7 +83,7 @@ export class CrossfilterWrapper<T> {
 
   updateChartFilters(chart: ChartSettings) {
     // get the filters from the chart
-    const filterFunc = this.getFilterFunction<T>(chart);
+    const filterFunc = this.getFilterFunction(chart);
 
     const foundChart = this.charts.get(chart.id);
 
@@ -137,9 +137,9 @@ export class CrossfilterWrapper<T> {
           // check if value is in the filters
           const filters = chart.filterValues?.values;
 
-          const dataum = this.dataHash[d];
+          const dataObj = this.dataHash[d];
 
-          const value = dataum[chart.field as keyof T] as datum;
+          const value = dataObj[chart.field as keyof T] as datum;
 
           return rowChartPureFilter(filters, value);
         };
@@ -147,9 +147,9 @@ export class CrossfilterWrapper<T> {
         return (d: IdField) => {
           const filters = getFilterObj(chart);
 
-          const dataum = this.dataHash[d];
+          const dataObj = this.dataHash[d];
 
-          const value = dataum[chart.field as keyof T] as datum;
+          const value = dataObj[chart.field as keyof T] as datum;
 
           return barChartPureFilter(filters, value);
         };

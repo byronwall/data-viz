@@ -3,6 +3,9 @@ import { ScaleBand, ScaleLinear } from "d3-scale";
 import { XAxis, YAxis } from "./Axis";
 import { useBrush } from "@/hooks/useBrush";
 import { cn } from "@/lib/utils";
+import { ChartSettings } from "@/types/ChartTypes";
+import { useFilterExtent } from "@/hooks/useFilterExtent";
+
 interface Margin {
   top: number;
   right: number;
@@ -22,6 +25,7 @@ interface BaseChartProps {
   onBrushChange?: (extent: [[number, number], [number, number]] | null) => void;
   children: ReactNode;
   className?: string;
+  settings: ChartSettings;
 }
 
 const defaultMargin: Margin = { top: 20, right: 20, bottom: 30, left: 60 };
@@ -36,10 +40,18 @@ export function BaseChart({
   onBrushChange,
   children,
   className,
+  settings,
 }: BaseChartProps) {
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
   const svgRef = useRef<SVGSVGElement>(null);
+
+  const extent = useFilterExtent({
+    settings,
+    xScale,
+    yScale,
+    innerHeight,
+  });
 
   const brush = useBrush({
     svgRef,
@@ -49,6 +61,7 @@ export function BaseChart({
     innerHeight,
     mode: brushingMode as "horizontal" | "2d" | "none",
     onBrushChange,
+    defaultExtent: extent,
   });
 
   return (

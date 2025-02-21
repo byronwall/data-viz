@@ -161,7 +161,6 @@ export function BarChart({ settings, width, height }: BarChartProps) {
           filterValues: { values: [] },
           filterRange: null,
         });
-
         return;
       }
 
@@ -171,8 +170,6 @@ export function BarChart({ settings, width, height }: BarChartProps) {
 
       const xStart = extent?.[0]?.[0];
       const xEnd = extent?.[1]?.[0];
-
-      // run those values through the scale to get the engineering units
 
       const linearScale = xScale as ScaleLinear<number, number>;
       const start = linearScale.invert(xStart);
@@ -196,6 +193,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
         yScale={yScale}
         brushingMode={isBandScale ? "none" : "horizontal"}
         onBrushChange={handleBrushChange}
+        settings={settings}
       >
         <g className="select-none">
           {/* Grid lines */}

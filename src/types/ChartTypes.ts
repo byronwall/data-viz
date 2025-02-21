@@ -75,4 +75,14 @@ export type Filter2dRange = {
   y: FilterRange;
 } | null;
 
-export type Filter = FilterValues | FilterRange | Filter2dRange | undefined;
+export type ScatterFilter = {
+  xFilterRange: FilterRange;
+  yFilterRange: FilterRange;
+};
+
+export type Filter =
+  | FilterValues
+  | FilterRange
+  | Filter2dRange
+  | ScatterFilter
+  | undefined;

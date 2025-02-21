@@ -25,3 +25,7 @@
   - Figure out how to do chloropleth maps
 - Add supporting for multiple data sources and relationships
 - Add data isolation + "fork" modes - create tabbed interfaces for these
+
+## Small problems
+
+- Scatter plot needs to allow new drag filter on off-click if already brushed

@@ -5,8 +5,9 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
-
+import { usePrevious } from "react-use";
 interface Point {
   x: number;
   y: number;
@@ -54,6 +55,7 @@ interface BrushOptions {
   innerHeight: number;
   mode: "horizontal" | "2d" | "none";
   onBrushChange?: (extent: [[number, number], [number, number]] | null) => void;
+  defaultExtent?: [[number, number], [number, number]] | null;
 }
 
 interface BrushRenderProps {
@@ -74,24 +76,92 @@ export function useBrush({
   innerHeight,
   mode,
   onBrushChange,
+  defaultExtent,
 }: BrushOptions) {
-  const [brushState, setBrushState] = useState<BrushState>({ state: "idle" });
+  const [brushState, setBrushState] = useState<BrushState>(() => {
+    if (defaultExtent) {
+      return {
+        state: "brushed",
+        brushStart: { x: defaultExtent[0][0], y: defaultExtent[0][1] },
+        brushEnd: { x: defaultExtent[1][0], y: defaultExtent[1][1] },
+      };
+    }
+    return { state: "idle" };
+  });
+
+  // Track the last external update to prevent infinite loops
+  const lastExternalUpdateRef = useRef<string | null>(null);
+
+  // Update brush state when defaultExtent changes
+  useEffect(() => {
+    if (!defaultExtent) {
+      if (brushState.state !== "idle") {
+        setBrushState({ state: "idle" });
+      }
+      return;
+    }
+
+    // Round coordinates to prevent floating point issues
+    const roundedExtent: [[number, number], [number, number]] = [
+      [
+        Math.round(defaultExtent[0][0] * 10000) / 10000,
+        Math.round(defaultExtent[0][1] * 10000) / 10000,
+      ],
+      [
+        Math.round(defaultExtent[1][0] * 10000) / 10000,
+        Math.round(defaultExtent[1][1] * 10000) / 10000,
+      ],
+    ];
+
+    const newExtentKey = JSON.stringify(roundedExtent);
+    if (newExtentKey === lastExternalUpdateRef.current) {
+      return; // Skip if this update was triggered by our own brush change
+    }
+
+    setBrushState({
+      state: "brushed",
+      brushStart: { x: roundedExtent[0][0], y: roundedExtent[0][1] },
+      brushEnd: { x: roundedExtent[1][0], y: roundedExtent[1][1] },
+    });
+  }, [defaultExtent]);
 
   // Call onBrushChange when brush state changes
+
   useEffect(() => {
     if (!onBrushChange) {
       return;
     }
 
     if (brushState.state === "brushed") {
-      onBrushChange([
-        [brushState.brushStart.x, brushState.brushStart.y],
-        [brushState.brushEnd.x, brushState.brushEnd.y],
-      ]);
+      // Round coordinates to prevent floating point issues
+      const extent: [[number, number], [number, number]] = [
+        [
+          Math.round(brushState.brushStart.x * 10000) / 10000,
+          Math.round(brushState.brushStart.y * 10000) / 10000,
+        ],
+        [
+          Math.round(brushState.brushEnd.x * 10000) / 10000,
+          Math.round(brushState.brushEnd.y * 10000) / 10000,
+        ],
+      ];
+      const extentKey = JSON.stringify(extent);
+
+      if (extentKey === lastExternalUpdateRef.current) {
+        // prevent infinite loop
+        return;
+      }
+
+      lastExternalUpdateRef.current = extentKey;
+      onBrushChange(extent);
     } else if (brushState.state === "idle") {
+      if (lastExternalUpdateRef.current == null) {
+        // prevent infinite loop on non-change
+        return;
+      }
+      lastExternalUpdateRef.current = null;
       onBrushChange(null);
     }
-  }, [brushState, onBrushChange]);
+  }, [brushState, onBrushChange, brushState?.state]);
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {

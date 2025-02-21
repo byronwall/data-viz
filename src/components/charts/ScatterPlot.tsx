@@ -120,7 +120,7 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
       const [[x0, y0], [x1, y1]] = extent;
 
       // Convert pixel coordinates back to data values
-      const xStart = xScale.invert(x0); // Adjust for translation
+      const xStart = xScale.invert(x0);
       const xEnd = xScale.invert(x1);
       const yStart = yScale.invert(y0);
       const yEnd = yScale.invert(y1);
@@ -156,6 +156,7 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
             brushingMode="2d"
             onBrushChange={handleBrushChange}
             className="absolute"
+            settings={settings}
           >
             <g /> {/* Empty group element as children */}
           </BaseChart>

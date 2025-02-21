@@ -83,15 +83,18 @@ export function RowChart({ settings, width, height }: RowChartProps) {
     settings.maxRowHeight,
   ]);
 
-  // Scales
-  const xScale = scaleLinear()
-    .domain([0, Math.max(...displayCounts.map((d) => d.count))])
-    .range([0, innerWidth]);
+  // Create scales
+  const xScale = useMemo(() => {
+    const maxValue = Math.max(...displayCounts.map((d) => d.count));
+    return scaleLinear().domain([0, maxValue]).range([0, innerWidth]).nice();
+  }, [displayCounts, innerWidth]);
 
-  const yScale = scaleBand()
-    .domain(displayCounts.map((d) => String(d.label)))
-    .range([0, innerHeight])
-    .padding(0.1);
+  const yScale = useMemo(() => {
+    return scaleBand()
+      .domain(displayCounts.map((d) => String(d.label)))
+      .range([0, innerHeight])
+      .padding(0.1);
+  }, [displayCounts, innerHeight]);
 
   return (
     <div style={{ width, height }}>
@@ -101,6 +104,7 @@ export function RowChart({ settings, width, height }: RowChartProps) {
         margin={margin}
         xScale={xScale}
         yScale={yScale}
+        settings={settings}
       >
         <g className="select-none">
           {/* Bars */}

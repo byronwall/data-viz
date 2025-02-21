@@ -2,7 +2,10 @@ import { useDataLayer } from "@/providers/DataLayerProvider";
 import { ChartSettings, datum } from "@/types/ChartTypes";
 import { useMemo } from "react";
 
-export function useGetLiveData(settings: ChartSettings) {
+export function useGetLiveData(
+  settings: ChartSettings,
+  field?: "xField" | "yField"
+) {
   const getLiveItems = useDataLayer((s) => s.getLiveItems);
   const getColumnData = useDataLayer((s) => s.getColumnData);
 
@@ -18,13 +21,27 @@ export function useGetLiveData(settings: ChartSettings) {
         ? getColumnData(settings.field)
         : settings.type === "bar"
         ? getColumnData(settings.field)
+        : settings.type === "scatter"
+        ? field === "xField"
+          ? getColumnData(settings.xField)
+          : field === "yField"
+          ? getColumnData(settings.yField)
+          : []
         : [];
 
     const data = liveIds.map((id) => _data[id]);
 
     return data as datum[];
     // TODO: this should really be the nonce
-  }, [getColumnData, liveItems, settings.field, settings.type]);
+  }, [
+    field,
+    getColumnData,
+    liveItems.items,
+    settings.field,
+    settings.type,
+    settings.xField,
+    settings.yField,
+  ]);
 
   return data;
 }

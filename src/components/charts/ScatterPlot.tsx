@@ -4,20 +4,18 @@ import { useDataLayer } from "@/providers/DataLayerProvider";
 import { BaseChart } from "./BaseChart";
 import { ScaleLinear, scaleLinear } from "d3-scale";
 import { scatterChartPureFilter } from "@/hooks/scatterChartPureFilter";
+import { useGetLiveData } from "./useGetLiveData";
 
-// Update the props type to use ScatterChartSettings
 interface ScatterPlotProps extends BaseChartProps {
   settings: ScatterChartSettings;
 }
 
 export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const getColumnData = useDataLayer((s) => s.getColumnData);
   const updateChart = useDataLayer((s) => s.updateChart);
 
-  // Get data for both x and y fields
-  const xData = getColumnData(settings.xField);
-  const yData = getColumnData(settings.yField);
+  const xData = useGetLiveData(settings, "xField");
+  const yData = useGetLiveData(settings, "yField");
 
   // Convert object to array and map to numbers
   const xValues = Object.values(xData).map(Number);

@@ -36,7 +36,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
 
   // Filter state (placeholder)
   updateFilter: (field: string, value: unknown) => void;
-  clearFilters: () => void;
+  clearAllFilters: () => void;
   clearFilter: (chart: ChartSettings) => void;
 
   crossfilterWrapper: CrossfilterWrapper<T & HasId>;
@@ -155,7 +155,28 @@ const createDataLayerStore = <T extends DatumObject>(
         // do nothing
       }));
     },
-    clearFilters: () => {},
+    clearAllFilters: () => {
+      const { charts, crossfilterWrapper } = get();
+
+      const newCharts = charts.map((chart) => {
+        const emptyFilter = getEmptyFilterObj(chart);
+
+        return {
+          ...chart,
+          ...emptyFilter,
+        };
+      }) as ChartSettings[];
+
+      for (const chart of newCharts) {
+        crossfilterWrapper.updateChart(chart);
+      }
+
+      // Update all live items in a single update
+      set({
+        charts: newCharts,
+        liveItems: crossfilterWrapper.getAllData(),
+      });
+    },
     clearFilter: (chart) => {
       const { updateChart } = get();
 
@@ -249,7 +270,9 @@ const createDataLayerStore = <T extends DatumObject>(
 export const DataLayerContext = createContext<DataLayerStore<any> | null>(null);
 
 // Provider wrapper
-type DataLayerProviderProps<T> = React.PropsWithChildren<DataLayerProps<T>>;
+type DataLayerProviderProps<T extends DatumObject> = React.PropsWithChildren<
+  DataLayerProps<T>
+>;
 
 export function DataLayerProvider<T extends DatumObject>({
   children,

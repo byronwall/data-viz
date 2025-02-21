@@ -11,6 +11,7 @@ import { createRowChartSettings } from "@/types/createRowChartSettings";
 import {
   BarChartHorizontal,
   BarChart as BarChartIcon,
+  FilterX,
   ScatterChart,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -37,6 +38,7 @@ export function PlotManager() {
   const updateChart = useDataLayer((state) => state.updateChart);
   const addChart = useDataLayer((state) => state.addChart);
   const removeChart = useDataLayer((state) => state.removeChart);
+  const clearAllFilters = useDataLayer((state) => state.clearAllFilters);
 
   // Get column names
   const columns = getColumnNames();
@@ -124,7 +126,7 @@ export function PlotManager() {
   return (
     <div className="w-full pb-40" ref={containerRef}>
       <div className="mb-4">
-        <h2 className="text-lg font-semibold mb-2">Available Fields</h2>
+        <h2 className="text-lg font-semibold">Available Fields</h2>
         <div className="flex flex-wrap gap-2">
           {columns.map((column) => (
             <div key={column} className="flex gap-1">
@@ -155,6 +157,20 @@ export function PlotManager() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="flex justify-between items-center mb-2">
+        {charts.length > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearAllFilters}
+            className="flex items-center gap-2"
+          >
+            <FilterX className="h-4 w-4" />
+            Clear All Filters
+          </Button>
+        )}
       </div>
 
       <ChartGridLayout

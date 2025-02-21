@@ -15,3 +15,16 @@ export function getFilterObj(chart: ChartSettings) {
       };
   }
 }
+
+export function getEmptyFilterObj(chart: ChartSettings) {
+  switch (chart.type) {
+    case "row":
+      return { filterValues: { values: [] } };
+
+    case "bar":
+      return { filterValues: null, filterRange: null };
+
+    case "scatter":
+      return { xFilterRange: null, yFilterRange: null };
+  }
+}

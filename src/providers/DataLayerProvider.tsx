@@ -7,6 +7,7 @@ import { ChartSettings, datum } from "@/types/ChartTypes";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
 import { saveProject } from "@/utils/localStorage";
+import { getEmptyFilterObj } from "@/hooks/getFilterValues";
 
 type DatumObject = { [key: string]: datum };
 export type { DatumObject };
@@ -142,13 +143,11 @@ const createDataLayerStore = <T extends DatumObject>(
         charts: state.charts.map((chart) =>
           chart.id === id ? updatedChart : chart
         ),
+        liveItems: crossfilterWrapper.getAllData(),
       }));
 
       // ideally would determine what changed and only update the liveItems for the chart that changed
       // for now, just update all liveItems
-      set({
-        liveItems: crossfilterWrapper.getAllData(),
-      });
     },
 
     updateFilter: (field, value) => {
@@ -160,20 +159,8 @@ const createDataLayerStore = <T extends DatumObject>(
     clearFilter: (chart) => {
       const { updateChart } = get();
 
-      const chartDim = crossfilterWrapper.charts.get(chart.id);
-      if (chartDim) {
-        chartDim.dimension.filterAll();
-        // Update the chart to reflect the cleared state
-        if (chart.type === "row") {
-          updateChart(chart.id, {
-            filterValues: { values: [] },
-          });
-        } else {
-          updateChart(chart.id, {
-            filterRange: null,
-          });
-        }
-      }
+      const emptyFilter = getEmptyFilterObj(chart);
+      updateChart(chart.id, emptyFilter);
     },
     nonce: 0,
     getLiveItems: (chart) => {

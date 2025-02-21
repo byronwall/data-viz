@@ -8,6 +8,7 @@ import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
 
 type DatumObject = { [key: string]: datum };
+export type { DatumObject };
 
 // Props and State interfaces
 interface DataLayerProps<T extends DatumObject> {
@@ -20,7 +21,8 @@ export type HasId = { __ID: IdType };
 
 interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   data: (T & HasId)[];
-  setData: (data: T[]) => void;
+  fileName: string | undefined;
+  setData: (data: T[], fileName?: string) => void;
 
   liveItems: LiveItemMap;
 
@@ -75,12 +77,18 @@ const createDataLayerStore = <T extends DatumObject>(
     initProps?.data ?? []
   );
 
+  if (!crossfilterWrapper || !initData) {
+    throw new Error("Data or crossfilterWrapper not found");
+  }
+
   return createStore<DataLayerState<T>>()((set, get) => ({
     data: initData,
+    fileName: undefined,
     crossfilterWrapper,
-    setData: (rawData) => {
+    setData: (rawData, fileName) => {
       set({
         ...getDataAndCrossfilterWrapper(rawData),
+        fileName,
       });
     },
     liveItems: {},

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useDataLayer } from "@/providers/DataLayerProvider";
+import type { DatumObject } from "@/providers/DataLayerProvider";
 import { Plus, Upload } from "lucide-react";
 import Papa from "papaparse";
 import { useCallback } from "react";
@@ -18,7 +19,7 @@ export function CsvUpload({ compact = false }: CsvUploadProps) {
 
       Papa.parse(file, {
         complete: (results) => {
-          setData(results.data);
+          setData(results.data as DatumObject[], file.name);
         },
         header: true,
         skipEmptyLines: true,
@@ -36,7 +37,7 @@ export function CsvUpload({ compact = false }: CsvUploadProps) {
   });
 
   const handleClear = () => {
-    setData([]);
+    setData([], undefined);
   };
 
   if (compact) {

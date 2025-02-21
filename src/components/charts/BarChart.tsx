@@ -1,13 +1,13 @@
+import { barChartPureFilter } from "@/hooks/barChartPureFilter";
 import { getFilterObj } from "@/hooks/getFilterValues";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { BarChartSettings, BaseChartProps, datum } from "@/types/ChartTypes";
+import { BarChartSettings, BaseChartProps } from "@/types/ChartTypes";
 import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from "d3-scale";
 import { useCallback, useMemo } from "react";
 import isEqual from "react-fast-compare";
 import { useCustomCompareMemo } from "use-custom-compare";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
-import { barChartPureFilter } from "@/hooks/barChartPureFilter";
 
 type NumericBin = {
   label: string;
@@ -137,7 +137,6 @@ export function BarChart({ settings, width, height }: BarChartProps) {
 
   const handleBarClick = useCallback(
     (label: string) => {
-      console.log("handleBarClick", label);
       if (!isBandScale) {
         return;
       }
@@ -157,7 +156,6 @@ export function BarChart({ settings, width, height }: BarChartProps) {
 
   const handleBrushChange = useCallback(
     (extent: [[number, number], [number, number]] | null) => {
-      console.log("handleBrushChange", extent);
       if (!extent) {
         updateChart(settings.id, {
           filterValues: { values: [] },
@@ -228,8 +226,10 @@ export function BarChart({ settings, width, height }: BarChartProps) {
               barWidth = bandScale.bandwidth();
             }
 
-            const isFiltered =
-              !d.isNumeric && barChartPureFilter(activeFilters, d.label);
+            const isFiltered = barChartPureFilter(
+              activeFilters,
+              d.isNumeric ? d.start : d.label
+            );
 
             return (
               <rect
@@ -239,7 +239,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
                 width={barWidth}
                 height={innerHeight - yScale(d.value)}
                 className={`${
-                  !d.isNumeric && activeFilters
+                  activeFilters
                     ? isFiltered
                       ? "fill-amber-800"
                       : "fill-amber-200"

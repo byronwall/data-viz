@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  use-custom-compare@1.4.0:
+    hash: qamfvg7piw77yywqp24lrrpigu
+    path: patches/use-custom-compare@1.4.0.patch
+
 importers:
 
   .:
@@ -184,7 +189,7 @@ importers:
         version: 1.0.7(tailwindcss@4.0.6)
       use-custom-compare:
         specifier: ^1.4.0
-        version: 1.4.0(react@19.0.0)(typescript@5.7.3)
+        version: 1.4.0(patch_hash=qamfvg7piw77yywqp24lrrpigu)(react@19.0.0)(typescript@5.7.3)
       vaul:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -4804,7 +4809,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.0.8
 
-  use-custom-compare@1.4.0(react@19.0.0)(typescript@5.7.3):
+  use-custom-compare@1.4.0(patch_hash=qamfvg7piw77yywqp24lrrpigu)(react@19.0.0)(typescript@5.7.3):
     dependencies:
       react: 19.0.0
       typescript: 5.7.3

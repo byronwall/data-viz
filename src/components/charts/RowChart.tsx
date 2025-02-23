@@ -98,6 +98,11 @@ export function RowChart({ settings, width, height }: RowChartProps) {
       .padding(0.1);
   }, [displayCounts, innerHeight]);
 
+  console.log("color scale deets", {
+    colorScaleId: settings.colorScaleId,
+    colorField: settings.colorField,
+  });
+
   return (
     <div style={{ width, height }}>
       <BaseChart

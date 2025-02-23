@@ -22,7 +22,7 @@ export type ColorScaleType = NumericalColorScale | CategoricalColorScale;
 
 export interface UseColorScalesReturn {
   // Scale Management
-  addColorScale: (scale: Omit<ColorScaleType, "id">) => void;
+  addColorScale: (scale: Omit<ColorScaleType, "id">) => ColorScaleType;
   removeColorScale: (id: string) => void;
   updateColorScale: (id: string, updates: Partial<ColorScaleType>) => void;
 
@@ -34,8 +34,15 @@ export interface UseColorScalesReturn {
   colorScales: ColorScaleType[];
 
   // Utilities
-  createDefaultNumericalScale: (name: string, min: number, max: number) => void;
-  createDefaultCategoricalScale: (name: string, values: string[]) => void;
+  createDefaultNumericalScale: (
+    name: string,
+    min: number,
+    max: number
+  ) => ColorScaleType;
+  createDefaultCategoricalScale: (
+    name: string,
+    values: string[]
+  ) => ColorScaleType;
 
   // D3 Integration
   getD3Scale: (

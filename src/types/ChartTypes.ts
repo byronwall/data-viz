@@ -19,6 +19,7 @@ export interface BaseChartSettings {
   field: string;
   layout: ChartLayout;
   colorScaleId?: string;
+  colorField?: string;
 }
 
 export interface RowChartSettings extends BaseChartSettings {

@@ -3,6 +3,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { ComboBox } from "./ComboBox";
 import { Button } from "./ui/button";
+import { Switch } from "./ui/switch";
 import { useState, useEffect } from "react";
 import { FieldSelector } from "./FieldSelector";
 import { useDataLayer } from "@/providers/DataLayerProvider";
@@ -62,7 +63,7 @@ export function ChartSettingsContent({
           onChange={(option) =>
             setLocalSettings({
               ...localSettings,
-              type: option as ChartSettings["type"],
+              type: option as ChartSettings["type"] as any,
             })
           }
           placeholder="Select chart type"
@@ -84,22 +85,21 @@ export function ChartSettingsContent({
               });
             }}
           />
-          <div className="space-y-2">
-            <Label htmlFor="colorScale">Color Scale</Label>
-            <ComboBox<ColorScaleType>
-              value={colorScales.find(
-                (s) => s.id === localSettings.colorScaleId
-              )}
-              options={colorScales}
-              onChange={(scale) =>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="colorField"
+              checked={localSettings.field === localSettings.colorField}
+              onCheckedChange={(checked) =>
                 setLocalSettings({
                   ...localSettings,
-                  colorScaleId: scale?.id,
+                  colorField: checked ? localSettings.field : undefined,
+                  colorScaleId: checked
+                    ? getOrCreateScaleForField(localSettings.field)
+                    : undefined,
                 })
               }
-              optionToLabel={(scale) => scale.name}
-              placeholder="Select color scale"
             />
+            <Label htmlFor="colorField">Use as color field</Label>
           </div>
         </>
       )}
@@ -165,6 +165,40 @@ export function ChartSettingsContent({
               })
             }
           />
+          <FieldSelector
+            label="Color Field"
+            value={localSettings.colorField || ""}
+            availableFields={availableFields}
+            onChange={(value) => {
+              const colorScaleId = value
+                ? getOrCreateScaleForField(value)
+                : undefined;
+              setLocalSettings({
+                ...localSettings,
+                colorField: value,
+                colorScaleId,
+              });
+            }}
+          />
+          {localSettings.colorField && (
+            <div className="space-y-2">
+              <Label htmlFor="colorScale">Color Scale</Label>
+              <ComboBox<ColorScaleType>
+                value={colorScales.find(
+                  (s) => s.id === localSettings.colorScaleId
+                )}
+                options={colorScales}
+                onChange={(scale) =>
+                  setLocalSettings({
+                    ...localSettings,
+                    colorScaleId: scale?.id,
+                  })
+                }
+                optionToLabel={(scale) => scale.name}
+                placeholder="Select color scale"
+              />
+            </div>
+          )}
         </>
       )}
 

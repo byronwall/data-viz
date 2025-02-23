@@ -37,7 +37,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
 
   // Color scale state
   colorScales: ColorScaleType[];
-  addColorScale: (scale: Omit<ColorScaleType, "id">) => void;
+  addColorScale: (scale: Omit<ColorScaleType, "id">) => ColorScaleType;
   removeColorScale: (id: string) => void;
   updateColorScale: (id: string, updates: Partial<ColorScaleType>) => void;
 
@@ -160,11 +160,13 @@ const createDataLayerStore = <T extends DatumObject>(
       const newScale = {
         ...scale,
         id: crypto.randomUUID(),
-      };
+      } as ColorScaleType;
 
       set((state) => ({
-        colorScales: [...state.colorScales, newScale as ColorScaleType],
+        colorScales: [...state.colorScales, newScale],
       }));
+
+      return newScale;
     },
     removeColorScale: (id: string) => {
       set((state) => ({

@@ -105,7 +105,7 @@ export function useColorScales(): UseColorScalesReturn {
     name: string,
     min: number,
     max: number
-  ): void => {
+  ): ColorScaleType => {
     const scale: Omit<NumericalColorScale, "id"> = {
       name,
       type: "numerical",
@@ -113,13 +113,13 @@ export function useColorScales(): UseColorScalesReturn {
       min,
       max,
     };
-    addColorScale(scale);
+    return addColorScale(scale);
   };
 
   const createDefaultCategoricalScale = (
     name: string,
     values: string[]
-  ): void => {
+  ): ColorScaleType => {
     const defaultPalette = DEFAULT_CATEGORICAL_PALETTES[0].colors;
     const mapping = new Map<string, string>();
     values.forEach((value, i) => {
@@ -132,7 +132,7 @@ export function useColorScales(): UseColorScalesReturn {
       palette: Array.from(mapping.values()),
       mapping,
     };
-    addColorScale(scale);
+    return addColorScale(scale);
   };
 
   const getD3Scale = (scaleId: string) => {
@@ -155,21 +155,17 @@ export function useColorScales(): UseColorScalesReturn {
     // Check if values are numerical
     const isNumerical = cleanValues.every((v) => !isNaN(Number(v)));
 
+    let newScale: ColorScaleType;
     if (isNumerical) {
       const numericValues = cleanValues.map(Number);
       const min = Math.min(...numericValues);
       const max = Math.max(...numericValues);
-      createDefaultNumericalScale(name ?? field, min, max);
+      newScale = createDefaultNumericalScale(name ?? field, min, max);
     } else {
       const uniqueValues = Array.from(new Set(cleanValues.map(String)));
-      createDefaultCategoricalScale(name ?? field, uniqueValues);
+      newScale = createDefaultCategoricalScale(name ?? field, uniqueValues);
     }
 
-    // Find and return the ID of the newly created scale
-    const newScale = colorScales.find((s) => s.name === (name ?? field));
-    if (!newScale) {
-      throw new Error(`Failed to create color scale for field ${field}`);
-    }
     return newScale.id;
   };
 

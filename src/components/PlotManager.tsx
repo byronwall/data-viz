@@ -74,7 +74,7 @@ export function PlotManager() {
       w: 6,
       h: 4,
     };
-    newChart.colorScaleId = getOrCreateScaleForField(field);
+    newChart.colorScaleId = undefined;
 
     addChart(newChart);
   };
@@ -90,7 +90,7 @@ export function PlotManager() {
         w: 6,
         h: 4,
       },
-      colorScaleId: getOrCreateScaleForField(field),
+      colorScaleId: undefined,
       filterValues: { values: [] },
       filterRange: null,
     };
@@ -110,7 +110,7 @@ export function PlotManager() {
         w: 6,
         h: 4,
       },
-      colorScaleId: getOrCreateScaleForField(xField),
+      colorScaleId: undefined,
       xFilterRange: null,
       yFilterRange: null,
     };

@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useColorScales } from "@/hooks/useColorScales";
 import {
   CategoricalColorScale,
@@ -26,10 +25,9 @@ import {
   schemeCategory10,
   schemeSet3,
 } from "d3-scale-chromatic";
-import { Palette } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Hash, Palette, Shapes } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { HexColorPicker } from "react-colorful";
-import { useFavicon } from "react-use";
 
 const NUMERICAL_PALETTES = [
   { name: "Viridis", interpolator: interpolateViridis },
@@ -255,10 +253,39 @@ function CategoricalScaleEditor({
   );
 }
 
-export function ColorScaleManager() {
-  const { colorScales, updateColorScale, addColorScale, removeColorScale } =
-    useColorScales();
+function ScaleListItem({
+  scale,
+  isSelected,
+  onClick,
+}: {
+  scale: ColorScaleType;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      variant={isSelected ? "default" : "ghost"}
+      className="w-full justify-start"
+      onClick={onClick}
+    >
+      <div className="flex items-center gap-2 w-full">
+        {scale.type === "numerical" ? (
+          <Hash className="w-4 h-4" />
+        ) : (
+          <Shapes className="w-4 h-4" />
+        )}
+        <span className="truncate">{scale.name}</span>
+      </div>
+    </Button>
+  );
+}
 
+export function ColorScaleManager() {
+  const { colorScales, updateColorScale } = useColorScales();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedScaleId, setSelectedScaleId] = useState<string | null>(
+    colorScales[0]?.id ?? null
+  );
   const [state, setState] = useState<ColorScaleEditorState>({
     scales: colorScales,
     isDirty: false,
@@ -268,15 +295,18 @@ export function ColorScaleManager() {
     setState({ scales: colorScales, isDirty: false });
   }, [colorScales]);
 
-  const numericalScales = state.scales.filter(
-    (s): s is NumericalColorScale => s.type === "numerical"
-  );
-  const categoricalScales = state.scales.filter(
-    (s): s is CategoricalColorScale => s.type === "categorical"
+  const filteredScales = useMemo(() => {
+    return state.scales.filter((scale) =>
+      scale.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [state.scales, searchQuery]);
+
+  const selectedScale = useMemo(
+    () => state.scales.find((s) => s.id === selectedScaleId),
+    [state.scales, selectedScaleId]
   );
 
   const handleSave = () => {
-    // Apply all changes
     state.scales.forEach((scale) => {
       const { id, ...scaleWithoutId } = scale;
       updateColorScale(id, scaleWithoutId);
@@ -301,7 +331,7 @@ export function ColorScaleManager() {
           Color Scales
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-[80vw] max-h-[80vh] min-h-[50vh]">
         <DialogHeader>
           <DialogTitle>Color Scale Manager</DialogTitle>
           <DialogDescription>
@@ -309,40 +339,50 @@ export function ColorScaleManager() {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="numerical" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="numerical" className="flex-1">
-              Numerical Scales
-            </TabsTrigger>
-            <TabsTrigger value="categorical" className="flex-1">
-              Categorical Scales
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="numerical" className="space-y-4">
-            {numericalScales.map((scale) => (
-              <div key={scale.id} className="space-y-4 border p-4 rounded-lg">
-                <NumericalScaleEditor
+        <div className="flex gap-6">
+          {/* Left Sidebar */}
+          <div className="w-64 border-r pr-4 space-y-4">
+            <Input
+              placeholder="Search scales..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="space-y-1 overflow-y-auto">
+              {filteredScales.map((scale) => (
+                <ScaleListItem
+                  key={scale.id}
                   scale={scale}
-                  onUpdate={handleScaleUpdate}
+                  isSelected={scale.id === selectedScaleId}
+                  onClick={() => setSelectedScaleId(scale.id)}
                 />
-                <NumericalScalePreview palette={scale.palette} />
-              </div>
-            ))}
-          </TabsContent>
+              ))}
+            </div>
+          </div>
 
-          <TabsContent value="categorical" className="space-y-4">
-            {categoricalScales.map((scale) => (
-              <div key={scale.id} className="space-y-4 border p-4 rounded-lg">
-                <CategoricalScaleEditor
-                  scale={scale}
-                  onUpdate={handleScaleUpdate}
-                />
-                <CategoricalScalePreview colors={scale.palette} />
+          {/* Right Content */}
+          <div className="overflow-y-auto w-[400px]">
+            {selectedScale && (
+              <div className="space-y-4">
+                {selectedScale.type === "numerical" ? (
+                  <NumericalScaleEditor
+                    scale={selectedScale}
+                    onUpdate={handleScaleUpdate}
+                  />
+                ) : (
+                  <CategoricalScaleEditor
+                    scale={selectedScale}
+                    onUpdate={handleScaleUpdate}
+                  />
+                )}
+                {selectedScale.type === "numerical" ? (
+                  <NumericalScalePreview palette={selectedScale.palette} />
+                ) : (
+                  <CategoricalScalePreview colors={selectedScale.palette} />
+                )}
               </div>
-            ))}
-          </TabsContent>
-        </Tabs>
+            )}
+          </div>
+        </div>
 
         <div className="flex justify-end gap-2">
           <Button

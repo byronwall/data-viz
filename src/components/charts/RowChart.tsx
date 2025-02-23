@@ -6,6 +6,7 @@ import { scaleBand, scaleLinear } from "d3-scale";
 import { useMemo } from "react";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
+import { useColorScales } from "@/hooks/useColorScales";
 
 type RowChartProps = BaseChartProps & {
   settings: RowChartSettings;
@@ -13,6 +14,7 @@ type RowChartProps = BaseChartProps & {
 
 export function RowChart({ settings, width, height }: RowChartProps) {
   const data = useGetLiveData(settings);
+  const { getColorForValue } = useColorScales();
 
   const updateChart = useDataLayer((s) => s.updateChart);
 
@@ -110,6 +112,12 @@ export function RowChart({ settings, width, height }: RowChartProps) {
           {/* Bars */}
           {displayCounts.map(({ label, count }) => {
             const isFiltered = rowChartPureFilter(filters, label);
+            const color =
+              filters.length > 0 && !isFiltered
+                ? "rgb(156 163 175)" // gray-400 for filtered out points
+                : settings.colorScaleId
+                ? getColorForValue(settings.colorScaleId, String(label))
+                : "rgb(253, 230, 138)"; // amber-200 default color
 
             return (
               <rect
@@ -121,12 +129,9 @@ export function RowChart({ settings, width, height }: RowChartProps) {
                 className={`${
                   label === "Others"
                     ? "fill-muted/80 hover:fill-muted"
-                    : filters.length > 0
-                    ? isFiltered
-                      ? "fill-amber-800"
-                      : "fill-amber-200"
-                    : "fill-blue-800"
-                } cursor-pointer`}
+                    : "cursor-pointer"
+                }`}
+                style={{ fill: color }}
                 onClick={() => handleBarClick(label)}
               />
             );

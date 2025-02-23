@@ -5,6 +5,7 @@ import { BaseChart } from "./BaseChart";
 import { ScaleLinear, scaleLinear } from "d3-scale";
 import { scatterChartPureFilter } from "@/hooks/scatterChartPureFilter";
 import { useGetLiveData } from "./useGetLiveData";
+import { useColorScales } from "@/hooks/useColorScales";
 
 interface ScatterPlotProps extends BaseChartProps {
   settings: ScatterChartSettings;
@@ -13,6 +14,7 @@ interface ScatterPlotProps extends BaseChartProps {
 export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const updateChart = useDataLayer((s) => s.updateChart);
+  const { getColorForValue } = useColorScales();
 
   const xData = useGetLiveData(settings, "xField");
   const yData = useGetLiveData(settings, "yField");
@@ -84,11 +86,11 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
       );
 
       ctx.fillStyle =
-        settings.xFilterRange || settings.yFilterRange
-          ? isFiltered
-            ? "rgb(146, 64, 14)" // amber-800
-            : "rgb(253, 230, 138)" // amber-200
-          : "rgb(99, 102, 241)"; // indigo-500
+        (settings.xFilterRange || settings.yFilterRange) && !isFiltered
+          ? "rgb(156 163 175)" // gray-400 for filtered out points
+          : settings.colorScaleId
+          ? getColorForValue(settings.colorScaleId, xValues[i])
+          : "rgb(253, 230, 138)"; // amber-200 default color
 
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);
@@ -101,10 +103,12 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
     settings.yField,
     settings.xFilterRange,
     settings.yFilterRange,
+    settings.colorScaleId,
     width,
     height,
     xScale,
     yScale,
+    getColorForValue,
   ]);
 
   const handleBrushChange = useCallback(

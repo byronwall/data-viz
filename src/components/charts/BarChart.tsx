@@ -8,6 +8,7 @@ import isEqual from "react-fast-compare";
 import { useCustomCompareMemo } from "use-custom-compare";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
+import { useColorScales } from "@/hooks/useColorScales";
 
 type NumericBin = {
   label: string;
@@ -31,63 +32,50 @@ type BarChartProps = BaseChartProps & {
 
 export function BarChart({ settings, width, height }: BarChartProps) {
   const allColData = useGetLiveData(settings);
-
   const updateChart = useDataLayer((s) => s.updateChart);
+  const { getColorForValue } = useColorScales();
 
   // Chart dimensions
-  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
-  const chartData = useMemo((): ChartDataItem[] => {
-    const values = allColData.map((item) => Number(item));
-
-    // Check if the data is numeric
-    const isNumeric = values.every((v) => !isNaN(v));
+  const chartData = useMemo(() => {
+    // Check if all values are numeric
+    const isNumeric = allColData.every((d) => !isNaN(Number(d)));
 
     if (isNumeric) {
-      // Use binning for numeric data
-      const binCount = settings.binCount || 30;
-      const min = Math.min(...values);
-      const max = Math.max(...values);
+      const numericData = allColData.map(Number);
+
+      // Create bins
+      const binCount = settings.binCount || 10;
+      const min = Math.min(...numericData);
+      const max = Math.max(...numericData);
       const binWidth = (max - min) / binCount;
 
-      // Initialize bins
-      const bins: NumericBin[] = Array.from({ length: binCount }, (_, i) => ({
-        label: `${(min + i * binWidth).toFixed(1)}-${(
-          min +
-          (i + 1) * binWidth
-        ).toFixed(1)}`,
-        start: min + i * binWidth,
-        end: min + (i + 1) * binWidth,
-        value: 0,
-        isNumeric: true,
-      }));
-
-      // Fill bins
-      values.forEach((value) => {
-        const binIndex = Math.min(
-          Math.floor((value - min) / binWidth),
-          binCount - 1
-        );
-        bins[binIndex].value++;
+      const bins = Array.from({ length: binCount }, (_, i) => {
+        const start = min + i * binWidth;
+        const end = start + binWidth;
+        const value = numericData.filter((d) => d >= start && d < end).length;
+        return { start, end, value, isNumeric: true } as NumericBin;
       });
 
       return bins;
     } else {
-      // Use original categorical logic for non-numeric data
-      const counts = allColData.reduce((acc, item) => {
-        const value = String(item);
-        acc[value] = (acc[value] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      // Handle categorical data
+      const countMap = new Map<string, number>();
+      allColData.forEach((value) => {
+        const key = String(value);
+        countMap.set(key, (countMap.get(key) || 0) + 1);
+      });
 
-      return Object.entries(counts).map(
-        ([label, count]): CategoryBin => ({
-          label,
-          value: count,
-          isNumeric: false,
-        })
+      return Array.from(countMap.entries()).map(
+        ([label, value]) =>
+          ({
+            label,
+            value,
+            isNumeric: false,
+          } as CategoryBin)
       );
     }
   }, [allColData, settings.binCount]);
@@ -195,83 +183,62 @@ export function BarChart({ settings, width, height }: BarChartProps) {
         onBrushChange={handleBrushChange}
         settings={settings}
       >
-        <g className="select-none">
-          {/* Grid lines */}
-          {yScale.ticks(5).map((tick) => (
-            <line
-              key={tick}
-              x1={0}
-              x2={innerWidth}
-              y1={yScale(tick)}
-              y2={yScale(tick)}
-              className="stroke-gray-200"
-              strokeDasharray="5,5"
-            />
-          ))}
-
-          {/* Bars */}
+        <g>
           {chartData.map((d, i) => {
-            let barX = 0;
-            let barWidth = 0;
+            const isNumeric = d.isNumeric;
+            let x: number;
+            let barWidth: number;
 
-            if (d.isNumeric) {
+            if (isNumeric) {
+              const numericBin = d as NumericBin;
               const linearScale = xScale as ScaleLinear<number, number>;
-              barX = linearScale(d.start);
-              barWidth = linearScale(d.end) - linearScale(d.start);
+              x = linearScale(numericBin.start);
+              barWidth =
+                linearScale(numericBin.end) - linearScale(numericBin.start);
             } else {
+              const categoryBin = d as CategoryBin;
               const bandScale = xScale as ScaleBand<string>;
-              barX = bandScale(d.label) ?? 0;
+              x = bandScale(categoryBin.label) || 0;
               barWidth = bandScale.bandwidth();
             }
 
-            const isFiltered = barChartPureFilter(
-              activeFilters,
-              d.isNumeric ? d.start : d.label
-            );
+            const isFiltered = isNumeric
+              ? activeFilters &&
+                "min" in activeFilters &&
+                "max" in activeFilters &&
+                typeof activeFilters.min === "number" &&
+                typeof activeFilters.max === "number" &&
+                (d as NumericBin).start >= activeFilters.min &&
+                (d as NumericBin).end <= activeFilters.max
+              : settings.filterValues?.values.includes(
+                  (d as CategoryBin).label
+                );
+
+            const color =
+              activeFilters && !isFiltered
+                ? "rgb(156 163 175)" // gray-400 for filtered out points
+                : settings.colorScaleId
+                ? getColorForValue(
+                    settings.colorScaleId,
+                    isNumeric
+                      ? (d as NumericBin).start
+                      : (d as CategoryBin).label
+                  )
+                : "rgb(253, 230, 138)"; // amber-200 default color
 
             return (
               <rect
                 key={i}
-                x={barX}
+                x={x}
                 y={yScale(d.value)}
                 width={barWidth}
                 height={innerHeight - yScale(d.value)}
-                className={`${
-                  activeFilters
-                    ? isFiltered
-                      ? "fill-amber-800"
-                      : "fill-amber-200"
-                    : "fill-primary/80 hover:fill-primary"
-                } transition-colors ${isBandScale ? "cursor-pointer" : ""}`}
-                onClick={() => isBandScale && handleBarClick(d.label)}
+                className={isBandScale ? "cursor-pointer" : ""}
+                style={{ fill: color }}
+                onClick={() =>
+                  isBandScale && handleBarClick((d as CategoryBin).label)
+                }
               />
-            );
-          })}
-
-          {/* Value labels */}
-          {chartData.map((d) => {
-            let labelX = 0;
-
-            if (d.isNumeric) {
-              const linearScale = xScale as ScaleLinear<number, number>;
-              labelX =
-                linearScale(d.start) +
-                (linearScale(d.end) - linearScale(d.start)) / 2;
-            } else {
-              const bandScale = xScale as ScaleBand<string>;
-              labelX = (bandScale(d.label) ?? 0) + bandScale.bandwidth() / 2;
-            }
-
-            return (
-              <text
-                key={d.label}
-                x={labelX}
-                y={yScale(d.value) - 5}
-                className="text-xs fill-foreground "
-                textAnchor="middle"
-              >
-                {d.value}
-              </text>
             );
           })}
         </g>

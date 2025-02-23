@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Layout } from "react-grid-layout";
 import { ChartGridLayout } from "./ChartGridLayout";
 import { PlotChartPanel } from "./PlotChartPanel";
+import { useColorScales } from "@/hooks/useColorScales";
 // Add these constants at the top of the file, after imports
 const GRID_ROW_HEIGHT = 100; // pixels per grid row
 const GRID_COLS = 12; // number of grid columns
@@ -39,6 +40,7 @@ export function PlotManager() {
   const addChart = useDataLayer((state) => state.addChart);
   const removeChart = useDataLayer((state) => state.removeChart);
   const clearAllFilters = useDataLayer((state) => state.clearAllFilters);
+  const { getOrCreateScaleForField } = useColorScales();
 
   // Get column names
   const columns = getColumnNames();
@@ -71,6 +73,7 @@ export function PlotManager() {
       w: 6,
       h: 4,
     };
+    newChart.colorScaleId = getOrCreateScaleForField(field);
 
     addChart(newChart);
   };
@@ -86,6 +89,9 @@ export function PlotManager() {
         w: 6,
         h: 4,
       },
+      colorScaleId: getOrCreateScaleForField(field),
+      filterValues: { values: [] },
+      filterRange: null,
     };
     addChart(newChart);
   };
@@ -103,6 +109,9 @@ export function PlotManager() {
         w: 6,
         h: 4,
       },
+      colorScaleId: getOrCreateScaleForField(xField),
+      xFilterRange: null,
+      yFilterRange: null,
     };
     addChart(newChart);
   };

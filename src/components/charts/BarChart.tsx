@@ -1,5 +1,5 @@
 import { barChartPureFilter } from "@/hooks/barChartPureFilter";
-import { getFilterObj } from "@/hooks/getFilterValues";
+import { getFilterObj, isEmptyFilter } from "@/hooks/getFilterValues";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { BarChartSettings, BaseChartProps } from "@/types/ChartTypes";
 import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from "d3-scale";
@@ -122,6 +122,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
   const isBandScale = "bandwidth" in xScale;
 
   const activeFilters = getFilterObj(settings);
+  const isFilterEmpty = isEmptyFilter(activeFilters);
 
   const handleBarClick = useCallback(
     (label: string) => {
@@ -215,7 +216,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
                 );
 
             const color =
-              activeFilters && !isFiltered
+              activeFilters && !isFilterEmpty && !isFiltered
                 ? "rgb(156 163 175)" // gray-400 for filtered out points
                 : settings.colorScaleId
                 ? getColorForValue(

@@ -1,4 +1,4 @@
-import { ChartSettings } from "@/types/ChartTypes";
+import { ChartSettings, Filter } from "@/types/ChartTypes";
 
 export function getFilterObj(chart: ChartSettings) {
   switch (chart.type) {
@@ -27,4 +27,24 @@ export function getEmptyFilterObj(chart: ChartSettings) {
     case "scatter":
       return { xFilterRange: null, yFilterRange: null };
   }
+}
+
+export function isEmptyFilter(filter: Filter): boolean {
+  if (!filter) {
+    return true;
+  }
+
+  if ("values" in filter) {
+    return filter.values.length === 0;
+  }
+
+  if ("min" in filter) {
+    return filter.min === null && filter.max === null;
+  }
+
+  if ("x" in filter) {
+    return isEmptyFilter(filter.x) && isEmptyFilter(filter.y);
+  }
+
+  return false;
 }

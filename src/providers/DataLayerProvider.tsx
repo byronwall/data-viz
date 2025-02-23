@@ -8,6 +8,7 @@ import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
 import { saveProject } from "@/utils/localStorage";
 import { getEmptyFilterObj } from "@/hooks/getFilterValues";
+import { ColorScaleType } from "@/types/ColorScaleTypes";
 
 type DatumObject = { [key: string]: datum };
 export type { DatumObject };
@@ -33,6 +34,12 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   addChart: (chart: Omit<ChartSettings, "id">) => void;
   removeChart: (chart: ChartSettings) => void;
   updateChart: (id: string, settings: Partial<ChartSettings>) => void;
+
+  // Color scale state
+  colorScales: ColorScaleType[];
+  addColorScale: (scale: Omit<ColorScaleType, "id">) => void;
+  removeColorScale: (id: string) => void;
+  updateColorScale: (id: string, updates: Partial<ColorScaleType>) => void;
 
   // Filter state (placeholder)
   clearAllFilters: () => void;
@@ -73,6 +80,7 @@ function getDataAndCrossfilterWrapper<T extends DatumObject>(
       (d) => d.__ID
     ),
     charts: [],
+    colorScales: [],
   };
 }
 
@@ -144,9 +152,31 @@ const createDataLayerStore = <T extends DatumObject>(
         ),
         liveItems: crossfilterWrapper.getAllData(),
       }));
+    },
 
-      // ideally would determine what changed and only update the liveItems for the chart that changed
-      // for now, just update all liveItems
+    // Color scale management
+    colorScales: [] as ColorScaleType[],
+    addColorScale: (scale: Omit<ColorScaleType, "id">) => {
+      const newScale = {
+        ...scale,
+        id: crypto.randomUUID(),
+      };
+
+      set((state) => ({
+        colorScales: [...state.colorScales, newScale as ColorScaleType],
+      }));
+    },
+    removeColorScale: (id: string) => {
+      set((state) => ({
+        colorScales: state.colorScales.filter((scale) => scale.id !== id),
+      }));
+    },
+    updateColorScale: (id: string, updates: Partial<ColorScaleType>) => {
+      set((state) => ({
+        colorScales: state.colorScales.map((scale) =>
+          scale.id === id ? ({ ...scale, ...updates } as ColorScaleType) : scale
+        ),
+      }));
     },
 
     clearAllFilters: () => {

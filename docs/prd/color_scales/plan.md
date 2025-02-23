@@ -21,7 +21,7 @@ interface NumericalColorScale extends ColorScale {
 interface CategoricalColorScale extends ColorScale {
   type: "categorical";
   palette: string[]; // array of colors
-  mapping: Record<string, string>; // value -> color mapping
+  mapping: Map<string, string>; // value -> color mapping
 }
 ```
 

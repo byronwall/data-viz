@@ -90,7 +90,7 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
           ? "rgb(156 163 175)" // gray-400 for filtered out points
           : settings.colorScaleId
           ? getColorForValue(settings.colorScaleId, xValues[i])
-          : "rgb(253, 230, 138)"; // amber-200 default color
+          : "hsl(217.2 91.2% 59.8%)";
 
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);

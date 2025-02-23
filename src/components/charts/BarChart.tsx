@@ -225,7 +225,7 @@ export function BarChart({ settings, width, height }: BarChartProps) {
                       ? (d as NumericBin).start
                       : (d as CategoryBin).label
                   )
-                : "rgb(253, 230, 138)"; // amber-200 default color
+                : "hsl(217.2 91.2% 59.8%)";
 
             return (
               <rect

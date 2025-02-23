@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { ColorScaleManager } from "./ColorScaleManager";
 
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { ChartLayout } from "@/types/ChartTypes";
@@ -169,17 +170,20 @@ export function PlotManager() {
       </div>
 
       <div className="flex justify-between items-center mb-2">
-        {charts.length > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearAllFilters}
-            className="flex items-center gap-2"
-          >
-            <FilterX className="h-4 w-4" />
-            Clear All Filters
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {charts.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAllFilters}
+              className="flex items-center gap-2"
+            >
+              <FilterX className="h-4 w-4" />
+              Clear All Filters
+            </Button>
+          )}
+          <ColorScaleManager />
+        </div>
       </div>
 
       <ChartGridLayout

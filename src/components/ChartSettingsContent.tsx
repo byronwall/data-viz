@@ -22,7 +22,7 @@ export function ChartSettingsContent({
   const [localSettings, setLocalSettings] = useState<ChartSettings>(settings);
 
   const updateChart = useDataLayer((s) => s.updateChart);
-  const { getOrCreateScaleForField, getAvailableScales } = useColorScales();
+  const { getOrCreateScaleForField, colorScales } = useColorScales();
 
   // Update local settings when prop changes
   useEffect(() => {
@@ -40,7 +40,6 @@ export function ChartSettingsContent({
 
   const hasDataField =
     localSettings.type === "row" || localSettings.type === "bar";
-  const colorScales = getAvailableScales();
 
   return (
     <div className="space-y-4">

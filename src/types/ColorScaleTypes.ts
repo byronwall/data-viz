@@ -29,7 +29,9 @@ export interface UseColorScalesReturn {
   // Color Getters
   getColorForValue: (scaleId: string, value: string | number) => string;
   getScaleById: (id: string) => ColorScaleType | undefined;
-  getAvailableScales: () => ColorScaleType[];
+  // getAvailableScales: () => ColorScaleType[];
+
+  colorScales: ColorScaleType[];
 
   // Utilities
   createDefaultNumericalScale: (name: string, min: number, max: number) => void;

@@ -101,10 +101,6 @@ export function useColorScales(): UseColorScalesReturn {
     return colorScales.find((s) => s.id === id);
   };
 
-  const getAvailableScales = (): ColorScaleType[] => {
-    return colorScales;
-  };
-
   const createDefaultNumericalScale = (
     name: string,
     min: number,
@@ -183,7 +179,7 @@ export function useColorScales(): UseColorScalesReturn {
     updateColorScale,
     getColorForValue,
     getScaleById,
-    getAvailableScales,
+    colorScales,
     createDefaultNumericalScale,
     createDefaultCategoricalScale,
     getD3Scale,

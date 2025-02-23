@@ -1,6 +1,6 @@
 # Detailed Plan
 
-## 1. Data Layer State Additions
+## 1. Core Data Layer State
 
 ### Color Scale Types
 
@@ -21,132 +21,138 @@ interface NumericalColorScale extends ColorScale {
 interface CategoricalColorScale extends ColorScale {
   type: "categorical";
   palette: string[]; // array of colors
-  mapping: Map<string, string>; // value -> color mapping
+  mapping: Record<string, string>; // value -> color mapping
 }
 ```
 
-### State Updates
+### Minimal State Updates
 
 - Add `colorScales: (NumericalColorScale | CategoricalColorScale)[]` to DataLayerState
 - Add `activeColorScale?: string` to ChartSettings
 
-## 2. Implementation Steps
+## 2. Custom Hook Implementation
 
-### 2.1 Data Layer Provider Updates
+### 2.1 useColorScales Hook
 
-1. Add color scale management functions:
+```typescript
+interface UseColorScalesReturn {
+  // Scale Management
+  addColorScale: (scale: Omit<ColorScale, "id">) => void;
+  removeColorScale: (id: string) => void;
+  updateColorScale: (id: string, updates: Partial<ColorScale>) => void;
 
-   - `addColorScale(scale: Omit<ColorScale, "id">)`
-   - `removeColorScale(id: string)`
-   - `updateColorScale(id: string, updates: Partial<ColorScale>)`
-   - `getColorForValue(scaleId: string, value: datum): string`
+  // Color Getters
+  getColorForValue: (scaleId: string, value: datum) => string;
+  getScaleById: (id: string) => ColorScale | undefined;
+  getAvailableScales: () => ColorScale[];
 
-2. Add default color scales:
-   - Default categorical palette
-   - Default numerical scales (viridis, magma, etc.)
+  // Utilities
+  createDefaultNumericalScale: (name: string, min: number, max: number) => void;
+  createDefaultCategoricalScale: (name: string, values: string[]) => void;
 
-### 2.2 Chart Component Updates
+  // D3 Integration
+  getD3Scale: (scaleId: string) => d3.ScaleSequential | d3.ScaleOrdinal;
+}
 
-1. Base Chart Component:
+function useColorScales(): UseColorScalesReturn {
+  const colorScales = useDataLayer((state) => state.colorScales);
+  const updateDataLayer = useDataLayer((state) => state.updateColorScales);
 
-   - Add color scale selector to chart settings
-   - Pass color scale info to child charts
+  // Implementation details here...
+}
+```
 
-2. Individual Chart Updates:
+### 2.2 Hook Features
 
-   - BarChart:
+1. Scale Management:
 
-     - Support numerical coloring based on bar value
-     - Support categorical coloring based on bar label
-     - Update bar fill colors using `getColorForValue`
+   - Create/update/delete color scales
+   - Handle scale validation
+   - Manage default scales
 
-   - ScatterPlot:
+2. Color Calculations:
 
-     - Add color field selector to settings
-     - Color points based on selected field
-     - Support both numerical and categorical coloring
+   - Cache color mappings
+   - Handle missing values
+   - Provide d3 scale objects
 
-   - RowChart:
-     - Update bar colors based on categorical color scale
-     - Support custom color mappings
+3. Performance Optimizations:
+   - Memoize color calculations
+   - Batch updates to DataLayer
+   - Cache d3 scale objects
 
-### 2.3 UI Components
+## 3. Component Integration
 
-1. Color Scale Manager:
+### 3.1 Chart Components
 
-   ```typescript
-   interface ColorScaleManagerProps {
-     onScaleSelect: (scaleId: string) => void;
-     activeScaleId?: string;
-   }
-   ```
+```typescript
+function BarChart({ settings }: BarChartProps) {
+  const { getColorForValue } = useColorScales();
 
-   - List all available color scales
-   - Show preview of each scale
-   - Allow creation of new scales
-   - Allow editing existing scales
+  // Use getColorForValue in render logic
+}
+```
 
-2. Color Scale Editor:
+### 3.2 UI Components
 
-   ```typescript
-   interface ColorScaleEditorProps {
-     scale: ColorScale;
-     onUpdate: (updates: Partial<ColorScale>) => void;
-   }
-   ```
+1. ColorScaleSelector:
 
-   - Edit scale name
-   - Choose palette type
-   - Set min/max for numerical
-   - Edit color mappings for categorical
-   - Preview current scale
+```typescript
+function ColorScaleSelector({ onSelect }: ColorScaleSelectorProps) {
+  const { getAvailableScales } = useColorScales();
+  // Implementation using hook
+}
+```
 
-3. Chart Settings Integration:
-   - Add color scale selector to chart settings panel
-   - Show appropriate options based on data type
-   - Preview colors in settings panel
+2. ColorScaleEditor:
 
-## 3. Implementation Order
+```typescript
+function ColorScaleEditor({ scaleId }: ColorScaleEditorProps) {
+  const { getScaleById, updateColorScale } = useColorScales();
+  // Implementation using hook
+}
+```
 
-1. Core Infrastructure:
+## 4. Implementation Order
 
-   - Add color scale types and state
-   - Implement basic color scale management
-   - Add default scales
+1. Core Data Layer:
 
-2. Basic Integration:
+   - Add minimal state for color scales
+   - Add basic update functions
 
-   - Update chart settings to include color scale
-   - Basic color application in charts
-   - Simple color scale selector
+2. Hook Development:
 
-3. Advanced Features:
+   - Implement useColorScales hook
+   - Add core functionality
+   - Add performance optimizations
 
-   - Custom color scale creation
-   - Color scale editor
-   - Advanced chart-specific coloring options
+3. Component Integration:
 
-4. Polish:
-   - Color previews
-   - Scale management UI
-   - Performance optimizations
+   - Update chart components to use hook
+   - Create UI components using hook
+   - Add color scale management UI
 
-## 4. Technical Considerations
+4. Polish and Testing:
+   - Add error handling
+   - Implement caching
+   - Add hook-specific tests
 
-### 4.1 Performance
+## 5. Technical Considerations
 
-- Cache color calculations
-- Optimize color scale lookups
-- Batch color updates
+### 5.1 Hook Performance
 
-### 4.2 State Management
+- Memoize expensive calculations
+- Cache d3 scale objects
+- Batch updates to DataLayer
 
-- Store color scales in project state
-- Save/load color scales with views
-- Handle color scale references in chart settings
+### 5.2 State Management
 
-### 4.3 Validation
+- Keep minimal state in DataLayer
+- Handle complex logic in hook
+- Use hook for all color operations
 
-- Validate color values
-- Check for missing mappings
-- Handle invalid/missing colors
+### 5.3 Error Handling
+
+- Validate color values in hook
+- Provide fallback colors
+- Handle edge cases

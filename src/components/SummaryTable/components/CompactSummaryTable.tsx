@@ -56,17 +56,19 @@ export function CompactSummaryTable({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-24"></TableHead>
             <TableHead>
-              <Button
-                variant="ghost"
-                onClick={() => onSort("name")}
-                className="h-8 text-left font-medium"
-              >
-                Column
-                <ArrowUpDown className="ml-2 h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => onSort("name")}
+                  className="h-8 text-left font-medium"
+                >
+                  Column
+                  <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
             </TableHead>
-            <TableHead className="w-8">Type</TableHead>
             <TableHead className="w-16">
               <TooltipProvider>
                 <Tooltip>
@@ -80,15 +82,28 @@ export function CompactSummaryTable({
               </TooltipProvider>
             </TableHead>
             <TableHead>Stats</TableHead>
-            <TableHead className="w-24">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.map((summary) => (
             <TableRow key={summary.name}>
-              <TableCell className="font-medium">{summary.name}</TableCell>
               <TableCell>
-                <DataTypeIcon type={summary.dataType} />
+                <div className="flex gap-1">
+                  <ChartActions
+                    columnName={summary.name}
+                    dataType={
+                      summary.dataType === "unknown"
+                        ? "categorical"
+                        : summary.dataType
+                    }
+                  />
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <DataTypeIcon type={summary.dataType} />
+                  <span className="font-medium">{summary.name}</span>
+                </div>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-1">
@@ -123,16 +138,6 @@ export function CompactSummaryTable({
                     />
                   )}
                 </div>
-              </TableCell>
-              <TableCell>
-                <ChartActions
-                  columnName={summary.name}
-                  dataType={
-                    summary.dataType === "unknown"
-                      ? "categorical"
-                      : summary.dataType
-                  }
-                />
               </TableCell>
             </TableRow>
           ))}

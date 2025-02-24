@@ -1,5 +1,13 @@
 # Data Viz
 
+Tool for exploratory and interactive data analysis.
+
+![](docs/main-image.png)
+
+## Features
+
+Will be updated when done...
+
 ## Major work remaining
 
 ### Core data viz

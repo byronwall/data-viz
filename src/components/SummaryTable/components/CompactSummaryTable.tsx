@@ -102,7 +102,7 @@ export function CompactSummaryTable({
               <TableCell>
                 <div className="flex items-center gap-2">
                   <DataTypeIcon type={summary.dataType} />
-                  <span className="font-medium">{summary.name}</span>
+                  <span className="font-semibold">{summary.name}</span>
                 </div>
               </TableCell>
               <TableCell>

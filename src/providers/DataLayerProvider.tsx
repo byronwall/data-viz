@@ -101,9 +101,21 @@ const createDataLayerStore = <T extends DatumObject>(
     fileName: undefined,
     crossfilterWrapper,
     setData: (rawData, fileName) => {
+      // Get fresh crossfilter and data with IDs
+      const { data: newData, crossfilterWrapper: newCrossfilter } =
+        getDataAndCrossfilterWrapper(rawData);
+
+      // Reset everything to initial state
       set({
-        ...getDataAndCrossfilterWrapper(rawData),
+        data: newData,
         fileName,
+        crossfilterWrapper: newCrossfilter,
+        charts: [],
+        colorScales: [],
+        liveItems: {},
+        columnCache: {},
+        nonce: 0,
+        currentProject: null,
       });
     },
     liveItems: {},

@@ -11,3 +11,7 @@
 - DO NOT change comments when doing refactors or other work
 - DO NOT alter functionality when refactoring. Again, DO NOT modify existing functionality unless I've explicitly asked you to.
 - DO NOT change `className` or other styling unless EXPLICITLY asked to do so.
+
+## Comp preferences
+
+- When creating toasts, use `sonner` via `import { toast } from "sonner"` and `toast("Event has been created.")`. The relevant providers are in place.

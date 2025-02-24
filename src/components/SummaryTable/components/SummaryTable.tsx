@@ -7,18 +7,26 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { detectColumnType } from "../utils/dataTypeDetection";
 import { calculateColumnStatistics } from "../utils/statisticsCalculator";
-import { sampleData } from "../utils/samplingStrategy";
+import {
+  sampleData,
+  estimateStatisticalSignificance,
+} from "../utils/samplingStrategy";
 import { ChartActions } from "./ChartActions";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
+import { Progress } from "@/components/ui/progress";
+
+import { DataType } from "../utils/dataTypeDetection";
+import { toast } from "sonner";
 
 interface ColumnSummary {
   name: string;
-  dataType: "numeric" | "categorical" | "datetime" | "boolean";
+  dataType: DataType | "unknown";
   totalCount: number;
   uniqueCount: number;
   nullCount: number;
@@ -53,10 +61,35 @@ export function SummaryTable() {
   });
   const [useSampling, setUseSampling] = useState(true);
   const [sampleSize, setSampleSize] = useState(1000);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+
+  // Progressive loading state
+  const [processedColumns, setProcessedColumns] = useState<Set<string>>(
+    new Set()
+  );
+  const [processingQueue, setProcessingQueue] = useState<string[]>([]);
 
   const columnSummaries = useMemo(() => {
     const columnNames = getColumnNames();
+
+    // Initialize processing queue if empty
+    if (processingQueue.length === 0 && processedColumns.size === 0) {
+      setProcessingQueue(columnNames);
+    }
+
     return columnNames.map((columnName) => {
+      // Return placeholder data for unprocessed columns
+      if (!processedColumns.has(columnName)) {
+        return {
+          name: columnName,
+          dataType: "unknown" as const,
+          totalCount: 0,
+          uniqueCount: 0,
+          nullCount: 0,
+        };
+      }
+
       const columnData = getColumnData(columnName);
       const sampledData = useSampling
         ? sampleData(columnData, { method: "random", sampleSize })
@@ -69,7 +102,73 @@ export function SummaryTable() {
         ...statistics,
       } as ColumnSummary;
     });
-  }, [getColumnData, getColumnNames, useSampling, sampleSize]);
+  }, [
+    getColumnData,
+    getColumnNames,
+    useSampling,
+    sampleSize,
+    processedColumns,
+  ]);
+
+  // Process columns progressively
+  const processNextColumn = useCallback(async () => {
+    if (processingQueue.length === 0 || isProcessing) {
+      return;
+    }
+
+    setIsProcessing(true);
+    const columnName = processingQueue[0];
+
+    try {
+      // Simulate processing time for demonstration
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      setProcessedColumns((prev) => new Set([...prev, columnName]));
+      setProcessingQueue((prev) => prev.slice(1));
+
+      const progress =
+        ((processedColumns.size + 1) /
+          (processedColumns.size + processingQueue.length)) *
+        100;
+      setProcessingProgress(progress);
+
+      if (processingQueue.length === 1) {
+        toast.success("Processing Complete");
+      }
+    } catch (error) {
+      toast.error(`Error processing column ${columnName}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [processingQueue, isProcessing, processedColumns, toast]);
+
+  // Process columns when queue changes
+  useMemo(() => {
+    if (processingQueue.length > 0) {
+      processNextColumn();
+    }
+  }, [processingQueue, processNextColumn]);
+
+  const handleSampleSizeChange = useCallback(
+    (value: number[]) => {
+      setSampleSize(value[0]);
+      // Reset processing state to reanalyze with new sample size
+      setProcessedColumns(new Set());
+      setProcessingQueue(getColumnNames());
+      setProcessingProgress(0);
+    },
+    [getColumnNames]
+  );
+
+  const significance = useMemo(() => {
+    if (!useSampling) {
+      return null;
+    }
+    const totalSize = Object.keys(
+      getColumnData(getColumnNames()[0] || "")
+    ).length;
+    return estimateStatisticalSignificance(sampleSize, totalSize);
+  }, [useSampling, sampleSize, getColumnData, getColumnNames]);
 
   const sortedSummaries = useMemo(() => {
     if (!sortConfig.column) {
@@ -118,23 +217,62 @@ export function SummaryTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <Badge variant={useSampling ? "default" : "outline"}>
-          {useSampling ? "Sampling Enabled" : "Full Dataset"}
-        </Badge>
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <Badge variant={useSampling ? "default" : "outline"}>
+            {useSampling ? "Sampling Enabled" : "Full Dataset"}
+          </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setUseSampling(!useSampling);
+              setProcessedColumns(new Set());
+              setProcessingQueue(getColumnNames());
+              setProcessingProgress(0);
+            }}
+          >
+            Toggle Sampling
+          </Button>
+        </div>
+
         {useSampling && (
-          <span className="text-sm text-muted-foreground">
-            Sample Size: {sampleSize}
-          </span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                Sample Size: {sampleSize}
+              </span>
+              {significance && (
+                <span className="text-sm text-muted-foreground">
+                  Margin of Error:{" "}
+                  {(significance.marginOfError * 100).toFixed(2)}%
+                </span>
+              )}
+            </div>
+            <Slider
+              value={[sampleSize]}
+              min={100}
+              max={10000}
+              step={100}
+              onValueChange={handleSampleSizeChange}
+            />
+          </div>
         )}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setUseSampling(!useSampling)}
-        >
-          Toggle Sampling
-        </Button>
+
+        {(isProcessing || processingQueue.length > 0) && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm text-muted-foreground">
+                Processing columns... {processedColumns.size} of{" "}
+                {processedColumns.size + processingQueue.length}
+              </span>
+            </div>
+            <Progress value={processingProgress} />
+          </div>
+        )}
       </div>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>

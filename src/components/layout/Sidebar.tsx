@@ -1,5 +1,4 @@
-import { cn } from "@/lib/utils";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -17,13 +16,9 @@ export function Sidebar({ isOpen, onToggle, children }: SidebarProps) {
       {/* Toggle Button */}
       <button
         onClick={onToggle}
-        className="absolute -right-10 top-4 rounded-md border bg-background p-2 hover:bg-accent"
+        className="absolute right-10 top-4 rounded-md border bg-background p-2 hover:bg-accent"
       >
-        {isOpen ? (
-          <PanelLeftClose className="h-4 w-4" />
-        ) : (
-          <PanelLeftOpen className="h-4 w-4" />
-        )}
+        <PanelLeftClose className="h-4 w-4" />
       </button>
     </div>
   );

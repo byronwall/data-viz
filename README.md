@@ -33,3 +33,4 @@
 - Charts are all missing consistent gridlines
 - Bools should be shown as `true`/`false` not `1`/`0`
 - Clicking on a numerical bar chart should filter by the width of the bar
+- ChartActions - tooltip is annoying - slow down or remove (add a legend?)

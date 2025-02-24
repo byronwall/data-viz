@@ -23,6 +23,7 @@ import { ChartActions } from "./ChartActions";
 import { toast } from "sonner";
 import { DataType } from "../utils/dataTypeDetection";
 import { Slider } from "@/components/ui/slider";
+import { CompactSummaryTable } from "./CompactSummaryTable";
 
 interface ColumnSummary {
   name: string;
@@ -133,15 +134,13 @@ export function SummaryTable() {
   >({});
 
   // Get total row count
-  const totalRowCount = useMemo(() => {
+  const totalRowCount = useCallback(() => {
     const firstColumn = getColumnNames()[0];
     return firstColumn ? Object.keys(getColumnData(firstColumn)).length : 0;
   }, [getColumnNames, getColumnData]);
 
   // Determine if sampling should be available
-  const samplingAvailable = useMemo(() => {
-    return totalRowCount > sampleSize;
-  }, [totalRowCount, sampleSize]);
+  const samplingAvailable = totalRowCount() > sampleSize;
 
   // Ensure sampling is disabled when not available
   useEffect(() => {
@@ -150,7 +149,7 @@ export function SummaryTable() {
     }
   }, [samplingAvailable, useSampling]);
 
-  const columnSummaries = useMemo(() => {
+  const columnSummaries = useCallback(() => {
     const columnNames = getColumnNames();
 
     // Initialize processing queue if empty
@@ -254,18 +253,16 @@ export function SummaryTable() {
     if (!useSampling) {
       return null;
     }
-    const totalSize = Object.keys(
-      getColumnData(getColumnNames()[0] || "")
-    ).length;
-    return estimateStatisticalSignificance(sampleSize, totalSize);
-  }, [useSampling, sampleSize, getColumnData, getColumnNames]);
+    return estimateStatisticalSignificance(sampleSize, totalRowCount());
+  }, [useSampling, sampleSize, totalRowCount]);
 
   const sortedSummaries = useMemo(() => {
+    const summaries = columnSummaries();
     if (!sortConfig.column) {
-      return columnSummaries;
+      return summaries;
     }
 
-    return [...columnSummaries].sort((a, b) => {
+    return [...summaries].sort((a, b) => {
       const aValue = a[sortConfig.column as keyof ColumnSummary];
       const bValue = b[sortConfig.column as keyof ColumnSummary];
 
@@ -304,6 +301,7 @@ export function SummaryTable() {
           : "asc",
     }));
   };
+
   return (
     <div className="space-y-4">
       <div className="space-y-4">
@@ -316,7 +314,7 @@ export function SummaryTable() {
             )}
             {!samplingAvailable && (
               <Badge variant="secondary">
-                Using Full Dataset ({totalRowCount} rows)
+                Using Full Dataset ({totalRowCount()} rows)
               </Badge>
             )}
             {samplingAvailable && (
@@ -383,98 +381,7 @@ export function SummaryTable() {
         )}
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("name")}
-                  className="h-8 text-left font-medium"
-                >
-                  Column
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("dataType")}
-                  className="h-8 text-left font-medium"
-                >
-                  Type
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("totalCount")}
-                  className="h-8 text-left font-medium"
-                >
-                  Total
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("uniqueCount")}
-                  className="h-8 text-left font-medium"
-                >
-                  Unique
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("nullCount")}
-                  className="h-8 text-left font-medium"
-                >
-                  Null
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>Statistics</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedSummaries.map((summary) => (
-              <TableRow key={summary.name}>
-                <TableCell className="font-medium">{summary.name}</TableCell>
-                <TableCell>{summary.dataType}</TableCell>
-                <TableCell>{summary.totalCount}</TableCell>
-                <TableCell>{summary.uniqueCount}</TableCell>
-                <TableCell>{summary.nullCount}</TableCell>
-                <TableCell>
-                  {summary.statistics && (
-                    <span>
-                      Min: {summary.statistics.min.toFixed(2)}, Max:{" "}
-                      {summary.statistics.max.toFixed(2)}
-                    </span>
-                  )}
-                  {summary.categories && (
-                    <span>Top: {summary.categories.topValues[0]?.value}</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <ChartActions
-                    columnName={summary.name}
-                    dataType={
-                      summary.dataType === "unknown"
-                        ? "categorical"
-                        : summary.dataType
-                    }
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <CompactSummaryTable data={sortedSummaries} onSort={handleSort} />
     </div>
   );
 }

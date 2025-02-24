@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ColorScaleManager } from "./ColorScaleManager";
 import { SummaryTable } from "./SummaryTable/components/SummaryTable";
+import { MainLayout } from "./layout/MainLayout";
 
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { ChartLayout } from "@/types/ChartTypes";
@@ -68,13 +69,8 @@ export function PlotManager() {
     });
   };
 
-  return (
+  const mainContent = (
     <div className="w-full pb-40" ref={containerRef}>
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold mb-2">Data Summary</h2>
-        <SummaryTable />
-      </div>
-
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
           {charts.length > 0 && (
@@ -121,4 +117,6 @@ export function PlotManager() {
       </ChartGridLayout>
     </div>
   );
+
+  return <MainLayout>{mainContent}</MainLayout>;
 }

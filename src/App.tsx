@@ -1,4 +1,3 @@
-import "./App.css";
 import { AppContent } from "./AppContent";
 import { demoData } from "./hooks/useDemoCrossfilter";
 import { DataLayerProvider } from "./providers/DataLayerProvider";

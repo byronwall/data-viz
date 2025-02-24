@@ -10,7 +10,6 @@ type ChartType = "row" | "bar" | "scatter" | "timeseries";
 
 export function useCreateCharts() {
   const addChart = useDataLayer((state) => state.addChart);
-  const getColumnNames = useDataLayer((state) => state.getColumnNames);
   const charts = useDataLayer((state) => state.charts);
 
   const getDefaultLayout = () => ({
@@ -45,16 +44,12 @@ export function useCreateCharts() {
         break;
       }
       case "scatter": {
-        const allColumns = getColumnNames();
-        const otherNumericColumn =
-          allColumns.find((col) => col !== field) ?? field;
-
         const settings: Omit<ScatterChartSettings, "id"> = {
           type: "scatter",
-          title: `Scatter Plot - ${field} vs ${otherNumericColumn}`,
+          title: `Scatter Plot - ${field} vs __ID`,
           field,
-          xField: field,
-          yField: otherNumericColumn,
+          xField: "__ID",
+          yField: field,
           layout: getDefaultLayout(),
           colorScaleId: undefined,
           xFilterRange: null,

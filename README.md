@@ -35,3 +35,4 @@
 - ChartActions - tooltip is annoying - slow down or remove (add a legend?)
 - Debounce the slider on the summary table to prevent too many re-renders
 - Show the total row count somewhere on the summary table
+- Verify that null detection is working correctly

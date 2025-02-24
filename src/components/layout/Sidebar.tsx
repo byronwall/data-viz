@@ -9,7 +9,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onToggle, children }: SidebarProps) {
   return (
     <div className="relative h-full">
-      <div className="h-full w-full overflow-auto border-r bg-background">
+      <div className="h-full w-full overflow-auto border-r bg-background ">
         {children}
       </div>
 

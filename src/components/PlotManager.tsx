@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { ColorScaleManager } from "./ColorScaleManager";
-import { SummaryTable } from "./SummaryTable/components/SummaryTable";
 import { MainLayout } from "./layout/MainLayout";
 
 import { useDataLayer } from "@/providers/DataLayerProvider";
@@ -10,7 +9,6 @@ import { useEffect, useRef, useState } from "react";
 import type { Layout } from "react-grid-layout";
 import { ChartGridLayout } from "./ChartGridLayout";
 import { PlotChartPanel } from "./PlotChartPanel";
-import { useColorScales } from "@/hooks/useColorScales";
 // Add these constants at the top of the file, after imports
 const GRID_ROW_HEIGHT = 100; // pixels per grid row
 const GRID_COLS = 12; // number of grid columns

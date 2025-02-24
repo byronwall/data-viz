@@ -36,4 +36,3 @@
 - Debounce the slider on the summary table to prevent too many re-renders
 - Show the total row count somewhere on the summary table
 - Verify that null detection is working correctly
-- Fire a resize event when the sidebar is resized or hidden

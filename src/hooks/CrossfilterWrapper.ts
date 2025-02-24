@@ -131,6 +131,16 @@ export class CrossfilterWrapper<T> {
     this.charts.delete(chart.id);
   }
 
+  removeAllCharts() {
+    // Clear and dispose all dimensions
+    for (const chart of this.charts.values()) {
+      chart.dimension.filterAll();
+      chart.dimension.dispose();
+    }
+    // Clear the charts map
+    this.charts.clear();
+  }
+
   getFilterFunction(chart: ChartSettings): (d: IdField) => boolean {
     switch (chart.type) {
       case "row":

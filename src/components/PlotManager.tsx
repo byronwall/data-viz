@@ -4,7 +4,7 @@ import { MainLayout } from "./layout/MainLayout";
 
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { ChartLayout } from "@/types/ChartTypes";
-import { FilterX } from "lucide-react";
+import { FilterX, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Layout } from "react-grid-layout";
 import { ChartGridLayout } from "./ChartGridLayout";
@@ -29,6 +29,7 @@ export function PlotManager() {
   const updateChart = useDataLayer((state) => state.updateChart);
   const addChart = useDataLayer((state) => state.addChart);
   const removeChart = useDataLayer((state) => state.removeChart);
+  const removeAllCharts = useDataLayer((state) => state.removeAllCharts);
   const clearAllFilters = useDataLayer((state) => state.clearAllFilters);
 
   // Get column names
@@ -76,15 +77,26 @@ export function PlotManager() {
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
           {charts.length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearAllFilters}
-              className="flex items-center gap-2"
-            >
-              <FilterX className="h-4 w-4" />
-              Clear All Filters
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearAllFilters}
+                className="flex items-center gap-2"
+              >
+                <FilterX className="h-4 w-4" />
+                Clear All Filters
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={removeAllCharts}
+                className="flex items-center gap-2"
+              >
+                <X className="h-4 w-4" />
+                Remove All Charts
+              </Button>
+            </>
           )}
           <ColorScaleManager />
         </div>

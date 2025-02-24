@@ -33,6 +33,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   charts: ChartSettings[];
   addChart: (chart: Omit<ChartSettings, "id">) => void;
   removeChart: (chart: ChartSettings) => void;
+  removeAllCharts: () => void;
   updateChart: (id: string, settings: Partial<ChartSettings>) => void;
 
   // Color scale state
@@ -141,6 +142,11 @@ const createDataLayerStore = <T extends DatumObject>(
       set((state) => ({
         charts: state.charts.filter((ogChart) => ogChart.id !== chart.id),
       }));
+    },
+    removeAllCharts: () => {
+      const { crossfilterWrapper } = get();
+      crossfilterWrapper.removeAllCharts();
+      set({ charts: [] });
     },
     updateChart: (id, settings) => {
       const { crossfilterWrapper } = get();

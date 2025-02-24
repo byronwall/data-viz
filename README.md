@@ -2,7 +2,6 @@
 
 ## Major work remaining
 
-- Global color scales for data
 - Add pivot tables
 - Add calculation engine
 - Add support for faceting

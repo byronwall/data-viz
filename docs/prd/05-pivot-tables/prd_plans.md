@@ -19,5 +19,6 @@ Overall goal is to add a "chart" comp type for calculating and viewing pivot tab
 - Add logic to the row and column headers which allows the user to filter the data - click to filter on value
 - UX considerations
   - Allow user to drag a field from the summary table to the pivot table to use as a row field or column field
+  - Allow user to click on a pivot value and get a detailed listing of the rows that contributed to that value
 
 ## Plan

@@ -13,7 +13,6 @@
 - Add a filter summary + filter controller
 - Wire up "load examples" buttons for main data sets - get rid of current default state
 - Improve handling of times stamps
-- Add a data summary table to the available fields - data type, min, max, mean, etc. first couple of unique values - buttons to quickly create a scatter or other plot - small distribution plots for numerical data - limit to 1000 row random sample
 - Export the core data viewer as a component to be installed elsewhere
 - Allow the comp to export the current config so it can be brought into code easily
 - Global color themes
@@ -34,3 +33,5 @@
 - Bools should be shown as `true`/`false` not `1`/`0`
 - Clicking on a numerical bar chart should filter by the width of the bar
 - ChartActions - tooltip is annoying - slow down or remove (add a legend?)
+- Debounce the slider on the summary table to prevent too many re-renders
+- Show the total row count somewhere on the summary table

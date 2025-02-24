@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ColorScaleManager } from "./ColorScaleManager";
+import { SummaryTable } from "./SummaryTable/components/SummaryTable";
 
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { ChartLayout } from "@/types/ChartTypes";
@@ -136,37 +137,8 @@ export function PlotManager() {
   return (
     <div className="w-full pb-40" ref={containerRef}>
       <div className="mb-4">
-        <h2 className="text-lg font-semibold">Available Fields</h2>
-        <div className="flex flex-wrap gap-2">
-          {columns.map((column) => (
-            <div key={column} className="flex gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addRowChart(column)}
-              >
-                <BarChartHorizontal className="w-4 h-4 mr-1" />
-                {column}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addBarChart(column)}
-              >
-                <BarChartIcon className="w-4 h-4 mr-1" />
-                {column}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addScatterPlot(column)}
-              >
-                <ScatterChart className="w-4 h-4 mr-1" />
-                {column}
-              </Button>
-            </div>
-          ))}
-        </div>
+        <h2 className="text-lg font-semibold mb-2">Data Summary</h2>
+        <SummaryTable />
       </div>
 
       <div className="flex justify-between items-center mb-2">

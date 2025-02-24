@@ -1,3 +1,6 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -7,22 +10,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { ArrowUpDown, Download, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { detectColumnType } from "../utils/dataTypeDetection";
-import { calculateColumnStatistics } from "../utils/statisticsCalculator";
 import {
-  sampleData,
   estimateStatisticalSignificance,
+  sampleData,
 } from "../utils/samplingStrategy";
+import { calculateColumnStatistics } from "../utils/statisticsCalculator";
 import { ChartActions } from "./ChartActions";
-import { ArrowUpDown, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { Progress } from "@/components/ui/progress";
 
-import { DataType } from "../utils/dataTypeDetection";
 import { toast } from "sonner";
+import { DataType } from "../utils/dataTypeDetection";
+import { Slider } from "@/components/ui/slider";
 
 interface ColumnSummary {
   name: string;
@@ -50,6 +50,65 @@ interface CategoryStatistics {
 type SortConfig = {
   column: keyof ColumnSummary | null;
   direction: "asc" | "desc";
+};
+
+// Add this function before the SummaryTable component
+const exportToCSV = (summaries: ColumnSummary[]) => {
+  // Create CSV header
+  const headers = [
+    "Column",
+    "Type",
+    "Total",
+    "Unique",
+    "Null",
+    "Min",
+    "Max",
+    "Mean",
+    "Median",
+    "StdDev",
+    "Top Values",
+  ];
+
+  // Convert summaries to CSV rows
+  const rows = summaries.map((summary) => {
+    const stats = summary.statistics || ({} as NumericStatistics);
+    const categories = summary.categories || ({} as CategoryStatistics);
+
+    return [
+      summary.name,
+      summary.dataType,
+      summary.totalCount,
+      summary.uniqueCount,
+      summary.nullCount,
+      stats.min !== undefined ? stats.min.toFixed(2) : "",
+      stats.max !== undefined ? stats.max.toFixed(2) : "",
+      stats.mean !== undefined ? stats.mean.toFixed(2) : "",
+      stats.median !== undefined ? stats.median.toFixed(2) : "",
+      stats.stdDev !== undefined ? stats.stdDev.toFixed(2) : "",
+      categories.topValues
+        ? categories.topValues.map((v) => `${v.value}(${v.count})`).join("; ")
+        : "",
+    ];
+  });
+
+  // Combine headers and rows
+  const csvContent = [
+    headers.join(","),
+    ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+  ].join("\n");
+
+  // Create and trigger download
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", "summary_table.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  toast.success("Summary table exported to CSV");
 };
 
 export function SummaryTable() {
@@ -245,16 +304,22 @@ export function SummaryTable() {
           : "asc",
     }));
   };
-
   return (
     <div className="space-y-4">
       <div className="space-y-4">
-        {samplingAvailable && (
-          <>
-            <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {samplingAvailable && (
               <Badge variant={useSampling ? "default" : "outline"}>
                 {useSampling ? "Sampling Enabled" : "Full Dataset"}
               </Badge>
+            )}
+            {!samplingAvailable && (
+              <Badge variant="secondary">
+                Using Full Dataset ({totalRowCount} rows)
+              </Badge>
+            )}
+            {samplingAvailable && (
               <Button
                 variant="outline"
                 size="sm"
@@ -267,7 +332,7 @@ export function SummaryTable() {
               >
                 Toggle Sampling
               </Button>
-            </div>
+            )}
 
             {useSampling && (
               <div className="space-y-2">
@@ -291,15 +356,18 @@ export function SummaryTable() {
                 />
               </div>
             )}
-          </>
-        )}
-        {!samplingAvailable && (
-          <div className="flex items-center gap-4">
-            <Badge variant="secondary">
-              Using Full Dataset ({totalRowCount} rows)
-            </Badge>
           </div>
-        )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => exportToCSV(sortedSummaries)}
+            disabled={isProcessing || processingQueue.length > 0}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export to CSV
+          </Button>
+        </div>
 
         {(isProcessing || processingQueue.length > 0) && (
           <div className="space-y-2">

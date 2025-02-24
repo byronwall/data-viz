@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { detectColumnType } from "../utils/dataTypeDetection";
 import { calculateColumnStatistics } from "../utils/statisticsCalculator";
 import {
@@ -69,6 +69,9 @@ export function SummaryTable() {
     new Set()
   );
   const [processingQueue, setProcessingQueue] = useState<string[]>([]);
+  const [columnSummaryData, setColumnSummaryData] = useState<
+    Record<string, ColumnSummary>
+  >({});
 
   const columnSummaries = useMemo(() => {
     const columnNames = getColumnNames();
@@ -79,36 +82,21 @@ export function SummaryTable() {
     }
 
     return columnNames.map((columnName) => {
-      // Return placeholder data for unprocessed columns
-      if (!processedColumns.has(columnName)) {
-        return {
-          name: columnName,
-          dataType: "unknown" as const,
-          totalCount: 0,
-          uniqueCount: 0,
-          nullCount: 0,
-        };
+      // Return cached data if already processed
+      if (columnSummaryData[columnName]) {
+        return columnSummaryData[columnName];
       }
 
-      const columnData = getColumnData(columnName);
-      const sampledData = useSampling
-        ? sampleData(columnData, { method: "random", sampleSize })
-        : columnData;
-      const dataType = detectColumnType(sampledData);
-      const statistics = calculateColumnStatistics(sampledData, dataType);
-
+      // Return placeholder data for unprocessed columns
       return {
         name: columnName,
-        ...statistics,
-      } as ColumnSummary;
+        dataType: "unknown" as const,
+        totalCount: 0,
+        uniqueCount: 0,
+        nullCount: 0,
+      };
     });
-  }, [
-    getColumnData,
-    getColumnNames,
-    useSampling,
-    sampleSize,
-    processedColumns,
-  ]);
+  }, [getColumnNames, processingQueue, processedColumns, columnSummaryData]);
 
   // Process columns progressively
   const processNextColumn = useCallback(async () => {
@@ -122,6 +110,21 @@ export function SummaryTable() {
     try {
       // Simulate processing time for demonstration
       await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const columnData = getColumnData(columnName);
+      const sampledData = useSampling
+        ? sampleData(columnData, { method: "random", sampleSize })
+        : columnData;
+      const dataType = detectColumnType(sampledData);
+      const statistics = calculateColumnStatistics(sampledData, dataType);
+
+      setColumnSummaryData((prev) => ({
+        ...prev,
+        [columnName]: {
+          name: columnName,
+          ...statistics,
+        },
+      }));
 
       setProcessedColumns((prev) => new Set([...prev, columnName]));
       setProcessingQueue((prev) => prev.slice(1));
@@ -140,10 +143,17 @@ export function SummaryTable() {
     } finally {
       setIsProcessing(false);
     }
-  }, [processingQueue, isProcessing, processedColumns, toast]);
+  }, [
+    processingQueue,
+    isProcessing,
+    processedColumns,
+    getColumnData,
+    useSampling,
+    sampleSize,
+  ]);
 
   // Process columns when queue changes
-  useMemo(() => {
+  useEffect(() => {
     if (processingQueue.length > 0) {
       processNextColumn();
     }
@@ -155,6 +165,7 @@ export function SummaryTable() {
       // Reset processing state to reanalyze with new sample size
       setProcessedColumns(new Set());
       setProcessingQueue(getColumnNames());
+      setColumnSummaryData({});
       setProcessingProgress(0);
     },
     [getColumnNames]
@@ -353,7 +364,11 @@ export function SummaryTable() {
                 <TableCell>
                   <ChartActions
                     columnName={summary.name}
-                    dataType={summary.dataType}
+                    dataType={
+                      summary.dataType === "unknown"
+                        ? "categorical"
+                        : summary.dataType
+                    }
                   />
                 </TableCell>
               </TableRow>

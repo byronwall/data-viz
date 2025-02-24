@@ -73,6 +73,24 @@ export function SummaryTable() {
     Record<string, ColumnSummary>
   >({});
 
+  // Get total row count
+  const totalRowCount = useMemo(() => {
+    const firstColumn = getColumnNames()[0];
+    return firstColumn ? Object.keys(getColumnData(firstColumn)).length : 0;
+  }, [getColumnNames, getColumnData]);
+
+  // Determine if sampling should be available
+  const samplingAvailable = useMemo(() => {
+    return totalRowCount > sampleSize;
+  }, [totalRowCount, sampleSize]);
+
+  // Ensure sampling is disabled when not available
+  useEffect(() => {
+    if (!samplingAvailable && useSampling) {
+      setUseSampling(false);
+    }
+  }, [samplingAvailable, useSampling]);
+
   const columnSummaries = useMemo(() => {
     const columnNames = getColumnNames();
 
@@ -108,13 +126,14 @@ export function SummaryTable() {
     const columnName = processingQueue[0];
 
     try {
-      // Simulate processing time for demonstration
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       const columnData = getColumnData(columnName);
-      const sampledData = useSampling
+      const shouldUseSampling = useSampling && samplingAvailable;
+      const sampledData = shouldUseSampling
         ? sampleData(columnData, { method: "random", sampleSize })
         : columnData;
+
       const dataType = detectColumnType(sampledData);
       const statistics = calculateColumnStatistics(sampledData, dataType);
 
@@ -150,6 +169,7 @@ export function SummaryTable() {
     getColumnData,
     useSampling,
     sampleSize,
+    samplingAvailable,
   ]);
 
   // Process columns when queue changes
@@ -229,44 +249,55 @@ export function SummaryTable() {
   return (
     <div className="space-y-4">
       <div className="space-y-4">
-        <div className="flex items-center gap-4">
-          <Badge variant={useSampling ? "default" : "outline"}>
-            {useSampling ? "Sampling Enabled" : "Full Dataset"}
-          </Badge>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setUseSampling(!useSampling);
-              setProcessedColumns(new Set());
-              setProcessingQueue(getColumnNames());
-              setProcessingProgress(0);
-            }}
-          >
-            Toggle Sampling
-          </Button>
-        </div>
-
-        {useSampling && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Sample Size: {sampleSize}
-              </span>
-              {significance && (
-                <span className="text-sm text-muted-foreground">
-                  Margin of Error:{" "}
-                  {(significance.marginOfError * 100).toFixed(2)}%
-                </span>
-              )}
+        {samplingAvailable && (
+          <>
+            <div className="flex items-center gap-4">
+              <Badge variant={useSampling ? "default" : "outline"}>
+                {useSampling ? "Sampling Enabled" : "Full Dataset"}
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setUseSampling(!useSampling);
+                  setProcessedColumns(new Set());
+                  setProcessingQueue(getColumnNames());
+                  setProcessingProgress(0);
+                }}
+              >
+                Toggle Sampling
+              </Button>
             </div>
-            <Slider
-              value={[sampleSize]}
-              min={100}
-              max={10000}
-              step={100}
-              onValueChange={handleSampleSizeChange}
-            />
+
+            {useSampling && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    Sample Size: {sampleSize}
+                  </span>
+                  {significance && (
+                    <span className="text-sm text-muted-foreground">
+                      Margin of Error:{" "}
+                      {(significance.marginOfError * 100).toFixed(2)}%
+                    </span>
+                  )}
+                </div>
+                <Slider
+                  value={[sampleSize]}
+                  min={100}
+                  max={10000}
+                  step={100}
+                  onValueChange={handleSampleSizeChange}
+                />
+              </div>
+            )}
+          </>
+        )}
+        {!samplingAvailable && (
+          <div className="flex items-center gap-4">
+            <Badge variant="secondary">
+              Using Full Dataset ({totalRowCount} rows)
+            </Badge>
           </div>
         )}
 

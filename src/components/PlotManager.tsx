@@ -4,18 +4,7 @@ import { SummaryTable } from "./SummaryTable/components/SummaryTable";
 
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { ChartLayout } from "@/types/ChartTypes";
-import {
-  BarChartSettings,
-  RowChartSettings,
-  ScatterChartSettings,
-} from "@/types/ChartTypes";
-import { createRowChartSettings } from "@/types/createRowChartSettings";
-import {
-  BarChartHorizontal,
-  BarChart as BarChartIcon,
-  FilterX,
-  ScatterChart,
-} from "lucide-react";
+import { FilterX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Layout } from "react-grid-layout";
 import { ChartGridLayout } from "./ChartGridLayout";
@@ -42,7 +31,6 @@ export function PlotManager() {
   const addChart = useDataLayer((state) => state.addChart);
   const removeChart = useDataLayer((state) => state.removeChart);
   const clearAllFilters = useDataLayer((state) => state.clearAllFilters);
-  const { getOrCreateScaleForField } = useColorScales();
 
   // Get column names
   const columns = getColumnNames();
@@ -63,60 +51,6 @@ export function PlotManager() {
     window.addEventListener("resize", updateWidth);
     return () => window.removeEventListener("resize", updateWidth);
   }, []);
-
-  const addRowChart = (field: string) => {
-    const newChart: Omit<RowChartSettings, "id"> = createRowChartSettings();
-
-    newChart.title = `Row Chart - ${field}`;
-    newChart.field = field;
-    newChart.layout = {
-      x: (charts.length * 2) % 12,
-      y: Math.floor(charts.length / 6) * 4,
-      w: 6,
-      h: 4,
-    };
-    newChart.colorScaleId = undefined;
-
-    addChart(newChart);
-  };
-
-  const addBarChart = (field: string) => {
-    const newChart: Omit<BarChartSettings, "id"> = {
-      type: "bar",
-      title: `Bar Chart - ${field}`,
-      field,
-      layout: {
-        x: (charts.length * 2) % 12,
-        y: Math.floor(charts.length / 6) * 4,
-        w: 6,
-        h: 4,
-      },
-      colorScaleId: undefined,
-      filterValues: { values: [] },
-      filterRange: null,
-    };
-    addChart(newChart);
-  };
-
-  const addScatterPlot = (xField: string) => {
-    const newChart: Omit<ScatterChartSettings, "id"> = {
-      type: "scatter",
-      title: `Scatter Plot - ${xField} vs Y`,
-      field: xField,
-      xField,
-      yField: columns[0],
-      layout: {
-        x: (charts.length * 2) % 12,
-        y: Math.floor(charts.length / 6) * 4,
-        w: 6,
-        h: 4,
-      },
-      colorScaleId: undefined,
-      xFilterRange: null,
-      yFilterRange: null,
-    };
-    addChart(newChart);
-  };
 
   const handleLayoutChange = (newLayout: Layout[]) => {
     charts.forEach((chart) => {

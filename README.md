@@ -32,3 +32,4 @@
 - Scatter plot needs to allow new drag filter on off-click if already brushed
 - Charts are all missing consistent gridlines
 - Bools should be shown as `true`/`false` not `1`/`0`
+- Clicking on a numerical bar chart should filter by the width of the bar

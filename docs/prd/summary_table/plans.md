@@ -289,7 +289,10 @@ interface SampledDataState {
   - Numeric statistics (min, max, mean, median, stdDev)
   - Categorical data analysis (top values, distribution)
   - Null/undefined detection
-- [ ] Data sampling (not started)
+- [x] Data sampling
+  - Random and systematic sampling implemented
+  - Configurable sample size
+  - Statistical significance estimation
 
 ### Phase 2: UI Development
 
@@ -297,13 +300,18 @@ interface SampledDataState {
   - Basic grid layout with shadcn/ui Table
   - Column type display
   - Basic statistics display
+  - Added sampling controls
+  - Added sorting capabilities for all columns
 - [x] Chart Creation Integration
   - Added chart creation buttons for each data type
   - Row charts for categorical data
   - Bar charts for numeric data
   - Scatter plots for numeric data
   - Time series for datetime data
-- [ ] Interactive Features (not started)
+- [x] Interactive Features
+  - Column sorting with direction toggle
+  - Sampling toggle with size indicator
+  - Formatted numeric values
 
 ### Phase 3: Performance Optimization
 
@@ -312,24 +320,34 @@ interface SampledDataState {
 
 ### Phase 4: Polish & Integration
 
-- [ ] Visual Feedback (not started)
-- [ ] Sampling Controls (not started)
+- [x] Visual Feedback
+  - Added sampling status badge
+  - Sort direction indicators
+  - Numeric value formatting
+- [ ] Sampling Controls (partially implemented)
+  - Basic toggle implemented
+  - Sample size display added
+  - [ ] Sample size adjustment needed
+  - [ ] Progress indicators needed
 - [ ] Export Features (not started)
 
 ### Current Progress
 
-Initial implementation of the summary table is complete with basic functionality. The table shows:
+The summary table now includes:
 
-- Column names
-- Data types
-- Basic statistics
-- Record counts
-- Null counts
+- Column names with sorting
+- Data types with sorting
+- Basic statistics with improved formatting
+- Record counts with sorting
+- Null counts with sorting
 - Chart creation buttons for each data type
+- Data sampling with toggle
+- Sort indicators on column headers
+- Sampling status indicator
 
 Next steps:
 
-1. Implement data sampling for large datasets
-2. Add interactive features (sorting, filtering)
-3. Improve statistics display and formatting
-4. Add visual feedback for chart creation
+1. Add sample size adjustment controls
+2. Implement progressive loading for large datasets
+3. Add export functionality
+4. Add progress indicators for sampling operations

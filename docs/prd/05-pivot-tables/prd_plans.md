@@ -75,8 +75,10 @@ src/
 
 ### Interface Details
 
+#### `types.ts`
+
 ```typescript
-interface PivotTableConfig {
+export interface PivotTableConfig {
   rowFields: string[];
   columnFields: string[];
   valueFields: ValueFieldConfig[];
@@ -85,19 +87,22 @@ interface PivotTableConfig {
     column: boolean;
     grand: boolean;
   };
-  dateBinning?: {
-    field: string;
-    type: "day" | "month" | "year";
-  };
+  dateBinning?: DateBinningConfig;
 }
 
-interface ValueFieldConfig {
+export interface ValueFieldConfig {
   field: string;
   aggregation: AggregationType;
   formula?: string; // For derived values
+  label?: string; // Display label
 }
 
-type AggregationType =
+export interface DateBinningConfig {
+  field: string;
+  type: "day" | "month" | "year";
+}
+
+export type AggregationType =
   | "sum"
   | "count"
   | "avg"
@@ -109,7 +114,195 @@ type AggregationType =
   | "variance"
   | "countUnique"
   | "singleValue";
+
+export interface PivotTableData {
+  headers: PivotHeader[];
+  rows: PivotRow[];
+  totals?: PivotTotals;
+}
+
+export interface PivotHeader {
+  label: string;
+  field: string;
+  value: string | number;
+  children?: PivotHeader[];
+  span: number;
+  depth: number;
+}
+
+export interface PivotRow {
+  key: string;
+  headers: PivotHeader[];
+  cells: PivotCell[];
+  subtotal?: boolean;
+}
+
+export interface PivotCell {
+  key: string;
+  value: number | string | null;
+  rawValue?: any;
+  sourceRows?: any[]; // Original rows that contributed to this value
+}
+
+export interface PivotTotals {
+  row: Record<string, number | string>;
+  column: Record<string, number | string>;
+  grand: Record<string, number | string>;
+}
+
+export interface FilterState {
+  field: string;
+  values: Set<string | number>;
+}
 ```
+
+#### `PivotTable.tsx`
+
+```typescript
+interface PivotTableProps {
+  data: any[]; // Source data array
+  config: PivotTableConfig;
+  onConfigChange: (config: PivotTableConfig) => void;
+  onFilterChange?: (filters: FilterState[]) => void;
+}
+
+// Internal state
+interface PivotTableState {
+  processedData: PivotTableData;
+  activeFilters: FilterState[];
+  selectedCell?: {
+    rowKey: string;
+    colKey: string;
+    value: any;
+  };
+}
+```
+
+#### `PivotTableConfig.tsx`
+
+```typescript
+interface PivotTableConfigProps {
+  config: PivotTableConfig;
+  availableFields: Array<{
+    name: string;
+    type: "string" | "number" | "date" | "boolean";
+  }>;
+  onConfigChange: (config: PivotTableConfig) => void;
+}
+
+// Internal state
+interface PivotTableConfigState {
+  activeTab: "fields" | "options" | "calculations";
+  draggedField?: string;
+}
+```
+
+#### `PivotTableHeader.tsx`
+
+```typescript
+interface PivotTableHeaderProps {
+  headers: PivotHeader[];
+  onFilterClick: (field: string, value: string | number) => void;
+  activeFilters: FilterState[];
+}
+```
+
+#### `PivotTableBody.tsx`
+
+```typescript
+interface PivotTableBodyProps {
+  rows: PivotRow[];
+  onCellClick: (cell: PivotCell, rowKey: string, colKey: string) => void;
+  showTotals: PivotTableConfig["showTotals"];
+}
+```
+
+#### `PivotTableCell.tsx`
+
+```typescript
+interface PivotTableCellProps {
+  cell: PivotCell;
+  isHeader?: boolean;
+  isTotal?: boolean;
+  onClick?: (cell: PivotCell) => void;
+}
+```
+
+#### `utils/calculations.ts`
+
+```typescript
+interface AggregationResult {
+  value: number | string;
+  rawValue?: any;
+  sourceRows: any[];
+}
+
+interface CalculationContext {
+  field: string;
+  rows: any[];
+  aggregationType: AggregationType;
+  formula?: string;
+}
+
+// Core functions to implement
+const calculations = {
+  calculateAggregation: (context: CalculationContext) => AggregationResult;
+  evaluateFormula: (formula: string, variables: Record<string, number>) => number;
+  validateSingleValue: (rows: any[], field: string) => AggregationResult;
+};
+```
+
+#### `utils/dateHandling.ts`
+
+```typescript
+interface DateBucket {
+  key: string;
+  start: Date;
+  end: Date;
+  display: string;
+}
+
+interface DateBinningOptions {
+  field: string;
+  type: DateBinningConfig["type"];
+  timezone?: string;
+}
+
+// Core functions to implement
+const dateBinning = {
+  createBuckets: (options: DateBinningOptions, data: any[]) => DateBucket[];
+  assignToBucket: (date: Date, bucket: DateBucket) => boolean;
+  formatBucketLabel: (bucket: DateBucket, type: DateBinningConfig["type"]) => string;
+};
+```
+
+#### `utils/filtering.ts`
+
+```typescript
+interface FilterOptions {
+  field: string;
+  values: Set<string | number>;
+  data: any[];
+}
+
+// Core functions to implement
+const filtering = {
+  applyFilters: (filters: FilterState[], data: any[]) => any[];
+  getUniqueValues: (field: string, data: any[]) => Set<string | number>;
+  createFilterState: (field: string, values: Array<string | number>) => FilterState;
+};
+```
+
+### Integration Points
+
+1. The `PivotTable` component will be the main entry point, managing state and coordinating between subcomponents.
+2. Data flow will be top-down with configuration changes bubbling up through callbacks.
+3. The calculation engine will be memoized to prevent unnecessary recalculations.
+4. All components will use Tailwind CSS for styling and shadcn/ui components where appropriate.
+5. The drill-down functionality will use a modal from shadcn/ui to display detailed data.
+6. Filtering will be implemented using shadcn/ui's popover and checkbox components.
+7. Icons from lucide-react will be used for various UI elements (sorting, filtering, etc.).
+8. Toast notifications using sonner will be used for error states (e.g., single value validation failures).
 
 ### Implementation Phases
 

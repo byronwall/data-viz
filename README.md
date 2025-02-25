@@ -12,7 +12,6 @@ Will be updated when done...
 
 ### Core data viz
 
-- Add pivot tables
 - Add calculation engine on raw data - create derived fields - show in summary table
 - Add support for faceting
 - Top level filter + steps = ability to quickly segment data and work on slices

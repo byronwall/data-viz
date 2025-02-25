@@ -18,6 +18,7 @@ import {
 } from "./ui/alert-dialog";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { PivotTable } from "./charts/PivotTable/PivotTable";
 
 interface PlotChartPanelProps {
   settings: ChartSettings;
@@ -59,6 +60,14 @@ export function PlotChartPanel({
       case "scatter":
         return (
           <ScatterPlot
+            settings={settings}
+            width={width - 32}
+            height={height - 32}
+          />
+        );
+      case "pivot":
+        return (
+          <PivotTable
             settings={settings}
             width={width - 32}
             height={height - 32}

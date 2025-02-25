@@ -11,6 +11,7 @@
 - DO NOT change comments when doing refactors or other work
 - DO NOT alter functionality when refactoring. Again, DO NOT modify existing functionality unless I've explicitly asked you to.
 - DO NOT change `className` or other styling unless EXPLICITLY asked to do so.
+- When creating new comps or adding functionality DO NOT EDIT OTHER STUFF. DO NOT REFACTOR OTHER STUFF even if it looks like a good idea.
 
 ## Comp preferences
 

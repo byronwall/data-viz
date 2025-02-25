@@ -1,4 +1,4 @@
-import { ChartSettings, datum } from "@/types/ChartTypes";
+import { ChartSettings, datum, PivotTableSettings } from "@/types/ChartTypes";
 import crossfilter from "crossfilter2";
 import isEqual from "react-fast-compare";
 import { rowChartPureFilter } from "./rowChartPureFilter";
@@ -7,6 +7,11 @@ import { barChartPureFilter } from "./barChartPureFilter";
 import { scatterChartPureFilter } from "./scatterChartPureFilter";
 
 type IdField = number | string;
+
+interface FilterConfig {
+  field: string;
+  values: Set<string | number>;
+}
 
 type ChartDimension<TData, TId extends IdField> = {
   dimension: crossfilter.Dimension<TData, TId>;
@@ -177,6 +182,56 @@ export class CrossfilterWrapper<T> {
             xValue,
             yValue
           );
+        };
+      case "pivot":
+        return (d: IdField) => {
+          const dataObj = this.dataHash[d];
+          const pivotSettings = chart as PivotTableSettings;
+
+          // Check if any row or column filters are active
+          const rowFilters: FilterConfig[] = pivotSettings.rowFields.map(
+            (field: string) => ({
+              field,
+              values: new Set(pivotSettings.rowFilterValues?.[field] || []),
+            })
+          );
+
+          const columnFilters: FilterConfig[] = pivotSettings.columnFields.map(
+            (field: string) => ({
+              field,
+              values: new Set(pivotSettings.columnFilterValues?.[field] || []),
+            })
+          );
+
+          // If no filters are active, include all data
+          if (
+            rowFilters.every((f: FilterConfig) => f.values.size === 0) &&
+            columnFilters.every((f: FilterConfig) => f.values.size === 0)
+          ) {
+            return true;
+          }
+
+          // Check if the data point matches any active row filters
+          const matchesRowFilters = rowFilters.every((filter: FilterConfig) => {
+            if (filter.values.size === 0) {
+              return true;
+            }
+            const value = dataObj[filter.field as keyof T] as string | number;
+            return filter.values.has(value);
+          });
+
+          // Check if the data point matches any active column filters
+          const matchesColumnFilters = columnFilters.every(
+            (filter: FilterConfig) => {
+              if (filter.values.size === 0) {
+                return true;
+              }
+              const value = dataObj[filter.field as keyof T] as string | number;
+              return filter.values.has(value);
+            }
+          );
+
+          return matchesRowFilters && matchesColumnFilters;
         };
     }
   }

@@ -64,3 +64,5 @@ Will be updated when done...
   - Set a max length on that label
   - Allow ordering by label
   - Allow keeping 0 count items in display to avoid layout shift when filtering
+- Need to swap out the multi select comp with good one from Plantasktic
+- Add button to create blank chart by choosing type

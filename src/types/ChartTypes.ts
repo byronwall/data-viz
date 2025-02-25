@@ -2,6 +2,7 @@ export const CHART_TYPES = [
   { value: "row", label: "Row Chart" },
   { value: "bar", label: "Bar Chart" },
   { value: "scatter", label: "Scatter Plot" },
+  { value: "pivot", label: "Pivot Table" },
 ] as const;
 
 export type ChartType = (typeof CHART_TYPES)[number]["value"];
@@ -50,10 +51,45 @@ export interface ScatterChartSettings extends BaseChartSettings {
   yFilterRange: FilterRange;
 }
 
+export interface PivotTableSettings extends BaseChartSettings {
+  type: "pivot";
+  rowFields: string[];
+  columnFields: string[];
+  valueFields: Array<{
+    field: string;
+    aggregation:
+      | "sum"
+      | "count"
+      | "avg"
+      | "min"
+      | "max"
+      | "median"
+      | "mode"
+      | "stddev"
+      | "variance"
+      | "countUnique"
+      | "singleValue";
+    formula?: string;
+    label?: string;
+  }>;
+  showTotals: {
+    row: boolean;
+    column: boolean;
+    grand: boolean;
+  };
+  dateBinning?: {
+    field: string;
+    type: "day" | "month" | "year";
+  };
+  rowFilterValues?: Record<string, Array<string | number>>;
+  columnFilterValues?: Record<string, Array<string | number>>;
+}
+
 export type ChartSettings =
   | RowChartSettings
   | BarChartSettings
-  | ScatterChartSettings;
+  | ScatterChartSettings
+  | PivotTableSettings;
 
 export interface BaseChartProps {
   settings: ChartSettings;

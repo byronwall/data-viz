@@ -1,78 +1,40 @@
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import {
-  BarChartSettings,
-  RowChartSettings,
-  ScatterChartSettings,
-} from "@/types/ChartTypes";
+import { createBarChartSettings } from "@/types/createBarChartSettings";
+import { createPivotTableSettings } from "@/types/createPivotTableSettings";
 import { createRowChartSettings } from "@/types/createRowChartSettings";
+import { createScatterChartSettings } from "@/types/createScatterChartSettings";
 
-type ChartType = "row" | "bar" | "scatter" | "timeseries";
+type ChartType = "row" | "bar" | "scatter" | "pivot";
 
 export function useCreateCharts() {
-  const addChart = useDataLayer((state) => state.addChart);
-  const charts = useDataLayer((state) => state.charts);
+  const addChart = useDataLayer((s) => s.addChart);
 
-  const getDefaultLayout = () => ({
-    x: (charts.length * 2) % 12,
-    y: Math.floor(charts.length / 6) * 4,
-    w: 6,
-    h: 4,
-  });
+  const createChart = (type: ChartType, field: string) => {
+    const layout = {
+      x: 0,
+      y: 0,
+      w: 6,
+      h: 4,
+    };
 
-  const createNewChart = (field: string, type: ChartType) => {
+    let settings;
     switch (type) {
-      case "row": {
-        const settings: Omit<RowChartSettings, "id"> = createRowChartSettings();
-        settings.field = field;
-        settings.title = `Row Chart - ${field}`;
-        settings.layout = getDefaultLayout();
-        settings.colorScaleId = undefined;
-        addChart(settings);
+      case "row":
+        settings = createRowChartSettings(field, layout);
         break;
-      }
-      case "bar": {
-        const settings: Omit<BarChartSettings, "id"> = {
-          type: "bar",
-          title: `Bar Chart - ${field}`,
-          field,
-          layout: getDefaultLayout(),
-          colorScaleId: undefined,
-          filterValues: { values: [] },
-          filterRange: null,
-        };
-        addChart(settings);
+      case "bar":
+        settings = createBarChartSettings(field, layout);
         break;
-      }
-      case "scatter": {
-        const settings: Omit<ScatterChartSettings, "id"> = {
-          type: "scatter",
-          title: `Scatter Plot - ${field} vs __ID`,
-          field,
-          xField: "__ID",
-          yField: field,
-          layout: getDefaultLayout(),
-          colorScaleId: undefined,
-          xFilterRange: null,
-          yFilterRange: null,
-        };
-        addChart(settings);
+      case "scatter":
+        settings = createScatterChartSettings(field, layout);
         break;
-      }
-      case "timeseries": {
-        const settings: Omit<BarChartSettings, "id"> = {
-          type: "bar",
-          title: `Time Series - ${field}`,
-          field,
-          layout: getDefaultLayout(),
-          colorScaleId: undefined,
-          filterValues: { values: [] },
-          filterRange: null,
-        };
-        addChart(settings);
+      case "pivot":
+        settings = createPivotTableSettings(field, layout);
         break;
-      }
     }
+
+    addChart(settings);
   };
 
-  return { createNewChart };
+  return { createChart };
 }

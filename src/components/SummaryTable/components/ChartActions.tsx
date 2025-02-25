@@ -1,11 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { BarChart, LineChart, ScatterChart } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { BarChart, LineChart, ScatterChart, Table2 } from "lucide-react";
 import { useCreateCharts } from "@/hooks/useCreateCharts";
 
 interface ChartActionsProps {
@@ -14,71 +8,53 @@ interface ChartActionsProps {
 }
 
 export function ChartActions({ columnName, dataType }: ChartActionsProps) {
-  const { createNewChart } = useCreateCharts();
+  const { createChart } = useCreateCharts();
 
   return (
-    <TooltipProvider>
-      <div className="flex items-center gap-2">
-        {(dataType === "categorical" || dataType === "boolean") && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => createNewChart(columnName, "row")}
-              >
-                <BarChart className="h-4 w-4 rotate-90" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Create Row Chart</TooltipContent>
-          </Tooltip>
-        )}
+    <div className="flex gap-1">
+      {dataType === "categorical" && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={() => createChart("row", columnName)}
+        >
+          <BarChart className="h-4 w-4 rotate-90" />
+        </Button>
+      )}
 
-        {dataType === "numeric" && (
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => createNewChart(columnName, "bar")}
-                >
-                  <BarChart className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Create Bar Chart</TooltipContent>
-            </Tooltip>
+      {dataType === "numeric" && (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => createChart("bar", columnName)}
+          >
+            <BarChart className="h-4 w-4" />
+          </Button>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => createNewChart(columnName, "scatter")}
-                >
-                  <ScatterChart className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Create Scatter Plot</TooltipContent>
-            </Tooltip>
-          </>
-        )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => createChart("scatter", columnName)}
+          >
+            <ScatterChart className="h-4 w-4" />
+          </Button>
+        </>
+      )}
 
-        {dataType === "datetime" && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => createNewChart(columnName, "timeseries")}
-              >
-                <LineChart className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Create Time Series</TooltipContent>
-          </Tooltip>
-        )}
-      </div>
-    </TooltipProvider>
+      {(dataType === "categorical" || dataType === "datetime") && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={() => createChart("pivot", columnName)}
+        >
+          <Table2 className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
   );
 }

@@ -1,21 +1,18 @@
-import { RowChartSettings } from "./ChartTypes";
+import { RowChartSettings, ChartLayout } from "./ChartTypes";
 
-export function createRowChartSettings(): RowChartSettings {
+export function createRowChartSettings(
+  field: string,
+  layout: ChartLayout
+): RowChartSettings {
   return {
     id: crypto.randomUUID(),
-    title: "Row Chart",
-    field: "value",
-    layout: {
-      x: 0,
-      y: 0,
-      w: 1,
-      h: 1,
-    },
+    type: "row",
+    title: `Row Chart - ${field}`,
+    field,
+    layout,
+    colorScaleId: undefined,
     minRowHeight: 10,
     maxRowHeight: 100,
-    filterValues: {
-      values: [],
-    },
-    type: "row",
+    filterValues: { values: [] },
   };
 }

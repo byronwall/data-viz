@@ -1,4 +1,8 @@
-import { ChartSettings, CHART_TYPES } from "@/types/ChartTypes";
+import {
+  ChartSettings,
+  CHART_TYPES,
+  PivotTableSettings,
+} from "@/types/ChartTypes";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { ComboBox } from "./ComboBox";
@@ -9,10 +13,18 @@ import { FieldSelector } from "./FieldSelector";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useColorScales } from "@/hooks/useColorScales";
 import { ColorScaleType } from "@/types/ColorScaleTypes";
+import { MultiSelect, Option } from "./ui/multi-select";
 
 interface ChartSettingsContentProps {
   settings: ChartSettings;
   availableFields: string[];
+}
+
+type AggregationType = PivotTableSettings["valueFields"][0]["aggregation"];
+
+interface AggregationOption {
+  label: string;
+  value: AggregationType;
 }
 
 export function ChartSettingsContent({
@@ -41,6 +53,179 @@ export function ChartSettingsContent({
 
   const hasDataField =
     localSettings.type === "row" || localSettings.type === "bar";
+
+  const renderPivotTableSettings = () => {
+    if (localSettings.type !== "pivot") {
+      return null;
+    }
+    const pivotSettings = localSettings as PivotTableSettings;
+
+    const fieldOptions = availableFields.map((f) => ({ label: f, value: f }));
+    const aggregationOptions: AggregationOption[] = [
+      { label: "Sum", value: "sum" },
+      { label: "Count", value: "count" },
+      { label: "Average", value: "avg" },
+      { label: "Min", value: "min" },
+      { label: "Max", value: "max" },
+      { label: "Median", value: "median" },
+      { label: "Mode", value: "mode" },
+      { label: "StdDev", value: "stddev" },
+      { label: "Variance", value: "variance" },
+      { label: "Count Unique", value: "countUnique" },
+      { label: "Single Value", value: "singleValue" },
+    ];
+
+    return (
+      <>
+        <div className="space-y-2">
+          <Label>Row Fields</Label>
+          <MultiSelect
+            options={fieldOptions}
+            value={pivotSettings.rowFields.map((f) => ({ label: f, value: f }))}
+            onChange={(values: Option[]) =>
+              setLocalSettings({
+                ...localSettings,
+                rowFields: values.map((v) => v.value),
+              } as PivotTableSettings)
+            }
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Column Fields</Label>
+          <MultiSelect
+            options={fieldOptions}
+            value={pivotSettings.columnFields.map((f) => ({
+              label: f,
+              value: f,
+            }))}
+            onChange={(values: Option[]) =>
+              setLocalSettings({
+                ...localSettings,
+                columnFields: values.map((v) => v.value),
+              } as PivotTableSettings)
+            }
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Value Fields</Label>
+          {pivotSettings.valueFields.map((valueField, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <ComboBox<Option>
+                options={fieldOptions}
+                value={fieldOptions.find((f) => f.value === valueField.field)}
+                onChange={(option) => {
+                  const newValueFields = [...pivotSettings.valueFields];
+                  newValueFields[index] = {
+                    ...valueField,
+                    field: option?.value || valueField.field,
+                  };
+                  setLocalSettings({
+                    ...localSettings,
+                    valueFields: newValueFields,
+                  } as PivotTableSettings);
+                }}
+                optionToLabel={(option) => option.label}
+              />
+              <ComboBox<AggregationOption>
+                options={aggregationOptions}
+                value={aggregationOptions.find(
+                  (o) => o.value === valueField.aggregation
+                )}
+                onChange={(option) => {
+                  const newValueFields = [...pivotSettings.valueFields];
+                  newValueFields[index] = {
+                    ...valueField,
+                    aggregation: option?.value || valueField.aggregation,
+                  };
+                  setLocalSettings({
+                    ...localSettings,
+                    valueFields: newValueFields,
+                  } as PivotTableSettings);
+                }}
+                optionToLabel={(option) => option.label}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  const newValueFields = pivotSettings.valueFields.filter(
+                    (_, i) => i !== index
+                  );
+                  setLocalSettings({
+                    ...localSettings,
+                    valueFields: newValueFields,
+                  } as PivotTableSettings);
+                }}
+              >
+                ×
+              </Button>
+            </div>
+          ))}
+          <Button
+            variant="outline"
+            onClick={() => {
+              setLocalSettings({
+                ...localSettings,
+                valueFields: [
+                  ...pivotSettings.valueFields,
+                  { field: availableFields[0], aggregation: "count" },
+                ],
+              } as PivotTableSettings);
+            }}
+          >
+            Add Value Field
+          </Button>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Show Totals</Label>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={pivotSettings.showTotals.row}
+                onCheckedChange={(checked) =>
+                  setLocalSettings({
+                    ...localSettings,
+                    showTotals: { ...pivotSettings.showTotals, row: checked },
+                  } as PivotTableSettings)
+                }
+              />
+              <Label>Row</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={pivotSettings.showTotals.column}
+                onCheckedChange={(checked) =>
+                  setLocalSettings({
+                    ...localSettings,
+                    showTotals: {
+                      ...pivotSettings.showTotals,
+                      column: checked,
+                    },
+                  } as PivotTableSettings)
+                }
+              />
+              <Label>Column</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={pivotSettings.showTotals.grand}
+                onCheckedChange={(checked) =>
+                  setLocalSettings({
+                    ...localSettings,
+                    showTotals: { ...pivotSettings.showTotals, grand: checked },
+                  } as PivotTableSettings)
+                }
+              />
+              <Label>Grand</Label>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -201,6 +386,8 @@ export function ChartSettingsContent({
           )}
         </>
       )}
+
+      {renderPivotTableSettings()}
 
       <Button className="w-full" onClick={handleUpdate}>
         Update Chart

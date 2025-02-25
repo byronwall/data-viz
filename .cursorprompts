@@ -32,7 +32,7 @@ Structure:
 
 ## Add detail to plan
 
-Update the plan with interfaces and initial scope for each of the proposed files. Do not mention testing or timelines. I am not worried about those. Just the code, its structure, and how it integrates with existing stuff.
+Update the plan with interfaces and initial scope for each of the proposed files. For new components, propose the props and any internal state. Do not mention testing or timelines. I am not worried about those. Just the code, its structure, and how it integrates with existing stuff. I will feed these specs into an AI to generate the code.
 
 ## Continue along the plan
 

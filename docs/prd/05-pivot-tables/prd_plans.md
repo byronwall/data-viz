@@ -21,4 +21,34 @@ Overall goal is to add a "chart" comp type for calculating and viewing pivot tab
   - Allow user to drag a field from the summary table to the pivot table to use as a row field or column field
   - Allow user to click on a pivot value and get a detailed listing of the rows that contributed to that value
 
+### Date Field Handling
+
+- Support automatic date field binning with options:
+  - Day
+  - Month
+  - Year
+- Implement internal handling of date buckets
+- Integrate with the calculation engine
+
+### Totals and Subtotals
+
+- Support row and column subtotals
+- Support grand totals
+- Make totals display optional
+
+### Drill-down Features
+
+- Implement modal/popover interface for detailed data view
+- Add pagination support for detailed data views
+
+### Calculated Fields
+
+- Support calculated expressions based on existing pivot table values
+- Implement custom syntax for calculations
+
+### Data Export
+
+- Add export to CSV functionality
+- Integrate with global view system for saving configurations
+
 ## Plan

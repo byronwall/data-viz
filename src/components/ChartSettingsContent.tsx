@@ -13,7 +13,7 @@ import { FieldSelector } from "./FieldSelector";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useColorScales } from "@/hooks/useColorScales";
 import { ColorScaleType } from "@/types/ColorScaleTypes";
-import { MultiSelect, Option } from "./ui/multi-select";
+import MultiSelect, { Option } from "./ui/multi-select";
 
 interface ChartSettingsContentProps {
   settings: ChartSettings;
@@ -177,51 +177,6 @@ export function ChartSettingsContent({
           >
             Add Value Field
           </Button>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Show Totals</Label>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={pivotSettings.showTotals.row}
-                onCheckedChange={(checked) =>
-                  setLocalSettings({
-                    ...localSettings,
-                    showTotals: { ...pivotSettings.showTotals, row: checked },
-                  } as PivotTableSettings)
-                }
-              />
-              <Label>Row</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={pivotSettings.showTotals.column}
-                onCheckedChange={(checked) =>
-                  setLocalSettings({
-                    ...localSettings,
-                    showTotals: {
-                      ...pivotSettings.showTotals,
-                      column: checked,
-                    },
-                  } as PivotTableSettings)
-                }
-              />
-              <Label>Column</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={pivotSettings.showTotals.grand}
-                onCheckedChange={(checked) =>
-                  setLocalSettings({
-                    ...localSettings,
-                    showTotals: { ...pivotSettings.showTotals, grand: checked },
-                  } as PivotTableSettings)
-                }
-              />
-              <Label>Grand</Label>
-            </div>
-          </div>
         </div>
       </>
     );

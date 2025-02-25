@@ -204,90 +204,7 @@ function generateRows(
     });
   });
 
-  // Add subtotals if enabled
-  if (showTotals.row) {
-    for (let i = 0; i < rowFields.length; i++) {
-      const subtotalGroups = new Map<string, any[]>();
-      data.forEach((item) => {
-        const key = rowFields
-          .slice(0, i + 1)
-          .map((field) => item[field])
-          .join(":");
-        if (!subtotalGroups.has(key)) {
-          subtotalGroups.set(key, []);
-        }
-        subtotalGroups.get(key)!.push(item);
-      });
-
-      subtotalGroups.forEach((groupData, key) => {
-        const headers = key.split(":").map((value, index) => ({
-          label: String(value),
-          field: rowFields[index],
-          value,
-          span: 1,
-          depth: index,
-        }));
-
-        const cells = generateCells(groupData, columnHeaders, valueFields);
-
-        rows.push({
-          key: `subtotal-${key}`,
-          headers,
-          cells,
-          subtotal: true,
-        });
-      });
-    }
-  }
-
   return rows;
-}
-
-function calculateTotals(
-  data: any[],
-  columnHeaders: PivotHeader[],
-  valueFields: PivotTableSettings["valueFields"]
-): PivotTableData["totals"] {
-  const flatColumns = flattenHeaders(columnHeaders);
-  const columnTotals: Record<string, number | string> = {};
-  const rowTotals: Record<string, number | string> = {};
-  const grandTotals: Record<string, number | string> = {};
-
-  // Calculate column totals
-  for (const column of flatColumns) {
-    const columnData = data.filter((d) => {
-      let current: PivotHeader | undefined = column;
-      let matches = true;
-      while (current) {
-        if (d[current.field] !== current.value) {
-          matches = false;
-          break;
-        }
-        current = current.children?.[0];
-      }
-      return matches;
-    });
-
-    for (const valueField of valueFields) {
-      const values = columnData.map((d) => d[valueField.field]);
-      const value = aggregationFunctions[valueField.aggregation](values);
-      columnTotals[`${column.field}-${column.value}-${valueField.field}`] =
-        value;
-    }
-  }
-
-  // Calculate grand totals
-  for (const valueField of valueFields) {
-    const values = data.map((d) => d[valueField.field]);
-    const value = aggregationFunctions[valueField.aggregation](values);
-    grandTotals[valueField.field] = value;
-  }
-
-  return {
-    row: rowTotals,
-    column: columnTotals,
-    grand: grandTotals,
-  };
 }
 
 export function calculatePivotData(
@@ -306,13 +223,8 @@ export function calculatePivotData(
 
   console.log("rows", rows);
 
-  const totals = settings.showTotals.grand
-    ? calculateTotals(data, headers, settings.valueFields)
-    : undefined;
-
   return {
     headers,
     rows,
-    totals,
   };
 }

@@ -1,3 +1,4 @@
+import { calculatePivotData } from "@/components/charts/PivotTable/utils/calculations";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDataLayer } from "@/providers/DataLayerProvider";
@@ -6,7 +7,6 @@ import { Search } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { PivotCell, PivotHeader, PivotRow } from "./types";
-import { calculatePivotData } from "./utils/calculations";
 
 type PivotTableProps = BaseChartProps & {
   settings: PivotTableSettings;
@@ -98,7 +98,7 @@ export function PivotTable({ settings, width, height }: PivotTableProps) {
       return (
         <th
           key={`${header.field}-${header.value}`}
-          colSpan={header.span}
+          colSpan={header.span * settings.valueFields.length}
           className={cn(
             "border p-2 bg-muted/50",
             header.depth === 0 && "font-semibold"
@@ -115,70 +115,134 @@ export function PivotTable({ settings, width, height }: PivotTableProps) {
               <Search className="h-4 w-4" />
             </Button>
           </div>
-          {header.children && (
-            <tr>{header.children.map((child) => renderHeader(child))}</tr>
-          )}
         </th>
       );
     },
-    [handleFilterClick]
+    [handleFilterClick, settings.valueFields.length]
   );
 
+  // Calculate the number of header rows needed
+  const headerDepth =
+    settings.columnFields.length + (settings.columnFields.length > 0 ? 1 : 0);
+
   return (
-    <div className={cn("w-full h-full overflow-auto border rounded-md")}>
-      <table className="w-full border-collapse">
-        <thead>
-          <tr>
-            {/* Add headers for row fields */}
-            {settings.rowFields.map((field) => (
-              <th key={field} className="border p-2 bg-muted/50 font-semibold">
-                {field}
-              </th>
-            ))}
-            {/* Show value field headers if no column fields */}
-            {settings.columnFields.length === 0 &&
-              settings.valueFields.map((valueField) => (
-                <th
-                  key={valueField.field}
-                  className="border p-2 bg-muted/50 font-semibold"
-                >
-                  {valueField.label ||
-                    `${valueField.field} (${valueField.aggregation})`}
-                </th>
-              ))}
-            {/* Show column headers if they exist */}
-            {pivotData.headers.map(renderHeader)}
-          </tr>
-        </thead>
-        <tbody>
-          {pivotData.rows.map((row: PivotRow) => (
-            <tr key={row.key} className={cn(row.subtotal && "bg-muted/20")}>
-              {row.headers.map((header: PivotHeader) => (
-                <th
-                  key={`${header.field}-${header.value}`}
-                  className="border p-2 text-left font-normal"
-                >
-                  {header.label}
-                </th>
-              ))}
-              {row.cells.map((cell: PivotCell) => (
-                <td
-                  key={cell.key}
-                  className={cn(
-                    "border p-2 text-right",
-                    cell.sourceRows && "cursor-pointer hover:bg-muted/20"
-                  )}
-                  onClick={() =>
-                    cell.sourceRows && handleCellClick(cell, row.key, cell.key)
-                  }
-                >
-                  {cell.value}
-                </td>
-              ))}
+    <div
+      className={cn("w-full h-full border rounded-md flex flex-col")}
+      style={{ height }}
+    >
+      <div className="overflow-auto flex-1">
+        <table className="w-full border-collapse relative">
+          <thead className="sticky top-0 bg-background z-40">
+            {/* First row: Row field headers and column field headers */}
+            <tr>
+              {/* Row field headers */}
+              {settings.rowFields.map((field, i) => {
+                const leftPosition = i * 150; // Match the body's width
+                return (
+                  <th
+                    key={field}
+                    rowSpan={headerDepth || 1}
+                    className={cn(
+                      "border p-2 bg-muted/50 font-semibold sticky",
+                      // Add z-index that decreases as we go right to ensure proper layering
+                      `z-[${30 - i}]` // Higher z-index than body to stay on top
+                    )}
+                    style={{
+                      left: `${leftPosition}px`,
+                      minWidth: "150px",
+                      maxWidth: "150px",
+                    }}
+                  >
+                    {field}
+                  </th>
+                );
+              })}
+
+              {/* Column headers or value fields if no columns */}
+              {settings.columnFields.length === 0
+                ? settings.valueFields.map((valueField) => (
+                    <th
+                      key={valueField.field}
+                      className="border p-2 bg-muted/50 font-semibold"
+                    >
+                      {valueField.label ||
+                        `${valueField.field} (${valueField.aggregation})`}
+                    </th>
+                  ))
+                : pivotData.headers.map(renderHeader)}
             </tr>
-          ))}
-        </tbody>
-      </table>
+
+            {/* Value field headers when column fields exist */}
+            {settings.columnFields.length > 0 && (
+              <tr>
+                {/* Add empty cells for row headers to maintain alignment */}
+
+                {pivotData.headers.flatMap((header: PivotHeader) =>
+                  Array(header.span)
+                    .fill(null)
+                    .map((_, i) =>
+                      settings.valueFields.map((valueField) => (
+                        <th
+                          key={`${header.field}-${header.value}-${valueField.field}-${i}`}
+                          className="border p-2 bg-muted/50"
+                        >
+                          {valueField.label ||
+                            `${valueField.field} (${valueField.aggregation})`}
+                        </th>
+                      ))
+                    )
+                )}
+              </tr>
+            )}
+          </thead>
+          <tbody>
+            {pivotData.rows.map((row: PivotRow) => (
+              <tr key={row.key}>
+                {row.headers.map((header: PivotHeader, i) => {
+                  // Calculate cumulative width of previous headers
+                  const leftPosition = i * 150; // Using fixed width for consistency
+                  return (
+                    <th
+                      key={`${header.field}-${header.value}`}
+                      className={cn(
+                        "border p-2 text-left font-normal sticky bg-white",
+                        // Add z-index that decreases as we go right to ensure proper layering
+                        `z-[${20 - i}]`
+                      )}
+                      style={{
+                        left: `${leftPosition}px`,
+                        minWidth: "150px", // Fixed width for consistency
+                        maxWidth: "150px",
+                      }}
+                    >
+                      {header.label}
+                    </th>
+                  );
+                })}
+                {row.cells.map((cell: PivotCell) => (
+                  <td
+                    key={cell.key}
+                    className={cn(
+                      "border p-2 text-right",
+                      cell.sourceRows && "cursor-pointer hover:bg-muted/20"
+                    )}
+                    onClick={() =>
+                      cell.sourceRows &&
+                      handleCellClick(cell, row.key, cell.key)
+                    }
+                  >
+                    {typeof cell.value === "number"
+                      ? cell.value.toLocaleString(undefined, {
+                          maximumFractionDigits: 2,
+                        })
+                      : cell.value}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

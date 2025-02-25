@@ -20,9 +20,9 @@ export function createPivotTableSettings(
       },
     ],
     showTotals: {
-      row: true,
-      column: true,
-      grand: true,
+      row: false,
+      column: false,
+      grand: false,
     },
   };
 }

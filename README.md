@@ -27,7 +27,6 @@ Will be updated when done...
 
 ### Packaging and usages
 
-- Get an initial page created to test on GitHub pages
 - Export the core data viewer as a component to be installed elsewhere
 - Allow the comp to export the current config so it can be brought into code easily
 

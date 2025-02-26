@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 generated_samples/*
+
+coverage/*

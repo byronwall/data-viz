@@ -436,4 +436,53 @@ describe("Calculator", () => {
       expect(result.error).toContain("Advanced analytics not implemented yet");
     });
   });
+
+  describe("Missing Functionality Tests (TODO)", () => {
+    // These tests are placeholders for functionality that needs to be implemented
+    describe("Date Processing", () => {
+      it.todo("should format dates using D3 format library");
+      it.todo("should extract year from date");
+      it.todo("should extract month from date");
+      it.todo("should extract day from date");
+      it.todo("should extract quarter from date");
+      it.todo("should extract week number from date");
+    });
+
+    describe("String Operations", () => {
+      it.todo("should concatenate strings");
+      it.todo("should extract substrings");
+      it.todo("should perform pattern matching/replacement");
+    });
+
+    describe("Statistical Functions", () => {
+      it.todo("should calculate percentiles");
+      it.todo("should calculate standard deviation");
+      it.todo("should calculate variance");
+      it.todo("should calculate median");
+      it.todo("should calculate z-scores");
+    });
+
+    describe("Advanced Analytics", () => {
+      it.todo("should perform self-organizing maps (Kohonen)");
+      it.todo("should perform PCA with first component extraction");
+      it.todo("should perform PCA with second component extraction");
+      it.todo("should perform UMAP transformation");
+      it.todo("should perform t-SNE transformation");
+    });
+
+    describe("Regression Analysis", () => {
+      it.todo("should perform linear regression");
+      it.todo("should perform polynomial regression");
+      it.todo("should calculate regression residuals");
+      it.todo("should perform ANOVA/factor analysis");
+    });
+
+    describe("Data Transformation", () => {
+      it.todo("should normalize data");
+      it.todo("should standardize data");
+      it.todo("should perform logarithmic transformations");
+      it.todo("should perform binning/bucketing of numeric values");
+      it.todo("should create dummy variables");
+    });
+  });
 });

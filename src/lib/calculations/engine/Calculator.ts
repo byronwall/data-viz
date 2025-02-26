@@ -54,12 +54,6 @@ export class Calculator {
             expression as AdvancedExpression
           );
           break;
-        case "derived":
-          result = await this.evaluateDerived(expression);
-          break;
-        case "literal":
-          result = this.evaluateExpression(expression);
-          break;
         case "ternary":
           result = await this.evaluateTernary(expression as TernaryExpression);
           break;
@@ -120,7 +114,9 @@ export class Calculator {
     return func(evaluatedArgs);
   }
 
-  private async evaluateGroup(expression: GroupExpression): Promise<any> {
+  private async evaluateGroup(
+    expression: GroupExpression
+  ): Promise<Record<string, any>> {
     const groupBy = expression.groupBy;
     const aggregation = expression.aggregation;
 
@@ -143,7 +139,9 @@ export class Calculator {
     return Object.fromEntries(results);
   }
 
-  private async evaluateRank(expression: RankExpression): Promise<any> {
+  private async evaluateRank(
+    expression: RankExpression
+  ): Promise<Record<number, number>> {
     const rankBy = expression.rankBy;
     const isNormalized = expression.isNormalized;
     const isCumulative = expression.isCumulative;
@@ -199,41 +197,6 @@ export class Calculator {
   private async evaluateAdvanced(expression: AdvancedExpression): Promise<any> {
     // This would be implemented based on the specific advanced analytics needed
     throw new Error("Advanced analytics not implemented yet");
-  }
-
-  private async evaluateDerived(expression: Expression): Promise<any> {
-    // For derived expressions, evaluate them as basic expressions
-    if (expression.type !== "derived") {
-      throw new Error("Invalid derived expression");
-    }
-
-    // Cast to BasicExpression since derived expressions should have the same structure
-    const derivedAsBasic = expression as unknown as BasicExpression;
-
-    // Validate that the derived expression has the required properties
-    if (
-      !derivedAsBasic.left ||
-      !derivedAsBasic.right ||
-      !derivedAsBasic.operator
-    ) {
-      throw new Error(
-        "Invalid derived expression: missing required properties"
-      );
-    }
-
-    // Create a basic expression from the derived expression
-    const basicExpr: BasicExpression = {
-      id: expression.id,
-      type: "basic",
-      name: expression.name,
-      dependencies: expression.dependencies,
-      expression: expression.expression,
-      left: derivedAsBasic.left,
-      right: derivedAsBasic.right,
-      operator: derivedAsBasic.operator,
-    };
-
-    return this.evaluateBasic(basicExpr);
   }
 
   private getFunction(name: string): CalcFunction | undefined {
@@ -366,7 +329,7 @@ export class Calculator {
     throw new Error(`Unsupported expression type: ${expr.type}`);
   }
 
-  private async evaluateUnary(expression: UnaryExpression): Promise<any> {
+  private async evaluateUnary(expression: UnaryExpression): Promise<number> {
     if (!expression.operand) {
       throw new Error(`Invalid unary expression: missing operand`);
     }

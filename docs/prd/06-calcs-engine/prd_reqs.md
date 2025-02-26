@@ -113,7 +113,7 @@ The calculations engine is a core component of the data visualization program th
 
 export interface Expression {
   id: string;
-  type: "basic" | "function" | "group" | "rank" | "advanced" | "derived";
+  type: "basic" | "function" | "group" | "rank" | "advanced";
   name: string;
   expression: string;
   dependencies: string[];
@@ -321,8 +321,6 @@ export class Calculator {
         return this.evaluateRank(expression);
       case "advanced":
         return this.evaluateAdvanced(expression);
-      case "derived":
-        return this.evaluateDerived(expression);
     }
   }
 
@@ -376,10 +374,6 @@ export class Calculator {
 
   private async evaluateAdvanced(expression: Expression): Promise<CalculationResult> {
     // Implement ML/advanced analytics
-  }
-
-  private async evaluateDerived(expression: Expression): Promise<CalculationResult> {
-    // Implement derived calculations
   }
 }
 

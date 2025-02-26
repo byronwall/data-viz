@@ -58,10 +58,6 @@ export interface AdvancedExpression extends BaseExpression {
   response?: string;
 }
 
-export interface DerivedExpression extends BaseExpression {
-  type: "derived";
-}
-
 export interface TernaryExpression extends BaseExpression {
   type: "ternary";
   condition: Expression;
@@ -86,7 +82,6 @@ export type Expression =
   | GroupExpression
   | RankExpression
   | AdvancedExpression
-  | DerivedExpression
   | TernaryExpression
   | UnaryExpression
   | LiteralExpression;

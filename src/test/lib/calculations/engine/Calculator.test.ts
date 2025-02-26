@@ -435,36 +435,5 @@ describe("Calculator", () => {
       expect(result.success).toBe(false);
       expect(result.error).toContain("Advanced analytics not implemented yet");
     });
-
-    it("should evaluate derived expressions", async () => {
-      const expr = {
-        id: "test-derived",
-        type: "derived" as const,
-        name: "Derived Test",
-        dependencies: [],
-        expression: "2 + 3",
-        left: {
-          type: "literal" as const,
-          name: "2",
-          dependencies: [],
-          value: 2,
-          expression: "2",
-          id: "left",
-        },
-        right: {
-          type: "literal" as const,
-          name: "3",
-          dependencies: [],
-          value: 3,
-          expression: "3",
-          id: "right",
-        },
-        operator: "+",
-      };
-
-      const result = await calculator.evaluate(expr);
-      expect(result.success).toBe(true);
-      expect(result.value).toBe(5);
-    });
   });
 });

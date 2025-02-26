@@ -1,4 +1,4 @@
-import { parseExpression } from "../parser/semantics";
+import { timeFormat } from "d3-time-format";
 import {
   type AdvancedExpression,
   type BasicExpression,
@@ -12,7 +12,6 @@ import {
   type TernaryExpression,
   type UnaryExpression,
 } from "../types";
-import { timeFormat } from "d3-time-format";
 
 type CalcFunction = (...args: any[]) => any;
 
@@ -52,6 +51,9 @@ export class Calculator {
             expression as FunctionExpression
           );
           if (!funcResult.success) {
+            console.error(
+              `[Calculator.evaluate] Function evaluation failed: ${funcResult.error}`
+            );
             return funcResult;
           }
           result = funcResult.value;
@@ -91,6 +93,11 @@ export class Calculator {
         value: result,
       };
     } catch (error: unknown) {
+      console.error(
+        `[Calculator.evaluate] Error: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
       return {
         success: false,
         value: null,
@@ -155,6 +162,9 @@ export class Calculator {
     // Get the function implementation first
     const func = this.getFunction(expression.functionName);
     if (!func) {
+      console.error(
+        `[Calculator.evaluateFunction] Unknown function: ${expression.functionName}`
+      );
       return {
         success: false,
         value: null,
@@ -170,20 +180,56 @@ export class Calculator {
       const evaluatedArgs = await Promise.all(
         expression.arguments.map(async (arg: Expression) => {
           if (arg.type === "literal") {
-            // If it's a string literal, use it directly
-            if (typeof arg.value === "string") {
-              return arg.value;
-            }
-            // If it's a variable name, try to resolve it
-            if (typeof arg.name === "string") {
-              const value = this.context.variables.get(arg.name);
-              if (value === undefined) {
-                throw new Error(`Undefined variable: ${arg.name}`);
+            const literalArg = arg as LiteralExpression;
+            console.log(
+              `[Calculator.evaluateFunction] Processing literal argument:`,
+              literalArg
+            );
+
+            // If it has a numeric value, use it directly
+            if (literalArg.value !== undefined) {
+              if (typeof literalArg.value === "number") {
+                return literalArg.value;
               }
-              return value;
+
+              // If it's a string literal, use it directly
+              if (typeof literalArg.value === "string") {
+                // Check if it's a variable reference
+                if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(literalArg.value)) {
+                  const value = this.context.variables.get(literalArg.value);
+                  if (value !== undefined) {
+                    return value;
+                  }
+                }
+                return literalArg.value;
+              }
+
+              return literalArg.value;
             }
-            return arg.value;
+
+            // If name is defined and it's a number, use it directly
+            if (typeof literalArg.name === "string") {
+              // If it looks like a number, convert it
+              if (!isNaN(Number(literalArg.name))) {
+                return Number(literalArg.name);
+              }
+
+              // If it looks like a variable, try to resolve it
+              if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(literalArg.name)) {
+                const value = this.context.variables.get(literalArg.name);
+                if (value !== undefined) {
+                  return value;
+                }
+              }
+
+              return literalArg.name;
+            }
+
+            return literalArg.value !== undefined
+              ? literalArg.value
+              : literalArg.name;
           }
+
           const result = await this.evaluate(arg);
           if (!result.success) {
             throw new Error(`Failed to evaluate argument: ${result.error}`);
@@ -204,8 +250,39 @@ export class Calculator {
       ) {
         if (!(evaluatedArgs[0] instanceof Date)) {
           try {
-            evaluatedArgs[0] = new Date(evaluatedArgs[0]);
+            console.log(
+              `[Calculator.evaluateFunction] Converting to Date:`,
+              evaluatedArgs[0]
+            );
+
+            // If it's a variable name, try to get the actual date from variables
+            if (
+              typeof evaluatedArgs[0] === "string" &&
+              /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(evaluatedArgs[0])
+            ) {
+              const dateValue = this.context.variables.get(evaluatedArgs[0]);
+              if (dateValue instanceof Date) {
+                evaluatedArgs[0] = dateValue;
+                console.log(
+                  `[Calculator.evaluateFunction] Found date in variables:`,
+                  evaluatedArgs[0]
+                );
+              } else if (dateValue !== undefined) {
+                evaluatedArgs[0] = new Date(dateValue);
+                console.log(
+                  `[Calculator.evaluateFunction] Converted variable to date:`,
+                  evaluatedArgs[0]
+                );
+              }
+            } else {
+              evaluatedArgs[0] = new Date(evaluatedArgs[0]);
+            }
+
             if (isNaN(evaluatedArgs[0].getTime())) {
+              console.error(
+                `[Calculator.evaluateFunction] Invalid date:`,
+                evaluatedArgs[0]
+              );
               return {
                 success: false,
                 value: null,
@@ -213,6 +290,10 @@ export class Calculator {
               };
             }
           } catch (error) {
+            console.error(
+              `[Calculator.evaluateFunction] Date conversion error:`,
+              error
+            );
             return {
               success: false,
               value: null,
@@ -226,11 +307,13 @@ export class Calculator {
 
       // Execute the function with evaluated arguments
       const result = func(...evaluatedArgs);
+      console.log(`[Calculator.evaluateFunction] Function result:`, result);
       return {
         success: true,
         value: result,
       };
     } catch (error) {
+      console.error(`[Calculator.evaluateFunction] Error:`, error);
       return {
         success: false,
         value: null,

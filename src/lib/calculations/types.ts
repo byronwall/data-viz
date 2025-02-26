@@ -21,6 +21,13 @@ export interface Expression {
   condition?: Expression;
   trueBranch?: Expression;
   falseBranch?: Expression;
+  // For basic expressions
+  left?: Expression;
+  right?: Expression;
+  // For unary expressions
+  operand?: Expression;
+  // For literals
+  value?: any;
 }
 
 export interface ExpressionMetadata {

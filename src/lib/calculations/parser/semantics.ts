@@ -270,6 +270,8 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         }`,
         expression: parsed.operator || "",
         dependencies: getDependencies(parsed),
+        left: parsed.left ? convertToExpression(parsed.left) : undefined,
+        right: parsed.right ? convertToExpression(parsed.right) : undefined,
       };
     case "unary":
       return {
@@ -278,6 +280,9 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         name: `${parsed.operator}${parsed.operand?.name || ""}`,
         expression: parsed.operator || "",
         dependencies: getDependencies(parsed),
+        operand: parsed.operand
+          ? convertToExpression(parsed.operand)
+          : undefined,
       };
     case "ternary":
       return {
@@ -317,17 +322,12 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         id,
         type: "literal",
         name: String(parsed.value),
-        expression: parsed.expression || String(parsed.value),
-        dependencies: [],
-      };
-    default:
-      return {
-        id,
-        type: "basic",
-        name: String(parsed.value),
         expression: String(parsed.value),
         dependencies: [],
+        value: parsed.value,
       };
+    default:
+      throw new Error(`Unsupported expression type: ${parsed.type}`);
   }
 }
 

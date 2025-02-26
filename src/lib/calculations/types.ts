@@ -1,61 +1,3 @@
-export interface Expression {
-  id: string;
-  type:
-    | "basic"
-    | "function"
-    | "group"
-    | "rank"
-    | "advanced"
-    | "derived"
-    | "ternary"
-    | "unary"
-    | "literal";
-  name: string;
-  expression: string;
-  dependencies: string[];
-  metadata?: ExpressionMetadata;
-  // For function calls
-  arguments?: Expression[];
-  functionName?: string;
-  // For ternary expressions
-  condition?: Expression;
-  trueBranch?: Expression;
-  falseBranch?: Expression;
-  // For basic expressions
-  left?: Expression;
-  right?: Expression;
-  // For unary expressions
-  operand?: Expression;
-  // For literals
-  value?: any;
-}
-
-export interface ExpressionMetadata {
-  // For group calculations
-  groupBy?: string[];
-  aggregation?: AggregationType;
-
-  // For rank calculations
-  rankBy?: string[];
-  isNormalized?: boolean;
-  isCumulative?: boolean;
-
-  // For advanced calculations
-  algorithm?: "pca" | "tsne" | "umap" | "som";
-  parameters?: Record<string, any>;
-
-  // For regression
-  regressionType?: "linear" | "polynomial";
-  degree?: number;
-  predictors?: string[];
-  response?: string;
-
-  // For function calls
-  functionCategory?: string;
-  returnType?: string;
-  parameterTypes?: string[];
-}
-
 export type AggregationType =
   | "sum"
   | "count"
@@ -67,6 +9,87 @@ export type AggregationType =
   | "median"
   | "stddev"
   | "variance";
+
+// Base interface for common fields
+interface BaseExpression {
+  id: string;
+  name: string;
+  expression: string;
+  dependencies: string[];
+}
+
+interface BasicExpression extends BaseExpression {
+  type: "basic";
+  left: Expression;
+  right: Expression;
+  operator: string;
+}
+
+interface FunctionExpression extends BaseExpression {
+  type: "function";
+  functionName: string;
+  arguments: Expression[];
+  functionCategory?: string;
+  returnType?: string;
+  parameterTypes?: string[];
+}
+
+interface GroupExpression extends BaseExpression {
+  type: "group";
+  groupBy: string[];
+  aggregation: AggregationType;
+}
+
+interface RankExpression extends BaseExpression {
+  type: "rank";
+  rankBy: string[];
+  isNormalized: boolean;
+  isCumulative: boolean;
+}
+
+interface AdvancedExpression extends BaseExpression {
+  type: "advanced";
+  algorithm: "pca" | "tsne" | "umap" | "som";
+  parameters?: Record<string, any>;
+  // Regression specific fields
+  regressionType?: "linear" | "polynomial";
+  degree?: number;
+  predictors?: string[];
+  response?: string;
+}
+
+interface DerivedExpression extends BaseExpression {
+  type: "derived";
+}
+
+interface TernaryExpression extends BaseExpression {
+  type: "ternary";
+  condition: Expression;
+  trueBranch: Expression;
+  falseBranch: Expression;
+}
+
+interface UnaryExpression extends BaseExpression {
+  type: "unary";
+  operand: Expression;
+  operator: string;
+}
+
+interface LiteralExpression extends BaseExpression {
+  type: "literal";
+  value: any;
+}
+
+export type Expression =
+  | BasicExpression
+  | FunctionExpression
+  | GroupExpression
+  | RankExpression
+  | AdvancedExpression
+  | DerivedExpression
+  | TernaryExpression
+  | UnaryExpression
+  | LiteralExpression;
 
 export interface CalculationResult {
   success: boolean;

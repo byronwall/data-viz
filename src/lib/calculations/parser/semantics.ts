@@ -262,6 +262,9 @@ function convertToExpression(parsed: ParsedExpression): Expression {
 
   switch (parsed.type) {
     case "basic":
+      if (!parsed.left || !parsed.right) {
+        throw new Error("Basic expression must have left and right operands");
+      }
       return {
         id,
         type: "basic",
@@ -270,21 +273,29 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         }`,
         expression: parsed.operator || "",
         dependencies: getDependencies(parsed),
-        left: parsed.left ? convertToExpression(parsed.left) : undefined,
-        right: parsed.right ? convertToExpression(parsed.right) : undefined,
+        left: convertToExpression(parsed.left),
+        right: convertToExpression(parsed.right),
+        operator: parsed.operator || "",
       };
     case "unary":
+      if (!parsed.operand) {
+        throw new Error("Unary expression must have an operand");
+      }
       return {
         id,
         type: "unary",
         name: `${parsed.operator}${parsed.operand?.name || ""}`,
         expression: parsed.operator || "",
         dependencies: getDependencies(parsed),
-        operand: parsed.operand
-          ? convertToExpression(parsed.operand)
-          : undefined,
+        operand: convertToExpression(parsed.operand),
+        operator: parsed.operator || "",
       };
     case "ternary":
+      if (!parsed.condition || !parsed.trueBranch || !parsed.falseBranch) {
+        throw new Error(
+          "Ternary expression must have condition and both branches"
+        );
+      }
       return {
         id,
         type: "ternary",
@@ -295,9 +306,9 @@ function convertToExpression(parsed: ParsedExpression): Expression {
           } : ${parsed.falseBranch?.name || ""}`,
         expression: parsed.expression || "?:",
         dependencies: getDependencies(parsed),
-        condition: convertToExpression(parsed.condition!),
-        trueBranch: convertToExpression(parsed.trueBranch!),
-        falseBranch: convertToExpression(parsed.falseBranch!),
+        condition: convertToExpression(parsed.condition),
+        trueBranch: convertToExpression(parsed.trueBranch),
+        falseBranch: convertToExpression(parsed.falseBranch),
       };
     case "function":
       return {
@@ -305,17 +316,19 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         type: "function",
         name: parsed.name || "",
         expression: "",
-        functionName: parsed.name,
+        functionName: parsed.name || "",
         arguments: parsed.arguments?.map(convertToExpression) || [],
         dependencies: getDependencies(parsed),
       };
     case "identifier":
+      // Create a literal expression for identifiers instead of basic
       return {
         id,
-        type: "basic",
+        type: "literal",
         name: parsed.name || "",
         expression: parsed.name || "",
         dependencies: [parsed.name || ""],
+        value: parsed.name || "",
       };
     case "literal":
       return {

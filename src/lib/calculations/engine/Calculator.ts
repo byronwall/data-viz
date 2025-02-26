@@ -36,31 +36,35 @@ export class Calculator {
 
       switch (expression.type) {
         case "basic":
-          result = await this.evaluateBasic(expression);
+          result = await this.evaluateBasic(expression as BasicExpression);
           break;
         case "function":
-          result = await this.evaluateFunction(expression);
+          result = await this.evaluateFunction(
+            expression as FunctionExpression
+          );
           break;
         case "group":
-          result = await this.evaluateGroup(expression);
+          result = await this.evaluateGroup(expression as GroupExpression);
           break;
         case "rank":
-          result = await this.evaluateRank(expression);
+          result = await this.evaluateRank(expression as RankExpression);
           break;
         case "advanced":
-          result = await this.evaluateAdvanced(expression);
+          result = await this.evaluateAdvanced(
+            expression as AdvancedExpression
+          );
           break;
         case "derived":
           result = await this.evaluateDerived(expression);
           break;
         case "literal":
-          result = await this.evaluateExpression(expression);
+          result = this.evaluateExpression(expression);
           break;
         case "ternary":
-          result = await this.evaluateExpression(expression);
+          result = await this.evaluateTernary(expression as TernaryExpression);
           break;
         case "unary":
-          result = await this.evaluateExpression(expression);
+          result = await this.evaluateUnary(expression as UnaryExpression);
           break;
         default:
           throw new Error(
@@ -75,7 +79,7 @@ export class Calculator {
         success: true,
         value: result,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       return {
         success: false,
         value: null,
@@ -85,7 +89,9 @@ export class Calculator {
   }
 
   private async evaluateBasic(expression: BasicExpression): Promise<any> {
-    // For basic expressions, directly evaluate using the evaluator
+    if (!expression.left || !expression.right) {
+      throw new Error(`Invalid basic expression: missing operands`);
+    }
     return this.evaluateExpression(expression);
   }
 
@@ -156,17 +162,34 @@ export class Calculator {
     });
 
     // Assign ranks
-    const ranks = new Map<any, number>();
+    const ranks = new Map<number, number>();
     sortedData.forEach((row, index) => {
       const rank = index + 1;
-      ranks.set(row, isNormalized ? rank / sortedData.length : rank);
+      ranks.set(row.id, isNormalized ? rank / sortedData.length : rank);
     });
 
     if (isCumulative) {
       let sum = 0;
-      for (const [key, value] of ranks) {
+      const sortedRanks = Array.from(ranks.entries()).sort(([id1], [id2]) => {
+        const row1 = sortedData.find((row) => row.id === id1);
+        const row2 = sortedData.find((row) => row.id === id2);
+        if (!row1 || !row2) {
+          return 0;
+        }
+        for (const field of rankBy) {
+          if (row1[field] < row2[field]) {
+            return -1;
+          }
+          if (row1[field] > row2[field]) {
+            return 1;
+          }
+        }
+        return 0;
+      });
+
+      for (const [id, value] of sortedRanks) {
         sum += value;
-        ranks.set(key, sum);
+        ranks.set(id, sum);
       }
     }
 
@@ -179,8 +202,38 @@ export class Calculator {
   }
 
   private async evaluateDerived(expression: Expression): Promise<any> {
-    // Evaluate the base expression
-    return this.evaluateBasic(expression as BasicExpression);
+    // For derived expressions, evaluate them as basic expressions
+    if (expression.type !== "derived") {
+      throw new Error("Invalid derived expression");
+    }
+
+    // Cast to BasicExpression since derived expressions should have the same structure
+    const derivedAsBasic = expression as unknown as BasicExpression;
+
+    // Validate that the derived expression has the required properties
+    if (
+      !derivedAsBasic.left ||
+      !derivedAsBasic.right ||
+      !derivedAsBasic.operator
+    ) {
+      throw new Error(
+        "Invalid derived expression: missing required properties"
+      );
+    }
+
+    // Create a basic expression from the derived expression
+    const basicExpr: BasicExpression = {
+      id: expression.id,
+      type: "basic",
+      name: expression.name,
+      dependencies: expression.dependencies,
+      expression: expression.expression,
+      left: derivedAsBasic.left,
+      right: derivedAsBasic.right,
+      operator: derivedAsBasic.operator,
+    };
+
+    return this.evaluateBasic(basicExpr);
   }
 
   private getFunction(name: string): CalcFunction | undefined {
@@ -221,14 +274,29 @@ export class Calculator {
     if (expr.type === "literal") {
       const literalExpr = expr as LiteralExpression;
       if (literalExpr.value !== undefined) {
-        // If it's a string and looks like an identifier, throw an error
+        // If it's a string and looks like an identifier, try to resolve it from variables
         if (
           typeof literalExpr.value === "string" &&
           /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(literalExpr.value)
         ) {
-          throw new Error(`Cannot evaluate identifier: ${literalExpr.value}`);
+          const value = this.context.variables.get(literalExpr.value);
+          if (value === undefined) {
+            throw new Error(`Undefined variable: ${literalExpr.value}`);
+          }
+          return Number(value);
         }
         return Number(literalExpr.value);
+      }
+      // Handle identifiers in the name field
+      if (
+        typeof literalExpr.name === "string" &&
+        /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(literalExpr.name)
+      ) {
+        const value = this.context.variables.get(literalExpr.name);
+        if (value === undefined) {
+          throw new Error(`Undefined variable: ${literalExpr.name}`);
+        }
+        return Number(value);
       }
       return Number(literalExpr.name);
     }
@@ -296,5 +364,23 @@ export class Calculator {
     }
 
     throw new Error(`Unsupported expression type: ${expr.type}`);
+  }
+
+  private async evaluateUnary(expression: UnaryExpression): Promise<any> {
+    if (!expression.operand) {
+      throw new Error(`Invalid unary expression: missing operand`);
+    }
+    return this.evaluateExpression(expression);
+  }
+
+  private async evaluateTernary(expression: TernaryExpression): Promise<any> {
+    if (
+      !expression.condition ||
+      !expression.trueBranch ||
+      !expression.falseBranch
+    ) {
+      throw new Error(`Invalid ternary expression: missing branches`);
+    }
+    return this.evaluateExpression(expression);
   }
 }

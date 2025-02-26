@@ -6,3 +6,4 @@
 - Review `keyword` for ohm - looks not used
 - How does the registry interact with the parser + calculator?
 - Adjust test command to not watch - stalls cursor
+- Need to think through how to handle vector vs. scalar calcs -- basically all calcs will run row wise eventually... except those that must process an entire column at once

@@ -12,6 +12,7 @@ import {
   type TernaryExpression,
   type UnaryExpression,
 } from "../types";
+import { timeFormat } from "d3-time-format";
 
 type CalcFunction = (...args: any[]) => any;
 
@@ -24,8 +25,15 @@ export class Calculator {
 
   async evaluate(expression: Expression): Promise<CalculationResult> {
     try {
+      console.log(
+        `[Calculator.evaluate] Starting evaluation of expression type: ${expression.type}`
+      );
+
       // Check cache first
       if (this.cache.has(expression.id)) {
+        console.log(
+          `[Calculator.evaluate] Cache hit for expression ID: ${expression.id}`
+        );
         return {
           success: true,
           value: this.cache.get(expression.id),
@@ -33,15 +41,20 @@ export class Calculator {
       }
 
       let result: any;
+      let funcResult: CalculationResult;
 
       switch (expression.type) {
         case "basic":
           result = await this.evaluateBasic(expression as BasicExpression);
           break;
         case "function":
-          result = await this.evaluateFunction(
+          funcResult = await this.evaluateFunction(
             expression as FunctionExpression
           );
+          if (!funcResult.success) {
+            return funcResult;
+          }
+          result = funcResult.value;
           break;
         case "group":
           result = await this.evaluateGroup(expression as GroupExpression);
@@ -60,6 +73,9 @@ export class Calculator {
         case "unary":
           result = await this.evaluateUnary(expression as UnaryExpression);
           break;
+        case "literal":
+          result = this.evaluateLiteral(expression as LiteralExpression);
+          break;
         default:
           throw new Error(
             `Unknown expression type: ${(expression as any).type}`
@@ -69,6 +85,7 @@ export class Calculator {
       // Cache the result
       this.cache.set(expression.id, result);
 
+      // Ensure we return a proper CalculationResult
       return {
         success: true,
         value: result,
@@ -86,32 +103,142 @@ export class Calculator {
     if (!expression.left || !expression.right) {
       throw new Error(`Invalid basic expression: missing operands`);
     }
-    return this.evaluateExpression(expression);
-  }
 
-  private async evaluateFunction(expression: FunctionExpression): Promise<any> {
-    // Evaluate all arguments first
-    const evaluatedArgs = await Promise.all(
-      expression.arguments.map(async (arg: Expression) => {
-        // For each argument, first parse it if it's a string expression
-        const parsedArg =
-          typeof arg.expression === "string"
-            ? parseExpression(arg.expression)
-            : arg;
-
-        // Then evaluate it
-        return this.evaluateExpression(parsedArg);
-      })
-    );
-
-    // Get the function implementation
-    const func = this.getFunction(expression.functionName);
-    if (!func) {
-      throw new Error(`Unknown function: ${expression.functionName}`);
+    const leftResult = await this.evaluate(expression.left);
+    if (!leftResult.success) {
+      throw new Error(`Failed to evaluate left operand: ${leftResult.error}`);
     }
 
-    // Execute the function with evaluated arguments
-    return func(evaluatedArgs);
+    const rightResult = await this.evaluate(expression.right);
+    if (!rightResult.success) {
+      throw new Error(`Failed to evaluate right operand: ${rightResult.error}`);
+    }
+
+    const left = leftResult.value;
+    const right = rightResult.value;
+
+    // Convert operands to numbers if they're strings that look like numbers
+    const leftNum = typeof left === "string" ? Number(left) : left;
+    const rightNum = typeof right === "string" ? Number(right) : right;
+
+    if (isNaN(leftNum) || isNaN(rightNum)) {
+      throw new Error(
+        `Invalid operands for operator ${expression.operator}: ${left}, ${right}`
+      );
+    }
+
+    switch (expression.operator) {
+      case "+":
+        return leftNum + rightNum;
+      case "-":
+        return leftNum - rightNum;
+      case "*":
+        return leftNum * rightNum;
+      case "/":
+        if (rightNum === 0) {
+          throw new Error("Division by zero");
+        }
+        return leftNum / rightNum;
+      case "^":
+        return Math.pow(leftNum, rightNum);
+      default:
+        throw new Error(`Unknown operator: ${expression.operator}`);
+    }
+  }
+
+  private async evaluateFunction(
+    expression: FunctionExpression
+  ): Promise<CalculationResult> {
+    console.log(
+      `[Calculator.evaluateFunction] Evaluating function: ${expression.functionName}`
+    );
+    // Get the function implementation first
+    const func = this.getFunction(expression.functionName);
+    if (!func) {
+      return {
+        success: false,
+        value: null,
+        error: `Unknown function: ${expression.functionName}`,
+      };
+    }
+
+    try {
+      // Evaluate all arguments
+      console.log(
+        `[Calculator.evaluateFunction] Evaluating ${expression.arguments.length} arguments`
+      );
+      const evaluatedArgs = await Promise.all(
+        expression.arguments.map(async (arg: Expression) => {
+          if (arg.type === "literal") {
+            // If it's a string literal, use it directly
+            if (typeof arg.value === "string") {
+              return arg.value;
+            }
+            // If it's a variable name, try to resolve it
+            if (typeof arg.name === "string") {
+              const value = this.context.variables.get(arg.name);
+              if (value === undefined) {
+                throw new Error(`Undefined variable: ${arg.name}`);
+              }
+              return value;
+            }
+            return arg.value;
+          }
+          const result = await this.evaluate(arg);
+          if (!result.success) {
+            throw new Error(`Failed to evaluate argument: ${result.error}`);
+          }
+          return result.value;
+        })
+      );
+
+      console.log(
+        `[Calculator.evaluateFunction] Arguments evaluated:`,
+        evaluatedArgs
+      );
+
+      // For date functions, ensure the first argument is a Date object
+      if (
+        expression.functionName.toLowerCase() === "formatdate" ||
+        expression.functionName.toLowerCase() === "extractdatecomponent"
+      ) {
+        if (!(evaluatedArgs[0] instanceof Date)) {
+          try {
+            evaluatedArgs[0] = new Date(evaluatedArgs[0]);
+            if (isNaN(evaluatedArgs[0].getTime())) {
+              return {
+                success: false,
+                value: null,
+                error: `Invalid date: ${evaluatedArgs[0]}`,
+              };
+            }
+          } catch (error) {
+            return {
+              success: false,
+              value: null,
+              error: `Failed to convert argument to Date: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            };
+          }
+        }
+      }
+
+      // Execute the function with evaluated arguments
+      const result = func(...evaluatedArgs);
+      return {
+        success: true,
+        value: result,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        value: null,
+        error: `Error executing function ${expression.functionName}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
   }
 
   private async evaluateGroup(
@@ -200,16 +327,57 @@ export class Calculator {
   }
 
   private getFunction(name: string): CalcFunction | undefined {
+    console.log(`[Calculator.getFunction] Looking up function: ${name}`);
     const functions: Record<string, CalcFunction> = {
-      sum: (values: number[]) => values.reduce((a, b) => a + b, 0),
-      avg: (values: number[]) =>
-        values.reduce((a, b) => a + b, 0) / values.length,
-      min: (values: number[]) => Math.min(...values),
-      max: (values: number[]) => Math.max(...values),
-      count: (values: any[]) => values.length,
+      sum: (...values: number[]) => {
+        console.log(`[Calculator.sum] Calculating sum of:`, values);
+        return values.reduce((a, b) => Number(a) + Number(b), 0);
+      },
+      avg: (...values: number[]) => {
+        console.log(`[Calculator.avg] Calculating average of:`, values);
+        return (
+          values.reduce((a, b) => Number(a) + Number(b), 0) / values.length
+        );
+      },
+      min: (...values: number[]) => {
+        console.log(`[Calculator.min] Calculating min of:`, values);
+        return Math.min(...values.map((v) => Number(v)));
+      },
+      max: (...values: number[]) => {
+        console.log(`[Calculator.max] Calculating max of:`, values);
+        return Math.max(...values.map((v) => Number(v)));
+      },
+      count: (...values: any[]) => {
+        console.log(`[Calculator.count] Counting values:`, values);
+        return values.length;
+      },
+      formatdate: (date: Date, format: string) => {
+        console.log(`[Calculator.formatdate] Formatting date:`, date, format);
+        return this.formatDate(date, format);
+      },
+      extractdatecomponent: (
+        date: Date,
+        component: "year" | "month" | "day" | "quarter" | "week"
+      ) => {
+        console.log(
+          `[Calculator.extractdatecomponent] Extracting ${component} from:`,
+          date
+        );
+        return this.extractDateComponent(date, component);
+      },
     };
 
-    return functions[name.toLowerCase()];
+    // First try exact match
+    if (name in functions) {
+      return functions[name];
+    }
+
+    // Try case-insensitive match
+    const lowerName = name.toLowerCase();
+    const functionKey = Object.keys(functions).find(
+      (key) => key.toLowerCase() === lowerName
+    );
+    return functionKey ? functions[functionKey] : undefined;
   }
 
   private aggregate(data: any[], type: string): any {
@@ -349,14 +517,90 @@ export class Calculator {
 
   // Date Processing Functions
   private formatDate(date: Date, format: string): string {
-    throw new Error("Date formatting not implemented");
+    console.log(
+      `[Calculator.formatDate] Formatting date with format: ${format}`,
+      date
+    );
+    try {
+      const formatter = timeFormat(format);
+      const result = formatter(date);
+      console.log(`[Calculator.formatDate] Result:`, result);
+      return result;
+    } catch (error) {
+      console.error(`[Calculator.formatDate] Error:`, error);
+      throw new Error(
+        `Error formatting date: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  private getISOWeek(date: Date): number {
+    try {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+      const week1 = new Date(d.getFullYear(), 0, 4);
+      return (
+        1 +
+        Math.round(
+          ((d.getTime() - week1.getTime()) / 86400000 -
+            3 +
+            ((week1.getDay() + 6) % 7)) /
+            7
+        )
+      );
+    } catch (error) {
+      throw new Error(
+        `Error calculating ISO week: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
   }
 
   private extractDateComponent(
     date: Date,
     component: "year" | "month" | "day" | "quarter" | "week"
   ): number {
-    throw new Error("Date component extraction not implemented");
+    try {
+      console.log(
+        `[Calculator.extractDateComponent] Processing date:`,
+        date,
+        `for component:`,
+        component
+      );
+      let result: number;
+      switch (component) {
+        case "year":
+          result = date.getFullYear();
+          break;
+        case "month":
+          result = date.getMonth() + 1; // Adding 1 since getMonth() returns 0-11
+          break;
+        case "day":
+          result = date.getDate();
+          break;
+        case "quarter":
+          result = Math.floor(date.getMonth() / 3) + 1;
+          break;
+        case "week":
+          result = this.getISOWeek(date);
+          break;
+        default:
+          throw new Error(`Unknown date component: ${component}`);
+      }
+      console.log(`[Calculator.extractDateComponent] Result:`, result);
+      return result;
+    } catch (error) {
+      console.error(`[Calculator.extractDateComponent] Error:`, error);
+      throw new Error(
+        `Error extracting date component: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
   }
 
   // String Operation Functions
@@ -472,5 +716,52 @@ export class Calculator {
 
   private createDummyVariables(categories: string[]): Record<string, number[]> {
     throw new Error("Dummy variable creation not implemented");
+  }
+
+  private evaluateLiteral(expression: LiteralExpression): any {
+    // If value is defined, use it first
+    if (expression.value !== undefined) {
+      // If it's a string that looks like an identifier, try to resolve it from variables
+      if (
+        typeof expression.value === "string" &&
+        /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(expression.value)
+      ) {
+        const value = this.context.variables.get(expression.value);
+        if (value === undefined) {
+          throw new Error(`Undefined variable: ${expression.value}`);
+        }
+        return value;
+      }
+      // If it's a string that looks like a number, convert it
+      if (
+        typeof expression.value === "string" &&
+        !isNaN(Number(expression.value))
+      ) {
+        return Number(expression.value);
+      }
+      return expression.value;
+    }
+
+    // If name is defined and looks like an identifier, try to resolve it from variables
+    if (
+      typeof expression.name === "string" &&
+      /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(expression.name)
+    ) {
+      const value = this.context.variables.get(expression.name);
+      if (value === undefined) {
+        throw new Error(`Undefined variable: ${expression.name}`);
+      }
+      return value;
+    }
+
+    // If name is a string that looks like a number, convert it
+    if (
+      typeof expression.name === "string" &&
+      !isNaN(Number(expression.name))
+    ) {
+      return Number(expression.name);
+    }
+
+    return expression.name;
   }
 }

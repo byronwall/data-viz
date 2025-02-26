@@ -440,12 +440,55 @@ describe("Calculator", () => {
   describe("Missing Functionality Tests (TODO)", () => {
     // These tests are placeholders for functionality that needs to be implemented
     describe("Date Processing", () => {
-      it.todo("should format dates using D3 format library");
-      it.todo("should extract year from date");
-      it.todo("should extract month from date");
-      it.todo("should extract day from date");
-      it.todo("should extract quarter from date");
-      it.todo("should extract week number from date");
+      const calculator = new Calculator({
+        data: [],
+        cache: new Map(),
+        variables: new Map([["testDate", new Date("2024-03-15T12:30:00Z")]]),
+      });
+
+      it("should format dates using D3 format library", async () => {
+        const expr = parseExpression('formatDate(testDate, "%Y-%m-%d")');
+        const result = await calculator.evaluate(expr);
+        expect(result.success).toBe(true);
+        expect(result.value).toBe("2024-03-15");
+      });
+
+      it("should extract year from date", async () => {
+        const expr = parseExpression('extractDateComponent(testDate, "year")');
+        const result = await calculator.evaluate(expr);
+        expect(result.success).toBe(true);
+        expect(result.value).toBe(2024);
+      });
+
+      it("should extract month from date", async () => {
+        const expr = parseExpression('extractDateComponent(testDate, "month")');
+        const result = await calculator.evaluate(expr);
+        expect(result.success).toBe(true);
+        expect(result.value).toBe(3); // March
+      });
+
+      it("should extract day from date", async () => {
+        const expr = parseExpression('extractDateComponent(testDate, "day")');
+        const result = await calculator.evaluate(expr);
+        expect(result.success).toBe(true);
+        expect(result.value).toBe(15);
+      });
+
+      it("should extract quarter from date", async () => {
+        const expr = parseExpression(
+          'extractDateComponent(testDate, "quarter")'
+        );
+        const result = await calculator.evaluate(expr);
+        expect(result.success).toBe(true);
+        expect(result.value).toBe(1); // Q1
+      });
+
+      it("should extract week number from date", async () => {
+        const expr = parseExpression('extractDateComponent(testDate, "week")');
+        const result = await calculator.evaluate(expr);
+        expect(result.success).toBe(true);
+        expect(result.value).toBe(11); // Week 11 of 2024
+      });
     });
 
     describe("String Operations", () => {

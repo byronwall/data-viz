@@ -17,7 +17,6 @@ Will be updated when done...
 - Top level filter + steps = ability to quickly segment data and work on slices
 - Improve UX everywhere
   - Settings needs a numeric input that works
-  - Field picker at top needs to improve
   - Add keyboard shortcuts + a guide
 - Allow controlling settings better
   - Grid layout
@@ -64,3 +63,5 @@ Will be updated when done...
   - Allow keeping 0 count items in display to avoid layout shift when filtering
 - Need to swap out the multi select comp with good one from Plantasktic
 - Add button to create blank chart by choosing type
+- Allow the summary table to show up in a popover if the sidebar is collapsed
+- `Remove all charts` needs a warning

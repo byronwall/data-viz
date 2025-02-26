@@ -1,5 +1,9 @@
 # Common prompts
 
+## Create a set of requirements from a transcript
+
+Take this transcript and split it into a new PRD document. Meticulously grab all of the comments and notes and "we should do" remarks and get them into a single file per bar chart. Organize the PRDs by sections: Requirements and then Outstanding Questions.
+
 ## Build a plan
 
 Update the prd_plan to include an actual implementation plan. Where it makes sense, add interface details and comp outlines (file structure + main props and actions).

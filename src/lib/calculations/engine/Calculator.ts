@@ -4,6 +4,7 @@ import {
   type CalculationContext,
 } from "../types";
 import { parseExpression } from "../parser/semantics";
+import { evaluate } from "../evaluator";
 
 type CalcFunction = (...args: any[]) => any;
 
@@ -66,9 +67,8 @@ export class Calculator {
   }
 
   private async evaluateBasic(expression: Expression): Promise<any> {
-    // For basic expressions, we need to parse and evaluate
-    const parsedExpr = parseExpression(expression.expression);
-    return this.evaluateNode(parsedExpr);
+    // For basic expressions, directly evaluate using the evaluator
+    return evaluate(expression);
   }
 
   private async evaluateFunction(expression: Expression): Promise<any> {
@@ -77,15 +77,18 @@ export class Calculator {
     }
 
     // Evaluate all arguments first
-    const args = await Promise.all(
-      (expression.arguments || []).map((arg) => this.evaluate(arg))
-    );
+    const evaluatedArgs = await Promise.all(
+      (expression.arguments || []).map(async (arg) => {
+        // For each argument, first parse it if it's a string expression
+        const parsedArg =
+          typeof arg.expression === "string"
+            ? parseExpression(arg.expression)
+            : arg;
 
-    // Check for errors in arguments
-    const errorArg = args.find((arg) => !arg.success);
-    if (errorArg) {
-      throw new Error(errorArg.error);
-    }
+        // Then evaluate it
+        return evaluate(parsedArg);
+      })
+    );
 
     // Get the function implementation
     const func = this.getFunction(expression.functionName);
@@ -94,7 +97,7 @@ export class Calculator {
     }
 
     // Execute the function with evaluated arguments
-    return func(...args.map((arg) => arg.value));
+    return func(evaluatedArgs);
   }
 
   private async evaluateGroup(expression: Expression): Promise<any> {
@@ -179,7 +182,6 @@ export class Calculator {
   }
 
   private getFunction(name: string): CalcFunction | undefined {
-    // This would be expanded to include all supported functions
     const functions: Record<string, CalcFunction> = {
       sum: (values: number[]) => values.reduce((a, b) => a + b, 0),
       avg: (values: number[]) =>
@@ -189,7 +191,7 @@ export class Calculator {
       count: (values: any[]) => values.length,
     };
 
-    return functions[name];
+    return functions[name.toLowerCase()];
   }
 
   private aggregate(data: any[], type: string): any {
@@ -214,7 +216,6 @@ export class Calculator {
   }
 
   private async evaluateNode(node: Expression): Promise<any> {
-    // This would be expanded based on the node types from the parser
-    return 0; // Placeholder
+    return evaluate(node);
   }
 }

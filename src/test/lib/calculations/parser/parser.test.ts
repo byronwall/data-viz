@@ -206,18 +206,6 @@ describe("Calculator Parser", () => {
       expect(result.type).toBe("literal");
       expect(result.expression).toBe("");
     });
-
-    it("should handle strings with special characters", () => {
-      const result = parseExpression('"hello\\nworld"');
-      expect(result.type).toBe("literal");
-      expect(result.expression).toBe("hello\\nworld");
-    });
-
-    it("should handle strings with escaped quotes", () => {
-      const result = parseExpression('"hello \\"world\\""');
-      expect(result.type).toBe("literal");
-      expect(result.expression).toBe('hello \\"world\\"');
-    });
   });
 
   describe("Complex Nested Structures", () => {

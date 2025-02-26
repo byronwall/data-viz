@@ -1,10 +1,17 @@
-import {
-  type Expression,
-  type CalculationResult,
-  type CalculationContext,
-} from "../types";
 import { parseExpression } from "../parser/semantics";
-import { evaluate } from "../evaluator";
+import {
+  type AdvancedExpression,
+  type BasicExpression,
+  type CalculationContext,
+  type CalculationResult,
+  type Expression,
+  type FunctionExpression,
+  type GroupExpression,
+  type LiteralExpression,
+  type RankExpression,
+  type TernaryExpression,
+  type UnaryExpression,
+} from "../types";
 
 type CalcFunction = (...args: any[]) => any;
 
@@ -46,8 +53,19 @@ export class Calculator {
         case "derived":
           result = await this.evaluateDerived(expression);
           break;
+        case "literal":
+          result = await this.evaluateExpression(expression);
+          break;
+        case "ternary":
+          result = await this.evaluateExpression(expression);
+          break;
+        case "unary":
+          result = await this.evaluateExpression(expression);
+          break;
         default:
-          throw new Error(`Unknown expression type: ${expression.type}`);
+          throw new Error(
+            `Unknown expression type: ${(expression as any).type}`
+          );
       }
 
       // Cache the result
@@ -66,19 +84,15 @@ export class Calculator {
     }
   }
 
-  private async evaluateBasic(expression: Expression): Promise<any> {
+  private async evaluateBasic(expression: BasicExpression): Promise<any> {
     // For basic expressions, directly evaluate using the evaluator
     return this.evaluateExpression(expression);
   }
 
-  private async evaluateFunction(expression: Expression): Promise<any> {
-    if (!expression.functionName) {
-      throw new Error("Function name is required");
-    }
-
+  private async evaluateFunction(expression: FunctionExpression): Promise<any> {
     // Evaluate all arguments first
     const evaluatedArgs = await Promise.all(
-      (expression.arguments || []).map(async (arg) => {
+      expression.arguments.map(async (arg: Expression) => {
         // For each argument, first parse it if it's a string expression
         const parsedArg =
           typeof arg.expression === "string"
@@ -86,7 +100,7 @@ export class Calculator {
             : arg;
 
         // Then evaluate it
-        return evaluate(parsedArg);
+        return this.evaluateExpression(parsedArg);
       })
     );
 
@@ -100,18 +114,14 @@ export class Calculator {
     return func(evaluatedArgs);
   }
 
-  private async evaluateGroup(expression: Expression): Promise<any> {
-    if (!expression.metadata?.groupBy) {
-      throw new Error("Group by fields are required");
-    }
-
-    const groupBy = expression.metadata.groupBy;
-    const aggregation = expression.metadata.aggregation || "sum";
+  private async evaluateGroup(expression: GroupExpression): Promise<any> {
+    const groupBy = expression.groupBy;
+    const aggregation = expression.aggregation;
 
     // Group the data
     const groups = new Map<string, any[]>();
     for (const row of this.context.data) {
-      const key = groupBy.map((field) => row[field]).join(":");
+      const key = groupBy.map((field: string) => row[field]).join(":");
       if (!groups.has(key)) {
         groups.set(key, []);
       }
@@ -127,14 +137,10 @@ export class Calculator {
     return Object.fromEntries(results);
   }
 
-  private async evaluateRank(expression: Expression): Promise<any> {
-    if (!expression.metadata?.rankBy) {
-      throw new Error("Rank by fields are required");
-    }
-
-    const rankBy = expression.metadata.rankBy;
-    const isNormalized = expression.metadata.isNormalized || false;
-    const isCumulative = expression.metadata.isCumulative || false;
+  private async evaluateRank(expression: RankExpression): Promise<any> {
+    const rankBy = expression.rankBy;
+    const isNormalized = expression.isNormalized;
+    const isCumulative = expression.isCumulative;
 
     // Sort the data
     const sortedData = [...this.context.data].sort((a, b) => {
@@ -167,18 +173,14 @@ export class Calculator {
     return Object.fromEntries(ranks);
   }
 
-  private async evaluateAdvanced(expression: Expression): Promise<any> {
-    if (!expression.metadata?.algorithm) {
-      throw new Error("Algorithm type is required");
-    }
-
+  private async evaluateAdvanced(expression: AdvancedExpression): Promise<any> {
     // This would be implemented based on the specific advanced analytics needed
     throw new Error("Advanced analytics not implemented yet");
   }
 
   private async evaluateDerived(expression: Expression): Promise<any> {
     // Evaluate the base expression
-    return this.evaluateBasic(expression);
+    return this.evaluateBasic(expression as BasicExpression);
   }
 
   private getFunction(name: string): CalcFunction | undefined {
@@ -215,34 +217,32 @@ export class Calculator {
     }
   }
 
-  private async evaluateNode(node: Expression): Promise<any> {
-    return this.evaluateExpression(node);
-  }
-
   private evaluateExpression(expr: Expression): number {
     if (expr.type === "literal") {
-      if (expr.value !== undefined) {
+      const literalExpr = expr as LiteralExpression;
+      if (literalExpr.value !== undefined) {
         // If it's a string and looks like an identifier, throw an error
         if (
-          typeof expr.value === "string" &&
-          /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(expr.value)
+          typeof literalExpr.value === "string" &&
+          /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(literalExpr.value)
         ) {
-          throw new Error(`Cannot evaluate identifier: ${expr.value}`);
+          throw new Error(`Cannot evaluate identifier: ${literalExpr.value}`);
         }
-        return Number(expr.value);
+        return Number(literalExpr.value);
       }
-      return Number(expr.name);
+      return Number(literalExpr.name);
     }
 
     if (expr.type === "basic") {
-      if (!expr.left || !expr.right) {
+      const basicExpr = expr as BasicExpression;
+      if (!basicExpr.left || !basicExpr.right) {
         throw new Error(`Invalid basic expression: missing operands`);
       }
 
-      const left = this.evaluateExpression(expr.left);
-      const right = this.evaluateExpression(expr.right);
+      const left = this.evaluateExpression(basicExpr.left);
+      const right = this.evaluateExpression(basicExpr.right);
 
-      switch (expr.operator) {
+      switch (basicExpr.operator) {
         case "+":
           return left + right;
         case "-":
@@ -257,36 +257,42 @@ export class Calculator {
         case "^":
           return Math.pow(left, right);
         default:
-          throw new Error(`Unknown operator: ${expr.operator}`);
+          throw new Error(`Unknown operator: ${basicExpr.operator}`);
       }
     }
 
     if (expr.type === "unary") {
-      if (!expr.operand) {
+      const unaryExpr = expr as UnaryExpression;
+      if (!unaryExpr.operand) {
         throw new Error(`Invalid unary expression: missing operand`);
       }
 
-      const operand = this.evaluateExpression(expr.operand);
+      const operand = this.evaluateExpression(unaryExpr.operand);
 
-      switch (expr.operator) {
+      switch (unaryExpr.operator) {
         case "-":
           return -operand;
         case "+":
           return operand;
         default:
-          throw new Error(`Unknown unary operator: ${expr.operator}`);
+          throw new Error(`Unknown unary operator: ${unaryExpr.operator}`);
       }
     }
 
     if (expr.type === "ternary") {
-      if (!expr.condition || !expr.trueBranch || !expr.falseBranch) {
+      const ternaryExpr = expr as TernaryExpression;
+      if (
+        !ternaryExpr.condition ||
+        !ternaryExpr.trueBranch ||
+        !ternaryExpr.falseBranch
+      ) {
         throw new Error(`Invalid ternary expression: missing branches`);
       }
 
-      const condition = this.evaluateExpression(expr.condition);
+      const condition = this.evaluateExpression(ternaryExpr.condition);
       return condition
-        ? this.evaluateExpression(expr.trueBranch)
-        : this.evaluateExpression(expr.falseBranch);
+        ? this.evaluateExpression(ternaryExpr.trueBranch)
+        : this.evaluateExpression(ternaryExpr.falseBranch);
     }
 
     throw new Error(`Unsupported expression type: ${expr.type}`);

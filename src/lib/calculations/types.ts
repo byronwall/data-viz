@@ -11,21 +11,21 @@ export type AggregationType =
   | "variance";
 
 // Base interface for common fields
-interface BaseExpression {
+export interface BaseExpression {
   id: string;
   name: string;
   expression: string;
   dependencies: string[];
 }
 
-interface BasicExpression extends BaseExpression {
+export interface BasicExpression extends BaseExpression {
   type: "basic";
   left: Expression;
   right: Expression;
   operator: string;
 }
 
-interface FunctionExpression extends BaseExpression {
+export interface FunctionExpression extends BaseExpression {
   type: "function";
   functionName: string;
   arguments: Expression[];
@@ -34,20 +34,20 @@ interface FunctionExpression extends BaseExpression {
   parameterTypes?: string[];
 }
 
-interface GroupExpression extends BaseExpression {
+export interface GroupExpression extends BaseExpression {
   type: "group";
   groupBy: string[];
   aggregation: AggregationType;
 }
 
-interface RankExpression extends BaseExpression {
+export interface RankExpression extends BaseExpression {
   type: "rank";
   rankBy: string[];
   isNormalized: boolean;
   isCumulative: boolean;
 }
 
-interface AdvancedExpression extends BaseExpression {
+export interface AdvancedExpression extends BaseExpression {
   type: "advanced";
   algorithm: "pca" | "tsne" | "umap" | "som";
   parameters?: Record<string, any>;
@@ -58,24 +58,24 @@ interface AdvancedExpression extends BaseExpression {
   response?: string;
 }
 
-interface DerivedExpression extends BaseExpression {
+export interface DerivedExpression extends BaseExpression {
   type: "derived";
 }
 
-interface TernaryExpression extends BaseExpression {
+export interface TernaryExpression extends BaseExpression {
   type: "ternary";
   condition: Expression;
   trueBranch: Expression;
   falseBranch: Expression;
 }
 
-interface UnaryExpression extends BaseExpression {
+export interface UnaryExpression extends BaseExpression {
   type: "unary";
   operand: Expression;
   operator: string;
 }
 
-interface LiteralExpression extends BaseExpression {
+export interface LiteralExpression extends BaseExpression {
   type: "literal";
   value: any;
 }

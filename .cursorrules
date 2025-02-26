@@ -1,5 +1,7 @@
 # Rules
 
+- ALWAYS RUN TESTS BEFORE REVIEWING CODE
+
 - use pnpm as package manager
 - use typescript
 - use tailwind css for styling

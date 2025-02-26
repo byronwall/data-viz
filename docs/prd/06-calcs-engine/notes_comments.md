@@ -5,3 +5,4 @@
 - Swap any for datum
 - Review `keyword` for ohm - looks not used
 - How does the registry interact with the parser + calculator?
+- Adjust test command to not watch - stalls cursor

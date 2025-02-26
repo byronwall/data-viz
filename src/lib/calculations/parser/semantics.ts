@@ -1,11 +1,54 @@
 import { type Expression } from "../types";
-import ohm from "ohm-js";
-import fs from "fs";
-import path from "path";
+import * as ohm from "ohm-js";
 
-// Load the grammar
-const grammarFile = path.join(__dirname, "grammar.ohm");
-const grammar = ohm.grammar(fs.readFileSync(grammarFile, "utf-8"));
+// Define the grammar inline
+const grammarSource = `Calculation {
+  Expression = IfExpr | TernaryExpr | LogicalExpr
+
+  LogicalExpr = LogicalExpr LogicalOp ComparisonExpr  -- binary
+              | ComparisonExpr                        -- term
+
+  ComparisonExpr = ComparisonExpr ComparisonOp AddExpr  -- binary
+                 | AddExpr                              -- term
+
+  AddExpr = AddExpr ("+" | "-") MulExpr  -- binary
+         | MulExpr                       -- term
+
+  MulExpr = MulExpr ("*" | "/") PowerExpr  -- binary
+         | PowerExpr                       -- term
+
+  PowerExpr = Term "^" PowerExpr  -- binary
+           | Term                 -- term
+
+  TernaryExpr = LogicalExpr "?" Expression ":" Expression
+  Term = UnaryExpr | FunctionCall | ParenTerm | number | string | boolean | null | identifier
+  UnaryExpr = UnaryOperator Term
+  FunctionCall = identifier "(" ListOf<Expression, ","> ")"
+  ParenTerm = "(" Expression ")"
+  IfExpr = "if" Expression "then" Expression "else" Expression
+
+  ComparisonOp = "==" | "!=" | "<=" | ">=" | "<" | ">"
+  LogicalOp = "&&" | "||"
+  UnaryOperator = "-" | "+" | "!"
+
+  identifier = ~keyword letter (letter | digit | "_")*
+  number = digit+ ("." digit+)?
+  string = "\\"" stringChar* "\\""
+  stringChar = ~("\\"" | "\\\\") any  -- nonEscape
+             | "\\\\" any              -- escape
+  boolean = "true" | "false"
+  null = "null"
+
+  // Built-in keywords
+  keyword = "if" | "then" | "else" | "true" | "false" | "null"
+
+  // Whitespace handling
+  space += comment
+  comment = "//" (~"\\n" any)* "\\n"  // Single line comments
+}`;
+
+// Create the grammar
+const grammar = ohm.grammar(grammarSource);
 
 export interface ParsedExpression {
   type: string;
@@ -20,6 +63,8 @@ export interface ParsedExpression {
   condition?: ParsedExpression;
   trueBranch?: ParsedExpression;
   falseBranch?: ParsedExpression;
+  dependencies?: string[];
+  expression?: string;
 }
 
 type Node = ohm.Node;
@@ -31,14 +76,80 @@ semantics.addOperation<ParsedExpression>("eval", {
   Expression(e: Node): ParsedExpression {
     return e.eval();
   },
-  BinaryExpr(left: Node, op: Node, right: Node): ParsedExpression {
+  LogicalExpr_binary(left: Node, op: Node, right: Node): ParsedExpression {
     return {
-      type: "binary",
-      value: undefined,
+      type: "basic",
       operator: op.sourceString,
+      expression: op.sourceString,
       left: left.eval(),
       right: right.eval(),
     };
+  },
+  LogicalExpr_term(term: Node): ParsedExpression {
+    return term.eval();
+  },
+  ComparisonExpr_binary(left: Node, op: Node, right: Node): ParsedExpression {
+    return {
+      type: "basic",
+      operator: op.sourceString,
+      expression: op.sourceString,
+      left: left.eval(),
+      right: right.eval(),
+    };
+  },
+  ComparisonExpr_term(term: Node): ParsedExpression {
+    return term.eval();
+  },
+  AddExpr_binary(left: Node, op: Node, right: Node): ParsedExpression {
+    return {
+      type: "basic",
+      operator: op.sourceString,
+      expression: op.sourceString,
+      left: left.eval(),
+      right: right.eval(),
+    };
+  },
+  AddExpr_term(term: Node): ParsedExpression {
+    return term.eval();
+  },
+  MulExpr_binary(left: Node, op: Node, right: Node): ParsedExpression {
+    return {
+      type: "basic",
+      operator: op.sourceString,
+      expression: op.sourceString,
+      left: left.eval(),
+      right: right.eval(),
+    };
+  },
+  MulExpr_term(term: Node): ParsedExpression {
+    return term.eval();
+  },
+  PowerExpr_binary(left: Node, op: Node, right: Node): ParsedExpression {
+    return {
+      type: "basic",
+      operator: op.sourceString,
+      expression: op.sourceString,
+      left: left.eval(),
+      right: right.eval(),
+    };
+  },
+  PowerExpr_term(term: Node): ParsedExpression {
+    return term.eval();
+  },
+  LogicalExpr(expr: Node): ParsedExpression {
+    return expr.eval();
+  },
+  ComparisonExpr(expr: Node): ParsedExpression {
+    return expr.eval();
+  },
+  AddExpr(expr: Node): ParsedExpression {
+    return expr.eval();
+  },
+  MulExpr(expr: Node): ParsedExpression {
+    return expr.eval();
+  },
+  PowerExpr(expr: Node): ParsedExpression {
+    return expr.eval();
   },
   TernaryExpr(
     condition: Node,
@@ -49,17 +160,35 @@ semantics.addOperation<ParsedExpression>("eval", {
   ): ParsedExpression {
     return {
       type: "ternary",
-      value: undefined,
       condition: condition.eval(),
       trueBranch: trueBranch.eval(),
       falseBranch: falseBranch.eval(),
+      expression: "?:",
+      name: `${condition.sourceString} ? ${trueBranch.sourceString} : ${falseBranch.sourceString}`,
+    };
+  },
+  IfExpr(
+    _if: Node,
+    condition: Node,
+    _then: Node,
+    trueBranch: Node,
+    _else: Node,
+    falseBranch: Node
+  ): ParsedExpression {
+    return {
+      type: "ternary",
+      condition: condition.eval(),
+      trueBranch: trueBranch.eval(),
+      falseBranch: falseBranch.eval(),
+      expression: "if",
+      name: `if ${condition.sourceString} then ${trueBranch.sourceString} else ${falseBranch.sourceString}`,
     };
   },
   UnaryExpr(op: Node, expr: Node): ParsedExpression {
     return {
       type: "unary",
-      value: undefined,
       operator: op.sourceString,
+      expression: op.sourceString,
       operand: expr.eval(),
     };
   },
@@ -71,31 +200,46 @@ semantics.addOperation<ParsedExpression>("eval", {
   ): ParsedExpression {
     return {
       type: "function",
-      value: undefined,
       name: name.sourceString,
       arguments: args.asIteration().children.map((arg: Node) => arg.eval()),
     };
   },
-  Term_parentheses(_open: Node, expr: Node, _close: Node): ParsedExpression {
+  ParenTerm(_open: Node, expr: Node, _close: Node): ParsedExpression {
     return expr.eval();
   },
-  number(_: Node): ParsedExpression {
+  number(digits: Node, _dot: Node, decimals: Node): ParsedExpression {
     return {
       type: "literal",
       value: parseFloat(this.sourceString),
+      expression: this.sourceString,
     };
   },
   string(_open: Node, chars: Node, _close: Node): ParsedExpression {
     return {
       type: "literal",
-      value: this.sourceString.slice(1, -1),
+      value: chars.sourceString.replace(/\\(.)/g, "$1"),
+      expression: chars.sourceString,
     };
   },
-  identifier(_: Node): ParsedExpression {
+  boolean(_: Node): ParsedExpression {
+    return {
+      type: "literal",
+      value: this.sourceString === "true",
+      expression: this.sourceString,
+    };
+  },
+  null(_: Node): ParsedExpression {
+    return {
+      type: "literal",
+      value: null,
+      expression: "null",
+    };
+  },
+  identifier(first: Node, rest: Node): ParsedExpression {
     return {
       type: "identifier",
-      value: undefined,
       name: this.sourceString,
+      expression: this.sourceString,
     };
   },
 });
@@ -117,7 +261,7 @@ function convertToExpression(parsed: ParsedExpression): Expression {
   const id = crypto.randomUUID();
 
   switch (parsed.type) {
-    case "binary":
+    case "basic":
       return {
         id,
         type: "basic",
@@ -126,6 +270,29 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         }`,
         expression: parsed.operator || "",
         dependencies: getDependencies(parsed),
+      };
+    case "unary":
+      return {
+        id,
+        type: "unary",
+        name: `${parsed.operator}${parsed.operand?.name || ""}`,
+        expression: parsed.operator || "",
+        dependencies: getDependencies(parsed),
+      };
+    case "ternary":
+      return {
+        id,
+        type: "ternary",
+        name:
+          parsed.name ||
+          `${parsed.condition?.name || ""} ? ${
+            parsed.trueBranch?.name || ""
+          } : ${parsed.falseBranch?.name || ""}`,
+        expression: parsed.expression || "?:",
+        dependencies: getDependencies(parsed),
+        condition: convertToExpression(parsed.condition!),
+        trueBranch: convertToExpression(parsed.trueBranch!),
+        falseBranch: convertToExpression(parsed.falseBranch!),
       };
     case "function":
       return {
@@ -145,6 +312,14 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         expression: parsed.name || "",
         dependencies: [parsed.name || ""],
       };
+    case "literal":
+      return {
+        id,
+        type: "literal",
+        name: String(parsed.value),
+        expression: parsed.expression || String(parsed.value),
+        dependencies: [],
+      };
     default:
       return {
         id,
@@ -160,18 +335,25 @@ function getDependencies(parsed: ParsedExpression): string[] {
   const deps = new Set<string>();
 
   function collect(expr: ParsedExpression) {
-    if (expr.type === "identifier" && expr.name) {
-      deps.add(expr.name);
-    }
-    if (expr.children) {
-      expr.children.forEach(collect);
+    if (expr.type === "identifier") {
+      deps.add(expr.name || "");
     }
     if (expr.arguments) {
       expr.arguments.forEach(collect);
     }
     if (expr.left) {
       collect(expr.left);
-      collect(expr.right!);
+    }
+    if (expr.right) {
+      collect(expr.right);
+    }
+    if (expr.operand) {
+      collect(expr.operand);
+    }
+    if (expr.condition) {
+      collect(expr.condition);
+      collect(expr.trueBranch!);
+      collect(expr.falseBranch!);
     }
   }
 

@@ -1,6 +1,15 @@
 export interface Expression {
   id: string;
-  type: "basic" | "function" | "group" | "rank" | "advanced" | "derived";
+  type:
+    | "basic"
+    | "function"
+    | "group"
+    | "rank"
+    | "advanced"
+    | "derived"
+    | "ternary"
+    | "unary"
+    | "literal";
   name: string;
   expression: string;
   dependencies: string[];
@@ -8,6 +17,10 @@ export interface Expression {
   // For function calls
   arguments?: Expression[];
   functionName?: string;
+  // For ternary expressions
+  condition?: Expression;
+  trueBranch?: Expression;
+  falseBranch?: Expression;
 }
 
 export interface ExpressionMetadata {

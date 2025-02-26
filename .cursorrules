@@ -13,6 +13,8 @@
 - DO NOT change `className` or other styling unless EXPLICITLY asked to do so.
 - When creating new comps or adding functionality DO NOT EDIT OTHER STUFF. DO NOT REFACTOR OTHER STUFF even if it looks like a good idea.
 
+- Use import + `useState` etc instead of `React.useState` etc.
+
 ## Comp preferences
 
 - When creating toasts, use `sonner` via `import { toast } from "sonner"` and `toast("Event has been created.")`. The relevant providers are in place.

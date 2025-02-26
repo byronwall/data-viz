@@ -1,0 +1,23 @@
+Calculation {
+  Expression = BinaryExpr | TernaryExpr | UnaryExpr | FunctionCall | Term
+
+  BinaryExpr = Expression Operator Expression
+  TernaryExpr = Expression "?" Expression ":" Expression
+  UnaryExpr = UnaryOperator Expression
+  FunctionCall = identifier "(" ListOf<Expression, ","> ")"
+  Term = number | string | identifier | "(" Expression ")"
+
+  Operator = "+" | "-" | "*" | "/" | "^" | "==" | "!=" | "<" | "<=" | ">" | ">=" | "&&" | "||"
+  UnaryOperator = "-" | "+" | "!"
+
+  identifier = letter (letter | digit | "_")*
+  number = digit+ ("." digit+)?
+  string = "\"" (~"\"" any)* "\""
+
+  // Built-in keywords
+  keyword = "if" | "then" | "else" | "true" | "false" | "null"
+
+  // Whitespace handling
+  space += comment
+  comment = "//" (~"\n" any)* "\n"  // Single line comments
+} 

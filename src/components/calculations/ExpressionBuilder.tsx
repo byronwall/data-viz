@@ -1,16 +1,15 @@
-import React, { useState } from "react";
-import { type Expression } from "@/lib/calculations/types";
-import { parseExpression } from "@/lib/calculations/parser/semantics";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
+import { parseExpression } from "@/lib/calculations/parser/semantics";
+import { Dispatch, SetStateAction, useState } from "react";
 import { FunctionBrowser } from "./FunctionBrowser";
 
 interface ExpressionBuilderProps {
-  expression: Expression;
-  onChange: (expression: Expression) => void;
+  expression: string;
+  // dispatch function
+  onChange: Dispatch<SetStateAction<string>>;
   availableFields: string[];
   availableFunctions: string[];
 }
@@ -21,46 +20,32 @@ export function ExpressionBuilder({
   availableFields,
   availableFunctions,
 }: ExpressionBuilderProps) {
-  const [expressionText, setExpressionText] = useState(expression.expression);
   const [error, setError] = useState<string | null>(null);
-
-  const handleExpressionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setExpressionText(e.target.value);
-    setError(null);
-  };
+  const [statusMessage, setStatusMessage] = useState<{
+    text: string;
+    type: "success" | "error" | null;
+  }>({
+    text: "",
+    type: null,
+  });
 
   const handleValidate = () => {
     try {
-      parseExpression(expressionText);
+      parseExpression(expression);
       setError(null);
-      toast.success("Expression is valid!");
+      setStatusMessage({ text: "Expression is valid!", type: "success" });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
-      toast.error("Invalid expression");
-    }
-  };
-
-  const handleSave = () => {
-    try {
-      const parsed = parseExpression(expressionText);
-      onChange({
-        ...expression,
-        expression: expressionText,
-        dependencies: parsed.dependencies,
-      });
-      toast.success("Expression saved!");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      toast.error("Failed to save expression");
+      setStatusMessage({ text: "Invalid expression", type: "error" });
     }
   };
 
   const handleInsertField = (field: string) => {
-    setExpressionText((prev) => prev + field);
+    onChange((prev) => prev + field);
   };
 
   const handleInsertFunction = (func: string) => {
-    setExpressionText((prev) => prev + `${func}()`);
+    onChange((prev) => prev + `${func}()`);
   };
 
   return (
@@ -70,17 +55,29 @@ export function ExpressionBuilder({
         <div className="flex gap-2">
           <Input
             id="expression"
-            value={expressionText}
-            onChange={handleExpressionChange}
+            value={expression}
+            onChange={(e) => onChange(e.target.value)}
             placeholder="Enter your expression..."
             className="flex-1"
           />
           <Button onClick={handleValidate} variant="secondary">
             Validate
           </Button>
-          <Button onClick={handleSave}>Save</Button>
         </div>
         {error && <p className="text-sm text-red-500">{error}</p>}
+        {statusMessage.text && (
+          <p
+            className={`text-sm ${
+              statusMessage.type === "success"
+                ? "text-green-500"
+                : statusMessage.type === "error"
+                ? "text-red-500"
+                : ""
+            }`}
+          >
+            {statusMessage.text}
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">

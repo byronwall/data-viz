@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +7,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -17,15 +18,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useDataLayer } from "@/providers/DataLayerProvider";
-import { toast } from "sonner";
-import { ExpressionBuilder } from "./ExpressionBuilder";
-import { CalculationPreview } from "./CalculationPreview";
-import { Expression } from "@/lib/calculations/types";
 import { parseExpression } from "@/lib/calculations/parser/semantics";
+import { useDataLayer } from "@/providers/DataLayerProvider";
+import { PlusCircle, X } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { CalculationPreview } from "./CalculationPreview";
+import { ExpressionBuilder } from "./ExpressionBuilder";
+
+export type CalcBuilder = {
+  name: string;
+  resultColumnName: string;
+  expressionString: string;
+};
 
 export function CalculationManager() {
   const calculations = useDataLayer((state) => state.calculations);
@@ -47,14 +52,7 @@ export function CalculationManager() {
 
   const [newCalcName, setNewCalcName] = useState("");
   const [newCalcColumn, setNewCalcColumn] = useState("");
-  const [newExpression, setNewExpression] = useState<Expression>({
-    id: crypto.randomUUID(),
-    type: "literal",
-    name: "",
-    expression: "",
-    dependencies: [],
-    value: null,
-  });
+  const [newExpression, setNewExpression] = useState("");
 
   const availableFields = getColumnNames();
   const availableFunctions: string[] = []; // This would come from a function registry
@@ -70,16 +68,18 @@ export function CalculationManager() {
       return;
     }
 
-    if (!newExpression.expression.trim()) {
+    if (!newExpression.trim()) {
       toast.error("Please enter an expression");
       return;
     }
 
     try {
+      console.log("add new ", newExpression, parseExpression(newExpression));
+
       await addCalculation({
         name: newCalcName,
         resultColumnName: newCalcColumn,
-        expression: newExpression,
+        expression: parseExpression(newExpression),
         isActive: true,
       });
 
@@ -125,7 +125,7 @@ export function CalculationManager() {
       setCurrentCalculation(resultColumnName);
       setNewCalcName(calculation.name);
       setNewCalcColumn(calculation.resultColumnName);
-      setNewExpression(calculation.expression);
+      setNewExpression(calculation.expression.rawInput);
       setIsEditDialogOpen(true);
     }
   };
@@ -155,11 +155,16 @@ export function CalculationManager() {
       return;
     }
 
+    if (!newExpression.trim()) {
+      toast.error("Please enter an expression");
+      return;
+    }
+
     try {
       updateCalculation(currentCalculation, {
         name: newCalcName,
         resultColumnName: newCalcColumn,
-        expression: newExpression,
+        expression: parseExpression(newExpression),
       });
 
       await executeCalculations();
@@ -177,18 +182,7 @@ export function CalculationManager() {
   const resetNewCalculationForm = () => {
     setNewCalcName("");
     setNewCalcColumn("");
-    setNewExpression({
-      id: crypto.randomUUID(),
-      type: "literal",
-      name: "",
-      expression: "",
-      dependencies: [],
-      value: null,
-    });
-  };
-
-  const handleExpressionChange = (expression: Expression) => {
-    setNewExpression(expression);
+    setNewExpression("");
   };
 
   return (
@@ -240,7 +234,7 @@ export function CalculationManager() {
 
               <ExpressionBuilder
                 expression={newExpression}
-                onChange={handleExpressionChange}
+                onChange={setNewExpression}
                 availableFields={availableFields}
                 availableFunctions={availableFunctions}
               />
@@ -280,7 +274,7 @@ export function CalculationManager() {
                   <TableCell>{calc.name}</TableCell>
                   <TableCell>{calc.resultColumnName}</TableCell>
                   <TableCell className="font-mono text-sm max-w-[300px] truncate">
-                    {calc.expression.expression}
+                    {calc.expression.rawInput}
                   </TableCell>
                   <TableCell>
                     <Switch
@@ -357,7 +351,7 @@ export function CalculationManager() {
 
             <ExpressionBuilder
               expression={newExpression}
-              onChange={handleExpressionChange}
+              onChange={setNewExpression}
               availableFields={availableFields}
               availableFunctions={availableFunctions}
             />

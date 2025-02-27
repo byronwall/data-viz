@@ -254,10 +254,13 @@ export function parseExpression(input: string): Expression {
   const parsed = semantics(matchResult).eval();
 
   // Convert the parsed expression to our Expression type
-  return convertToExpression(parsed);
+  return convertToExpression(parsed, input);
 }
 
-function convertToExpression(parsed: ParsedExpression): Expression {
+function convertToExpression(
+  parsed: ParsedExpression,
+  rawInput: string
+): Expression {
   const id = crypto.randomUUID();
 
   switch (parsed.type) {
@@ -273,9 +276,10 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         }`,
         expression: parsed.operator || "",
         dependencies: getDependencies(parsed),
-        left: convertToExpression(parsed.left),
-        right: convertToExpression(parsed.right),
+        left: convertToExpression(parsed.left, ""),
+        right: convertToExpression(parsed.right, ""),
         operator: parsed.operator || "",
+        rawInput,
       };
     case "unary":
       if (!parsed.operand) {
@@ -287,8 +291,9 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         name: `${parsed.operator}${parsed.operand?.name || ""}`,
         expression: parsed.operator || "",
         dependencies: getDependencies(parsed),
-        operand: convertToExpression(parsed.operand),
+        operand: convertToExpression(parsed.operand, ""),
         operator: parsed.operator || "",
+        rawInput,
       };
     case "ternary":
       if (!parsed.condition || !parsed.trueBranch || !parsed.falseBranch) {
@@ -306,9 +311,10 @@ function convertToExpression(parsed: ParsedExpression): Expression {
           } : ${parsed.falseBranch?.name || ""}`,
         expression: parsed.expression || "?:",
         dependencies: getDependencies(parsed),
-        condition: convertToExpression(parsed.condition),
-        trueBranch: convertToExpression(parsed.trueBranch),
-        falseBranch: convertToExpression(parsed.falseBranch),
+        condition: convertToExpression(parsed.condition, ""),
+        trueBranch: convertToExpression(parsed.trueBranch, ""),
+        falseBranch: convertToExpression(parsed.falseBranch, ""),
+        rawInput,
       };
     case "function":
       return {
@@ -317,8 +323,10 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         name: parsed.name || "",
         expression: "",
         functionName: parsed.name || "",
-        arguments: parsed.arguments?.map(convertToExpression) || [],
+        arguments:
+          parsed.arguments?.map((arg) => convertToExpression(arg, "")) || [],
         dependencies: getDependencies(parsed),
+        rawInput,
       };
     case "identifier":
       // Create a literal expression for identifiers instead of basic
@@ -329,6 +337,7 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         expression: parsed.name || "",
         dependencies: [parsed.name || ""],
         value: parsed.name || "",
+        rawInput,
       };
     case "literal":
       return {
@@ -338,6 +347,7 @@ function convertToExpression(parsed: ParsedExpression): Expression {
         expression: String(parsed.value),
         dependencies: [],
         value: parsed.value,
+        rawInput,
       };
     default:
       throw new Error(`Unsupported expression type: ${parsed.type}`);

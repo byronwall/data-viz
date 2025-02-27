@@ -16,6 +16,7 @@ export interface BaseExpression {
   name: string;
   expression: string;
   dependencies: string[];
+  rawInput: string;
 }
 
 export interface BasicExpression extends BaseExpression {

@@ -71,9 +71,13 @@ function CalculationTestComponent({
   const addCalculation = useDataLayer((state) => state.addCalculation);
 
   const columnData = useGetColumnData(resultField);
+  const getColumnNames = useDataLayer((state) => state.getColumnNames);
+
+  const columnNames = getColumnNames();
 
   console.log("CalculationTestComponent columnData", {
     columnData,
+    columnNames,
   });
 
   // Add calculation and execute when the component mounts if a calculation is provided
@@ -98,6 +102,11 @@ function CalculationTestComponent({
       <div data-testid={`data-length-${testId}`}>{data.length}</div>
       <div data-testid={`calculations-length-${testId}`}>
         {calculations.length}
+      </div>
+
+      {/* Display column names */}
+      <div data-testid={`column-names-${testId}`}>
+        {JSON.stringify(columnNames)}
       </div>
 
       {/* Add calculation button for manual testing if needed */}
@@ -315,35 +324,32 @@ describe("DataLayerProvider Calculations", () => {
     // Check a few values to ensure the calculation worked correctly
     // The values should be doubleValue + 100
     expect(parsedData[0]).toBe(300); // (100 * 2) + 100
-    expect(parsedData[1]).toBe(300); // (200 * 2) + 100
-    expect(parsedData[2]).toBe(300); // (300 * 2) + 100
+    expect(parsedData[1]).toBe(500); // (200 * 2) + 100
+    expect(parsedData[2]).toBe(700); // (300 * 2) + 100
   });
 
   it("should update column names to include calculation results", async () => {
     // First get initial column names
     const { unmount } = render(
       <DataLayerProvider data={mockData}>
-        <CalculationTestComponent
-          resultField="columnNames"
-          testId="names-initial"
-        />
+        <CalculationTestComponent testId="names-initial" />
       </DataLayerProvider>
     );
 
     // Wait for column names to be populated
     await waitFor(() => {
-      const resultData = screen.getByTestId(
-        "result-data-names-initial"
-      ).textContent;
-      expect(resultData).not.toBe("{}");
-      expect(resultData).not.toBe("null");
+      const columnNamesElement = screen.getByTestId(
+        "column-names-names-initial"
+      );
+      expect(columnNamesElement.textContent).not.toBe("[]");
+      expect(columnNamesElement.textContent).not.toBe("");
     });
 
     // Get initial column names
-    const initialResultData = screen.getByTestId(
-      "result-data-names-initial"
-    ).textContent;
-    const initialColumnNames = JSON.parse(initialResultData!);
+    const columnNamesElement = screen.getByTestId("column-names-names-initial");
+    const initialColumnNames = JSON.parse(
+      columnNamesElement.textContent || "[]"
+    );
 
     // Unmount and render with a calculation
     unmount();
@@ -352,7 +358,6 @@ describe("DataLayerProvider Calculations", () => {
       <DataLayerProvider data={mockData}>
         <CalculationTestComponent
           calculationConfig={CALCULATIONS.doubleValue}
-          resultField="columnNames"
           testId="names-updated"
         />
       </DataLayerProvider>
@@ -367,18 +372,20 @@ describe("DataLayerProvider Calculations", () => {
 
     // Wait for column names to be populated
     await waitFor(() => {
-      const resultData = screen.getByTestId(
-        "result-data-names-updated"
-      ).textContent;
-      expect(resultData).not.toBe("{}");
-      expect(resultData).not.toBe("null");
+      const updatedColumnNamesElement = screen.getByTestId(
+        "column-names-names-updated"
+      );
+      expect(updatedColumnNamesElement.textContent).not.toBe("[]");
+      expect(updatedColumnNamesElement.textContent).not.toBe("");
     });
 
     // Get updated column names
-    const updatedResultData = screen.getByTestId(
-      "result-data-names-updated"
-    ).textContent;
-    const updatedColumnNames = JSON.parse(updatedResultData!);
+    const updatedColumnNamesElement = screen.getByTestId(
+      "column-names-names-updated"
+    );
+    const updatedColumnNames = JSON.parse(
+      updatedColumnNamesElement.textContent || "[]"
+    );
 
     // Check that the new column name is included
     expect(updatedColumnNames).toContain("doubleValue");
@@ -398,7 +405,6 @@ describe("DataLayerProvider Calculations", () => {
         />
         <CalculationTestComponent
           calculationConfig={CALCULATIONS.conditionalValue}
-          resultField="virtualColumns"
           testId="virtual-result"
         />
       </DataLayerProvider>
@@ -411,26 +417,22 @@ describe("DataLayerProvider Calculations", () => {
       ).toBe("3");
     });
 
-    // Wait for virtual columns to be populated
-    await waitFor(() => {
-      const resultData = screen.getByTestId(
-        "result-data-virtual-result"
-      ).textContent;
-      expect(resultData).not.toBe("{}");
-      expect(resultData).not.toBe("null");
-    });
+    // Check column names in the DOM
+    const columnNamesElement = screen.getByTestId(
+      "column-names-virtual-result"
+    );
+    const columnNames = JSON.parse(columnNamesElement.textContent || "[]");
 
-    // Check that we have results
-    const resultData = screen.getByTestId(
-      "result-data-virtual-result"
-    ).textContent;
+    // Verify that all calculation columns appear in the column names
+    expect(columnNames).toContain("doubleValue");
+    expect(columnNames).toContain("complexValue");
+    expect(columnNames).toContain("conditionalValue");
 
-    // Parse the JSON to verify the virtual columns
-    const parsedData = JSON.parse(resultData!);
-
-    // Check that all calculation columns are available
-    expect(Object.keys(parsedData)).toContain("doubleValue");
-    expect(Object.keys(parsedData)).toContain("complexValue");
-    expect(Object.keys(parsedData)).toContain("conditionalValue");
+    // Verify original columns are still present
+    expect(columnNames).toContain("id");
+    expect(columnNames).toContain("name");
+    expect(columnNames).toContain("value");
+    expect(columnNames).toContain("category");
+    expect(columnNames).toContain("date");
   });
 });

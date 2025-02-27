@@ -1,16 +1,14 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Calculator } from "../../../../lib/calculations/engine/Calculator";
 import { parseExpression } from "../../../../lib/calculations/parser/semantics";
 import {
+  AdvancedExpression,
   AggregationType,
-  Expression,
+  BasicExpression,
   GroupExpression,
   RankExpression,
-  AdvancedExpression,
-  BasicExpression,
-  UnaryExpression,
   TernaryExpression,
-  LiteralExpression,
+  UnaryExpression,
 } from "../../../../lib/calculations/types";
 
 describe("Calculator", () => {

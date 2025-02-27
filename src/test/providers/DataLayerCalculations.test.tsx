@@ -78,6 +78,7 @@ function CalculationTestComponent({
   console.log("CalculationTestComponent columnData", {
     columnData,
     columnNames,
+    // expr: parseExpression(calculationConfig?.expression || ""),
   });
 
   // Add calculation and execute when the component mounts if a calculation is provided

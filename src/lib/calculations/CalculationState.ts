@@ -1,13 +1,13 @@
-import { Calculator } from "./engine/Calculator";
-import { CalculationContext, CalculationResult, Expression } from "./types";
 import { DatumObject, HasId } from "@/providers/DataLayerProvider";
+import { Calculator } from "./engine/Calculator";
+import { CalculationContext, Expression } from "./types";
 
 export interface CalculationDefinition {
-  id: string;
   name: string;
   expression: Expression;
   isActive: boolean;
   resultColumnName: string;
+  id: string;
 }
 
 export interface CalculationStateType {
@@ -35,48 +35,127 @@ export class CalculationManager<T extends DatumObject> {
   /**
    * Add a new calculation definition
    */
-  addCalculation(
-    calculation: Omit<CalculationDefinition, "id">
-  ): CalculationDefinition {
-    const id = crypto.randomUUID();
-    const newCalculation: CalculationDefinition = {
-      ...calculation,
-      id,
+  async addAndExecCalculation(calculation: CalculationDefinition): Promise<{
+    calculation: CalculationDefinition;
+    results: Record<string, Record<number, any>>;
+  }> {
+    // Check if a calculation with this result column name already exists
+    const existingIndex = this.state.calculations.findIndex(
+      (calc) => calc.resultColumnName === calculation.resultColumnName
+    );
+
+    if (existingIndex !== -1) {
+      throw new Error(
+        `A calculation with result column name '${calculation.resultColumnName}' already exists`
+      );
+    }
+
+    this.state.calculations.push(calculation);
+    this.updateDependencyGraph(calculation);
+
+    // Execute the calculation and collect all affected columns
+    const affectedColumns = new Set<string>([calculation.resultColumnName]);
+    await this.executeCalculation(calculation);
+
+    // Find all dependent calculations that were executed
+    const dependents = this.findDependents(calculation.resultColumnName);
+    for (const dependent of dependents) {
+      affectedColumns.add(dependent);
+    }
+
+    // Convert the results to the format expected by the column cache
+    const results: Record<string, Record<number, any>> = {};
+    for (const columnName of affectedColumns) {
+      const columnResults = this.state.calculationResults.get(columnName);
+      if (columnResults) {
+        const columnData: Record<number, any> = {};
+        for (const [rowId, value] of columnResults.entries()) {
+          columnData[rowId] = value;
+        }
+        results[columnName] = columnData;
+      }
+    }
+
+    return {
+      calculation,
+      results,
     };
-
-    this.state.calculations.push(newCalculation);
-    this.updateDependencyGraph(newCalculation);
-
-    return newCalculation;
   }
 
   /**
-   * Remove a calculation by ID
+   * Remove a calculation by result column name
    */
-  removeCalculation(id: string): void {
+  removeCalculation(resultColumnName: string): void {
     this.state.calculations = this.state.calculations.filter(
-      (calc) => calc.id !== id
+      (calc) => calc.resultColumnName !== resultColumnName
     );
-    this.state.calculationResults.delete(id);
-    this.state.dependencyGraph.delete(id);
+    this.state.calculationResults.delete(resultColumnName);
+    this.state.dependencyGraph.delete(resultColumnName);
 
     // Remove this calculation from other calculations' dependencies
-    for (const [calcId, dependencies] of this.state.dependencyGraph.entries()) {
-      dependencies.delete(id);
+    for (const [
+      calcName,
+      dependencies,
+    ] of this.state.dependencyGraph.entries()) {
+      dependencies.delete(resultColumnName);
     }
   }
 
   /**
    * Update an existing calculation
    */
-  updateCalculation(id: string, updates: Partial<CalculationDefinition>): void {
-    const index = this.state.calculations.findIndex((calc) => calc.id === id);
+  updateCalculation(
+    resultColumnName: string,
+    updates: Partial<CalculationDefinition>
+  ): void {
+    const index = this.state.calculations.findIndex(
+      (calc) => calc.resultColumnName === resultColumnName
+    );
     if (index === -1) {
       return;
     }
 
+    const oldCalculation = this.state.calculations[index];
+
+    // If changing the result column name, ensure the new name doesn't already exist
+    if (
+      updates.resultColumnName &&
+      updates.resultColumnName !== resultColumnName
+    ) {
+      const existingIndex = this.state.calculations.findIndex(
+        (calc) => calc.resultColumnName === updates.resultColumnName
+      );
+
+      if (existingIndex !== -1) {
+        throw new Error(
+          `A calculation with result column name '${updates.resultColumnName}' already exists`
+        );
+      }
+
+      // Update the dependency graph and results map keys
+      const results = this.state.calculationResults.get(resultColumnName);
+      if (results) {
+        this.state.calculationResults.set(updates.resultColumnName, results);
+        this.state.calculationResults.delete(resultColumnName);
+      }
+
+      const dependencies = this.state.dependencyGraph.get(resultColumnName);
+      if (dependencies) {
+        this.state.dependencyGraph.set(updates.resultColumnName, dependencies);
+        this.state.dependencyGraph.delete(resultColumnName);
+      }
+
+      // Update dependencies in other calculations
+      for (const [calcName, deps] of this.state.dependencyGraph.entries()) {
+        if (deps.has(resultColumnName)) {
+          deps.delete(resultColumnName);
+          deps.add(updates.resultColumnName);
+        }
+      }
+    }
+
     const updatedCalculation = {
-      ...this.state.calculations[index],
+      ...oldCalculation,
       ...updates,
     };
 
@@ -85,7 +164,7 @@ export class CalculationManager<T extends DatumObject> {
     // If the expression changed, update the dependency graph
     if (updates.expression) {
       this.updateDependencyGraph(updatedCalculation);
-      this.invalidateCalculation(id);
+      this.invalidateCalculation(updates.resultColumnName || resultColumnName);
     }
   }
 
@@ -97,10 +176,12 @@ export class CalculationManager<T extends DatumObject> {
   }
 
   /**
-   * Get a specific calculation by ID
+   * Get a specific calculation by result column name
    */
-  getCalculation(id: string): CalculationDefinition | undefined {
-    return this.state.calculations.find((calc) => calc.id === id);
+  getCalculation(resultColumnName: string): CalculationDefinition | undefined {
+    return this.state.calculations.find(
+      (calc) => calc.resultColumnName === resultColumnName
+    );
   }
 
   /**
@@ -161,27 +242,106 @@ export class CalculationManager<T extends DatumObject> {
       }
     }
 
-    console.log("CalculationManager executeCalculation resultMap", {
+    console.log("*** CalculationManager executeCalculation resultMap", {
       data: this.data,
       resultMap,
     });
 
     // Store the results
-    this.state.calculationResults.set(calculation.id, resultMap);
+    this.state.calculationResults.set(calculation.resultColumnName, resultMap);
+
+    // Find and execute dependent calculations
+    await this.executeDependent(calculation.resultColumnName);
+  }
+
+  /**
+   * Execute all calculations that depend on the given calculation
+   */
+  private async executeDependent(resultColumnName: string): Promise<void> {
+    // Find all direct dependents
+    const dependents = this.findDependents(resultColumnName);
+
+    console.log("*** CalculationManager executeDependent dependents", {
+      dependents,
+      graph: this.state.dependencyGraph,
+    });
+
+    // Get the actual calculation objects and filter for active ones
+    const dependentCalculations = this.state.calculations.filter(
+      (calc) => dependents.has(calc.resultColumnName) && calc.isActive
+    );
+
+    // Sort the dependent calculations based on their dependencies
+    const sortedDependents = this.sortCalculationsByDependency(
+      dependentCalculations
+    );
+
+    // Execute each dependent calculation
+    for (const depCalc of sortedDependents) {
+      await this.executeCalculation(depCalc);
+    }
+  }
+
+  /**
+   * Sort a subset of calculations based on dependency order
+   */
+  private sortCalculationsByDependency(
+    calculations: CalculationDefinition[]
+  ): CalculationDefinition[] {
+    const calcNames = new Set(
+      calculations.map((calc) => calc.resultColumnName)
+    );
+    const visited = new Set<string>();
+    const sorted: CalculationDefinition[] = [];
+
+    const visit = (resultColumnName: string) => {
+      if (visited.has(resultColumnName) || !calcNames.has(resultColumnName)) {
+        return;
+      }
+
+      visited.add(resultColumnName);
+
+      const dependencies =
+        this.state.dependencyGraph.get(resultColumnName) || new Set();
+
+      // For each dependency (variable name)
+      for (const dep of dependencies) {
+        // If it's a calculation in our subset, visit it
+        if (calcNames.has(dep)) {
+          visit(dep);
+        }
+      }
+
+      const calculation = calculations.find(
+        (calc) => calc.resultColumnName === resultColumnName
+      );
+      if (calculation) {
+        sorted.push(calculation);
+      }
+    };
+
+    // Visit all calculations in our subset
+    for (const calculation of calculations) {
+      visit(calculation.resultColumnName);
+    }
+
+    return sorted;
   }
 
   /**
    * Get calculation results for all rows
    */
-  getCalculationResults(calculationId: string): Map<number, any> | undefined {
-    return this.state.calculationResults.get(calculationId);
+  getCalculationResults(
+    resultColumnName: string
+  ): Map<number, any> | undefined {
+    return this.state.calculationResults.get(resultColumnName);
   }
 
   /**
    * Get calculation result for a specific row
    */
-  getCalculationResultForRow(calculationId: string, rowId: number): any {
-    const results = this.state.calculationResults.get(calculationId);
+  getCalculationResultForRow(resultColumnName: string, rowId: number): any {
+    const results = this.state.calculationResults.get(resultColumnName);
     return results ? results.get(rowId) : undefined;
   }
 
@@ -196,7 +356,9 @@ export class CalculationManager<T extends DatumObject> {
         continue;
       }
 
-      const results = this.state.calculationResults.get(calculation.id);
+      const results = this.state.calculationResults.get(
+        calculation.resultColumnName
+      );
       if (!results) {
         continue;
       }
@@ -215,33 +377,43 @@ export class CalculationManager<T extends DatumObject> {
   /**
    * Invalidate a calculation and its dependents
    */
-  invalidateCalculation(calculationId: string): void {
+  invalidateCalculation(resultColumnName: string): void {
     // Clear the results for this calculation
-    this.state.calculationResults.delete(calculationId);
+    this.state.calculationResults.delete(resultColumnName);
 
     // Find all calculations that depend on this one
-    const dependents = this.findDependents(calculationId);
+    const dependents = this.findDependents(resultColumnName);
 
     // Invalidate all dependent calculations
-    for (const dependentId of dependents) {
-      this.state.calculationResults.delete(dependentId);
+    for (const dependentName of dependents) {
+      this.state.calculationResults.delete(dependentName);
     }
   }
 
   /**
    * Find all calculations that depend on a given calculation
    */
-  private findDependents(calculationId: string): Set<string> {
+  private findDependents(resultColumnName: string): Set<string> {
     const dependents = new Set<string>();
 
-    for (const [calcId, dependencies] of this.state.dependencyGraph.entries()) {
-      if (dependencies.has(calculationId)) {
-        dependents.add(calcId);
+    console.log("*** CalculationManager findDependents", {
+      resultColumnName,
+      graph: this.state.dependencyGraph,
+    });
+
+    // Find calculations that directly depend on this calculation's result column
+    for (const [
+      calcName,
+      dependencies,
+    ] of this.state.dependencyGraph.entries()) {
+      // Check if this calculation depends on the target calculation
+      if (dependencies.has(resultColumnName)) {
+        dependents.add(calcName);
 
         // Recursively find dependents of this dependent
-        const nestedDependents = this.findDependents(calcId);
-        for (const nestedId of nestedDependents) {
-          dependents.add(nestedId);
+        const nestedDependents = this.findDependents(calcName);
+        for (const nestedName of nestedDependents) {
+          dependents.add(nestedName);
         }
       }
     }
@@ -253,11 +425,11 @@ export class CalculationManager<T extends DatumObject> {
    * Update the dependency graph for a calculation
    */
   private updateDependencyGraph(calculation: CalculationDefinition): void {
-    // Extract dependencies from the expression
+    // Extract variable dependencies from the expression
     const dependencies = new Set<string>(calculation.expression.dependencies);
 
     // Update the dependency graph
-    this.state.dependencyGraph.set(calculation.id, dependencies);
+    this.state.dependencyGraph.set(calculation.resultColumnName, dependencies);
   }
 
   /**
@@ -267,21 +439,29 @@ export class CalculationManager<T extends DatumObject> {
     const visited = new Set<string>();
     const sorted: CalculationDefinition[] = [];
 
-    const visit = (calculationId: string) => {
-      if (visited.has(calculationId)) {
+    const visit = (resultColumnName: string) => {
+      if (visited.has(resultColumnName)) {
         return;
       }
 
-      visited.add(calculationId);
+      visited.add(resultColumnName);
 
       const dependencies =
-        this.state.dependencyGraph.get(calculationId) || new Set();
-      for (const depId of dependencies) {
-        visit(depId);
+        this.state.dependencyGraph.get(resultColumnName) || new Set();
+
+      // Visit all dependencies
+      for (const dep of dependencies) {
+        // Check if this dependency is a calculation
+        const calcWithName = this.state.calculations.find(
+          (calc) => calc.resultColumnName === dep
+        );
+        if (calcWithName) {
+          visit(dep);
+        }
       }
 
       const calculation = this.state.calculations.find(
-        (calc) => calc.id === calculationId
+        (calc) => calc.resultColumnName === resultColumnName
       );
       if (calculation) {
         sorted.push(calculation);
@@ -290,7 +470,7 @@ export class CalculationManager<T extends DatumObject> {
 
     // Visit all calculations
     for (const calculation of this.state.calculations) {
-      visit(calculation.id);
+      visit(calculation.resultColumnName);
     }
 
     return sorted;
@@ -323,7 +503,9 @@ export class CalculationManager<T extends DatumObject> {
 
     // Add results from already calculated fields
     for (const calculation of this.state.calculations) {
-      const results = this.state.calculationResults.get(calculation.id);
+      const results = this.state.calculationResults.get(
+        calculation.resultColumnName
+      );
       if (results && results.has(row.__ID)) {
         variables.set(calculation.resultColumnName, results.get(row.__ID));
       }

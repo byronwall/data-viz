@@ -372,27 +372,33 @@ const createDataLayerStore = <T extends DatumObject>(
       if (view.calculations) {
         // Clear existing calculations
         calculationManager?.getCalculations().forEach((calc) => {
-          calculationManager.removeCalculation(calc.id);
+          calculationManager.removeCalculation(calc.resultColumnName);
         });
 
         // Add new calculations
         const newCalculations: CalculationDefinition[] = [];
-        view.calculations.forEach((calc) => {
-          const newCalc = calculationManager?.addCalculation({
-            name: calc.name,
-            expression: calc.expression,
-            isActive: calc.isActive,
-            resultColumnName: calc.resultColumnName,
-          });
-          if (newCalc) {
-            newCalculations.push(newCalc);
+        view.calculations.forEach(async (calc) => {
+          if (calculationManager) {
+            const calcWithId: CalculationDefinition = {
+              name: calc.name,
+              expression: calc.expression,
+              isActive: calc.isActive,
+              resultColumnName: calc.resultColumnName,
+              id: calc.id || crypto.randomUUID(),
+            };
+
+            try {
+              const result = await calculationManager.addAndExecCalculation(
+                calcWithId
+              );
+              newCalculations.push(result.calculation);
+            } catch (error) {
+              console.error("Error adding calculation:", error);
+            }
           }
         });
 
         set({ calculations: newCalculations });
-
-        // Execute calculations
-        calculationManager?.executeCalculations();
       }
 
       set({ liveItems: crossfilterWrapper.getAllData() });
@@ -401,33 +407,39 @@ const createDataLayerStore = <T extends DatumObject>(
     // Calculation management
     addCalculation: async (calculation) => {
       const { calculationManager } = get();
-      console.log("DataLayerProvider addCalculation", {
+      console.log("*** DataLayerProvider addCalculation", {
         calculation,
         expression: calculation.expression,
+        depends: calculation.expression.dependencies,
       });
       if (!calculationManager) {
         throw new Error("Calculation manager not initialized");
       }
 
-      const newCalculation = calculationManager.addCalculation(calculation);
+      // Add an id to the calculation
+      const calculationWithId: CalculationDefinition = {
+        ...calculation,
+        id: crypto.randomUUID(),
+      };
+
+      const result = await calculationManager.addAndExecCalculation(
+        calculationWithId
+      );
+      const { calculation: newCalculation, results } = result;
 
       set((state) => ({
         calculations: [...state.calculations, newCalculation],
       }));
 
-      // Execute the calculation
-      await calculationManager.executeCalculation(newCalculation);
+      console.log("DataLayerProvider addCalculation: executed");
 
-      console.log("DataLayerProvider addCalculation: excecuted");
-
-      // Update column cache to include the new virtual column
+      // Update column cache to include the new virtual column and any dependent columns
       set((state) => {
-        const virtualColumns = calculationManager.getVirtualColumns();
         const newColumnCache = { ...state.columnCache };
 
-        if (newCalculation.resultColumnName in virtualColumns) {
-          newColumnCache[newCalculation.resultColumnName] =
-            virtualColumns[newCalculation.resultColumnName];
+        // Add all affected columns to the cache
+        for (const [columnName, columnData] of Object.entries(results)) {
+          newColumnCache[columnName] = columnData;
         }
 
         return { columnCache: newColumnCache, nonce: state.nonce + 1 };
@@ -447,7 +459,7 @@ const createDataLayerStore = <T extends DatumObject>(
         return;
       }
 
-      calculationManager.removeCalculation(id);
+      calculationManager.removeCalculation(calculation.resultColumnName);
 
       set((state) => ({
         calculations: state.calculations.filter((calc) => calc.id !== id),
@@ -469,7 +481,16 @@ const createDataLayerStore = <T extends DatumObject>(
         throw new Error("Calculation manager not initialized");
       }
 
-      calculationManager.updateCalculation(id, updates);
+      // Find the calculation by id
+      const calculation = get().calculations.find((calc) => calc.id === id);
+      if (!calculation) {
+        return;
+      }
+
+      calculationManager.updateCalculation(
+        calculation.resultColumnName,
+        updates
+      );
 
       set((state) => ({
         calculations: state.calculations.map((calc) =>
@@ -479,9 +500,11 @@ const createDataLayerStore = <T extends DatumObject>(
 
       // If the calculation was updated, re-execute it
       if (updates.expression || updates.isActive !== undefined) {
-        const calculation = calculationManager.getCalculation(id);
-        if (calculation && calculation.isActive) {
-          calculationManager.executeCalculation(calculation);
+        const updatedCalc = calculationManager.getCalculation(
+          updates.resultColumnName || calculation.resultColumnName
+        );
+        if (updatedCalc && updatedCalc.isActive) {
+          calculationManager.executeCalculation(updatedCalc);
         }
       }
 

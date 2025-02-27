@@ -16,28 +16,13 @@ import {
 type CalcFunction = (...args: any[]) => any;
 
 export class Calculator {
-  private cache: Map<string, any>;
-
-  constructor(private context: CalculationContext) {
-    this.cache = context.cache || new Map();
-  }
+  constructor(private context: CalculationContext) {}
 
   async evaluate(expression: Expression): Promise<CalculationResult> {
     try {
       console.log(
         `[Calculator.evaluate] Starting evaluation of expression type: ${expression.type}`
       );
-
-      // Check cache first
-      if (this.cache.has(expression.id)) {
-        console.log(
-          `[Calculator.evaluate] Cache hit for expression ID: ${expression.id}`
-        );
-        return {
-          success: true,
-          value: this.cache.get(expression.id),
-        };
-      }
 
       let result: any;
       let funcResult: CalculationResult;
@@ -83,9 +68,6 @@ export class Calculator {
             `Unknown expression type: ${(expression as any).type}`
           );
       }
-
-      // Cache the result
-      this.cache.set(expression.id, result);
 
       // Ensure we return a proper CalculationResult
       return {

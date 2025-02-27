@@ -3,12 +3,16 @@ import {
   LiveItem,
   LiveItemMap,
 } from "@/hooks/CrossfilterWrapper";
+import { getEmptyFilterObj } from "@/hooks/getFilterValues";
+import {
+  CalculationDefinition,
+  CalculationManager,
+} from "@/lib/calculations/CalculationState";
 import { ChartSettings, datum } from "@/types/ChartTypes";
+import { ColorScaleType } from "@/types/ColorScaleTypes";
+import { saveProject } from "@/utils/localStorage";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
-import { saveProject } from "@/utils/localStorage";
-import { getEmptyFilterObj } from "@/hooks/getFilterValues";
-import { ColorScaleType } from "@/types/ColorScaleTypes";
 
 type DatumObject = { [key: string]: datum };
 export type { DatumObject };
@@ -51,7 +55,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   getLiveItems: (chart: ChartSettings) => LiveItem;
 
   // data and key functions
-  getColumnData: (field: string) => { [key: IdType]: datum };
+  getColumnData: (field: string | undefined) => { [key: IdType]: datum };
   getColumnNames: () => string[];
   columnCache: Record<string, { [key: IdType]: datum }>;
 
@@ -60,6 +64,21 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   setCurrentProject: (project: SavedProject) => void;
   saveCurrentView: (name: string) => void;
   loadView: (view: SavedView) => void;
+
+  // Calculation state
+  calculationManager: CalculationManager<T> | null;
+  calculations: CalculationDefinition[];
+  addCalculation: (
+    calculation: Omit<CalculationDefinition, "id">
+  ) => Promise<CalculationDefinition>;
+  removeCalculation: (id: string) => void;
+  updateCalculation: (
+    id: string,
+    updates: Partial<CalculationDefinition>
+  ) => void;
+  executeCalculations: () => Promise<void>;
+  getVirtualColumns: () => Record<string, Record<number, any>>;
+  getCalculationResultForRow: (calculationId: string, rowId: number) => any;
 }
 
 // Store type
@@ -82,6 +101,8 @@ function getDataAndCrossfilterWrapper<T extends DatumObject>(
     ),
     charts: [],
     colorScales: [],
+    calculationManager: new CalculationManager<T>(dataWithIds),
+    calculations: [],
   };
 }
 
@@ -89,28 +110,39 @@ function getDataAndCrossfilterWrapper<T extends DatumObject>(
 const createDataLayerStore = <T extends DatumObject>(
   initProps?: Partial<DataLayerProps<T>>
 ) => {
-  const { data: initData, crossfilterWrapper } = getDataAndCrossfilterWrapper(
-    initProps?.data ?? []
-  );
+  const {
+    data: initData,
+    crossfilterWrapper,
+    calculationManager,
+  } = getDataAndCrossfilterWrapper(initProps?.data ?? []);
 
-  if (!crossfilterWrapper || !initData) {
-    throw new Error("Data or crossfilterWrapper not found");
+  if (!crossfilterWrapper || !initData || !calculationManager) {
+    throw new Error(
+      "Data, crossfilterWrapper, or calculationManager not found"
+    );
   }
 
   return createStore<DataLayerState<T>>()((set, get) => ({
     data: initData,
     fileName: undefined,
     crossfilterWrapper,
+    calculationManager,
+    calculations: [],
     setData: (rawData, fileName) => {
       // Get fresh crossfilter and data with IDs
-      const { data: newData, crossfilterWrapper: newCrossfilter } =
-        getDataAndCrossfilterWrapper(rawData);
+      const {
+        data: newData,
+        crossfilterWrapper: newCrossfilter,
+        calculationManager: newCalculationManager,
+      } = getDataAndCrossfilterWrapper(rawData);
 
       // Reset everything to initial state
       set({
         data: newData,
         fileName,
         crossfilterWrapper: newCrossfilter,
+        calculationManager: newCalculationManager,
+        calculations: [],
         charts: [],
         colorScales: [],
         liveItems: {},
@@ -225,7 +257,9 @@ const createDataLayerStore = <T extends DatumObject>(
       const { updateChart } = get();
 
       const emptyFilter = getEmptyFilterObj(chart);
-      updateChart(chart.id, emptyFilter);
+      if (emptyFilter) {
+        updateChart(chart.id, emptyFilter);
+      }
     },
     nonce: 0,
     getLiveItems: (chart) => {
@@ -237,20 +271,48 @@ const createDataLayerStore = <T extends DatumObject>(
     },
 
     getColumnNames() {
-      return Object.keys(get().data[0]);
+      const { data, getVirtualColumns } = get();
+      const baseColumns = Object.keys(data[0] || {});
+      const virtualColumns = Object.keys(getVirtualColumns());
+
+      return [...baseColumns, ...virtualColumns];
     },
 
-    getColumnData(field: string) {
-      const { columnCache } = get();
+    getColumnData(field: string | undefined) {
+      const { columnCache, data, getVirtualColumns } = get();
+
+      if (!field) {
+        return {};
+      }
+
+      console.log("DataLayerProvider getColumnData", {
+        field,
+        columnCache,
+      });
 
       if (columnCache[field]) {
         return columnCache[field];
       }
 
-      const data = get().data.map((row) => row[field]);
-      columnCache[field] = data;
+      // Check if it's a virtual column
+      const virtualColumns = getVirtualColumns();
+      console.log("DataLayerProvider getColumnData", {
+        field,
+        virtualColumns,
+      });
+      if (field in virtualColumns) {
+        columnCache[field] = virtualColumns[field];
+        return virtualColumns[field];
+      }
 
-      return data;
+      // Otherwise, it's a regular column
+      const columnData: { [key: IdType]: datum } = {};
+      data.forEach((row) => {
+        columnData[row.__ID] = row[field];
+      });
+
+      columnCache[field] = columnData;
+      return columnData;
     },
 
     columnCache: {},
@@ -265,7 +327,7 @@ const createDataLayerStore = <T extends DatumObject>(
       }
     },
     saveCurrentView: (name: string) => {
-      const { charts, currentProject } = get();
+      const { charts, currentProject, calculations } = get();
 
       if (!currentProject) {
         console.error("No project selected");
@@ -276,6 +338,7 @@ const createDataLayerStore = <T extends DatumObject>(
         version: 1,
         name,
         charts: [...charts],
+        calculations: [...calculations],
       };
 
       const updatedProject: SavedProject = {
@@ -290,7 +353,7 @@ const createDataLayerStore = <T extends DatumObject>(
       }
     },
     loadView: (view: SavedView) => {
-      const { crossfilterWrapper } = get();
+      const { crossfilterWrapper, calculationManager } = get();
 
       // Clear existing charts
       crossfilterWrapper.charts.forEach((_, chartId) => {
@@ -305,7 +368,189 @@ const createDataLayerStore = <T extends DatumObject>(
         crossfilterWrapper.addChart(chart);
       });
 
+      // Load calculations if they exist
+      if (view.calculations) {
+        // Clear existing calculations
+        calculationManager?.getCalculations().forEach((calc) => {
+          calculationManager.removeCalculation(calc.id);
+        });
+
+        // Add new calculations
+        const newCalculations: CalculationDefinition[] = [];
+        view.calculations.forEach((calc) => {
+          const newCalc = calculationManager?.addCalculation({
+            name: calc.name,
+            expression: calc.expression,
+            isActive: calc.isActive,
+            resultColumnName: calc.resultColumnName,
+          });
+          if (newCalc) {
+            newCalculations.push(newCalc);
+          }
+        });
+
+        set({ calculations: newCalculations });
+
+        // Execute calculations
+        calculationManager?.executeCalculations();
+      }
+
       set({ liveItems: crossfilterWrapper.getAllData() });
+    },
+
+    // Calculation management
+    addCalculation: async (calculation) => {
+      const { calculationManager } = get();
+      console.log("DataLayerProvider addCalculation", {
+        calculation,
+        expression: calculation.expression,
+      });
+      if (!calculationManager) {
+        throw new Error("Calculation manager not initialized");
+      }
+
+      const newCalculation = calculationManager.addCalculation(calculation);
+
+      set((state) => ({
+        calculations: [...state.calculations, newCalculation],
+      }));
+
+      // Execute the calculation
+      await calculationManager.executeCalculation(newCalculation);
+
+      console.log("DataLayerProvider addCalculation: excecuted");
+
+      // Update column cache to include the new virtual column
+      set((state) => {
+        const virtualColumns = calculationManager.getVirtualColumns();
+        const newColumnCache = { ...state.columnCache };
+
+        if (newCalculation.resultColumnName in virtualColumns) {
+          newColumnCache[newCalculation.resultColumnName] =
+            virtualColumns[newCalculation.resultColumnName];
+        }
+
+        return { columnCache: newColumnCache, nonce: state.nonce + 1 };
+      });
+
+      return newCalculation;
+    },
+
+    removeCalculation: (id) => {
+      const { calculationManager } = get();
+      if (!calculationManager) {
+        throw new Error("Calculation manager not initialized");
+      }
+
+      const calculation = calculationManager.getCalculation(id);
+      if (!calculation) {
+        return;
+      }
+
+      calculationManager.removeCalculation(id);
+
+      set((state) => ({
+        calculations: state.calculations.filter((calc) => calc.id !== id),
+      }));
+
+      // Remove from column cache
+      set((state) => {
+        const newColumnCache = { ...state.columnCache };
+        if (calculation.resultColumnName in newColumnCache) {
+          delete newColumnCache[calculation.resultColumnName];
+        }
+        return { columnCache: newColumnCache };
+      });
+    },
+
+    updateCalculation: (id, updates) => {
+      const { calculationManager } = get();
+      if (!calculationManager) {
+        throw new Error("Calculation manager not initialized");
+      }
+
+      calculationManager.updateCalculation(id, updates);
+
+      set((state) => ({
+        calculations: state.calculations.map((calc) =>
+          calc.id === id ? { ...calc, ...updates } : calc
+        ),
+      }));
+
+      // If the calculation was updated, re-execute it
+      if (updates.expression || updates.isActive !== undefined) {
+        const calculation = calculationManager.getCalculation(id);
+        if (calculation && calculation.isActive) {
+          calculationManager.executeCalculation(calculation);
+        }
+      }
+
+      // Update column cache if the result column name changed
+      if (updates.resultColumnName) {
+        set((state) => {
+          const virtualColumns = calculationManager.getVirtualColumns();
+          const newColumnCache = { ...state.columnCache };
+
+          // Remove old column name from cache
+          const oldCalc = state.calculations.find((calc) => calc.id === id);
+          if (oldCalc && oldCalc.resultColumnName in newColumnCache) {
+            delete newColumnCache[oldCalc.resultColumnName];
+          }
+
+          // Add new column name to cache
+          if (
+            updates.resultColumnName &&
+            updates.resultColumnName in virtualColumns
+          ) {
+            newColumnCache[updates.resultColumnName] =
+              virtualColumns[updates.resultColumnName];
+          }
+
+          return { columnCache: newColumnCache };
+        });
+      }
+    },
+
+    executeCalculations: async () => {
+      const { calculationManager } = get();
+      if (!calculationManager) {
+        throw new Error("Calculation manager not initialized");
+      }
+
+      await calculationManager.executeCalculations();
+
+      // Update column cache with virtual columns
+      set((state) => {
+        const virtualColumns = calculationManager.getVirtualColumns();
+        const newColumnCache = { ...state.columnCache };
+
+        for (const [columnName, columnData] of Object.entries(virtualColumns)) {
+          newColumnCache[columnName] = columnData;
+        }
+
+        return { columnCache: newColumnCache };
+      });
+    },
+
+    getVirtualColumns: () => {
+      const { calculationManager } = get();
+      if (!calculationManager) {
+        return {};
+      }
+
+      return calculationManager.getVirtualColumns();
+    },
+
+    getCalculationResultForRow: (calculationId, rowId) => {
+      const { calculationManager } = get();
+      if (!calculationManager) {
+        return undefined;
+      }
+
+      return calculationManager.getCalculationResultForRow(
+        calculationId,
+        rowId
+      );
     },
   }));
 };
@@ -348,6 +593,7 @@ type SavedView = {
   version: 1;
   charts: ChartSettings[];
   name: string;
+  calculations?: CalculationDefinition[];
 };
 
 type SavedProject = {
@@ -358,4 +604,4 @@ type SavedProject = {
   isSaved: boolean;
 };
 
-export type { SavedView, SavedProject };
+export type { SavedProject, SavedView };

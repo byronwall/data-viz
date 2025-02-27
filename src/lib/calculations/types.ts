@@ -101,5 +101,4 @@ export interface CalculationResult {
 export interface CalculationContext {
   data: Record<string, any>[];
   variables: Record<string, any>;
-  cache?: Map<string, any>;
 }

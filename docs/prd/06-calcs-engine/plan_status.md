@@ -24,21 +24,21 @@
 
 - **Core Integration:**
 
-  - [ ] Extend DataLayerProvider with calculation capabilities
-  - [ ] Implement calculation state management
-  - [ ] Create virtual column system
-  - [ ] Build calculation dependency graph
+  - [x] Extend DataLayerProvider with calculation capabilities
+  - [x] Implement calculation state management
+  - [x] Create virtual column system
+  - [x] Setup calculation dependency tracking
 
 - **Data Flow:**
 
-  - [ ] Implement reactive calculation updates
-  - [ ] Add change detection for dependencies
-  - [ ] Create calculation invalidation system
-  - [ ] Build calculation execution queue
+  - [x] Implement reactive calculation updates
+  - [x] Add change detection for dependencies
+  - [x] Create calculation invalidation system
+  - [x] Build calculation execution queue
 
 - **Performance:**
 
-  - [ ] Implement calculation caching
+  - [x] Implement calculation caching
   - [ ] Add memoization for expensive operations
   - [ ] Create lazy evaluation system
   - [ ] Optimize recalculation triggers
@@ -121,32 +121,32 @@
 
 ### Phase 1.5: DataLayerProvider Integration
 
-- [ ] Core Integration
+- [x] Core Integration
 
-  - [ ] Calculation state in DataLayerProvider
-  - [ ] Virtual column implementation
-  - [ ] Dependency tracking system
-  - [ ] Expression evaluation pipeline
+  - [x] Extend DataLayerProvider with calculation capabilities
+  - [x] Implement calculation state management
+  - [x] Create virtual column system
+  - [x] Setup calculation dependency tracking
 
-- [ ] Data Flow
+- [x] Data Flow
 
-  - [ ] Reactive calculation updates
-  - [ ] Change detection for dependencies
-  - [ ] Calculation invalidation system
-  - [ ] Execution queue management
+  - [x] Implement reactive calculation updates
+  - [x] Add change detection for dependencies
+  - [x] Create calculation invalidation system
+  - [x] Build calculation execution queue
 
 - [ ] Performance
 
-  - [ ] Calculation result caching
-  - [ ] Memoization for expensive operations
-  - [ ] Lazy evaluation implementation
-  - [ ] Optimized recalculation triggers
+  - [x] Implement calculation caching
+  - [ ] Add memoization for expensive operations
+  - [ ] Create lazy evaluation system
+  - [ ] Optimize recalculation triggers
 
 - [ ] UI Integration
-  - [ ] Calculation status indicators
-  - [ ] Progress feedback components
-  - [ ] Error handling and display
-  - [ ] Debugging tools and interfaces
+  - [ ] Add calculation status indicators
+  - [ ] Create calculation progress feedback
+  - [ ] Implement error handling and display
+  - [ ] Build calculation debugging tools
 
 ### Phase 2: Function Implementation
 
@@ -201,14 +201,15 @@
 - [x] Basic function registry created
 - [x] UI components built
 - [x] Expression evaluation engine completed
+- [x] DataLayerProvider integration completed
 - [ ] Advanced analytics integration pending
 - [ ] Performance optimization pending
 
 ### Next Steps
 
-1. Write unit tests for parser
-1. Implement advanced analytics features (PCA, UMAP, t-SNE)
-1. Add regression analysis capabilities
-1. Optimize for large datasets
-1. Add comprehensive error handling
-1. Implement batch computation for better performance
+1. Create UI components for calculation management
+2. Implement advanced analytics features (PCA, UMAP, t-SNE)
+3. Add regression analysis capabilities
+4. Optimize for large datasets
+5. Add comprehensive error handling
+6. Implement batch computation for better performance

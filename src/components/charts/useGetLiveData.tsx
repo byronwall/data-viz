@@ -8,6 +8,7 @@ export function useGetLiveData(
 ) {
   const getLiveItems = useDataLayer((s) => s.getLiveItems);
   const getColumnData = useDataLayer((s) => s.getColumnData);
+  const nonce = useDataLayer((s) => s.nonce);
 
   const liveItems = getLiveItems(settings);
 
@@ -34,6 +35,7 @@ export function useGetLiveData(
     return data as datum[];
     // TODO: this should really be the nonce
   }, [
+    nonce,
     field,
     getColumnData,
     liveItems.items,

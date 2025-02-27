@@ -33,38 +33,6 @@ export class CrossfilterWrapper<T> {
     }, {} as Record<string, T>);
   }
 
-  updateCharts(updatedCharts: ChartSettings[]) {
-    // do some work to diff before and after - determine which charts added, removed or filters that change
-    // need a dim for each chart.
-
-    // remove charts that are no longer in the list
-    for (const chart of this.charts.values()) {
-      if (!updatedCharts.some((c) => c.id === chart.chart.id)) {
-        this.removeChart(chart.chart);
-      }
-    }
-
-    // add charts that are new
-    for (const chart of updatedCharts) {
-      if (!this.charts.has(chart.id)) {
-        this.addChart(chart);
-      }
-    }
-
-    // update charts that are in both lists
-    for (const chart of this.charts.values()) {
-      // find corresponding chart in updatedCharts via ID
-      // pass the new defs in to update the old
-      const newChart = updatedCharts.find((c) => c.id === chart.chart.id);
-
-      const isDiff = !isEqual(chart.chart, newChart);
-
-      if (isDiff && newChart) {
-        this.updateChart(newChart);
-      }
-    }
-  }
-
   updateChart(chart: ChartSettings) {
     // check if the filters have changed
     const oldChart = this.charts.get(chart.id);

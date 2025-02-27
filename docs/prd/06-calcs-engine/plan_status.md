@@ -20,6 +20,35 @@
   - [ ] Setup caching integration
   - [ ] Add calculation dependency tracking
 
+#### Phase 1.5: DataLayerProvider Integration
+
+- **Core Integration:**
+
+  - [ ] Extend DataLayerProvider with calculation capabilities
+  - [ ] Implement calculation state management
+  - [ ] Create virtual column system
+  - [ ] Build calculation dependency graph
+
+- **Data Flow:**
+
+  - [ ] Implement reactive calculation updates
+  - [ ] Add change detection for dependencies
+  - [ ] Create calculation invalidation system
+  - [ ] Build calculation execution queue
+
+- **Performance:**
+
+  - [ ] Implement calculation caching
+  - [ ] Add memoization for expensive operations
+  - [ ] Create lazy evaluation system
+  - [ ] Optimize recalculation triggers
+
+- **UI Integration:**
+  - [ ] Add calculation status indicators
+  - [ ] Create calculation progress feedback
+  - [ ] Implement error handling and display
+  - [ ] Build calculation debugging tools
+
 #### Phase 2: Function Implementation
 
 - [ ] Core Function Categories
@@ -75,7 +104,7 @@
   - [x] Create Ohm.js grammar file
   - [x] Implement basic semantics
   - [x] Add expression validation
-  - [ ] Write parser tests
+  - [x] Write parser tests
 
 - [x] Basic Math Operations
 
@@ -89,6 +118,35 @@
   - [x] Validation feedback
   - [x] Variable reference system
   - [x] Basic error handling
+
+### Phase 1.5: DataLayerProvider Integration
+
+- [ ] Core Integration
+
+  - [ ] Calculation state in DataLayerProvider
+  - [ ] Virtual column implementation
+  - [ ] Dependency tracking system
+  - [ ] Expression evaluation pipeline
+
+- [ ] Data Flow
+
+  - [ ] Reactive calculation updates
+  - [ ] Change detection for dependencies
+  - [ ] Calculation invalidation system
+  - [ ] Execution queue management
+
+- [ ] Performance
+
+  - [ ] Calculation result caching
+  - [ ] Memoization for expensive operations
+  - [ ] Lazy evaluation implementation
+  - [ ] Optimized recalculation triggers
+
+- [ ] UI Integration
+  - [ ] Calculation status indicators
+  - [ ] Progress feedback components
+  - [ ] Error handling and display
+  - [ ] Debugging tools and interfaces
 
 ### Phase 2: Function Implementation
 

@@ -33,8 +33,6 @@ function TestComponent({ children }: { children?: ReactNode }) {
   const getColumnData = useDataLayer((state) => state.getColumnData);
   const colorScales = useDataLayer((state) => state.colorScales);
   const addColorScale = useDataLayer((state) => state.addColorScale);
-  const updateColorScale = useDataLayer((state) => state.updateColorScale);
-  const removeColorScale = useDataLayer((state) => state.removeColorScale);
 
   // Create chart settings
   const rowChartSettings = createRowChartSettings("category", {

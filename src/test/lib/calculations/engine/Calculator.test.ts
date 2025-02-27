@@ -17,7 +17,6 @@ describe("Calculator", () => {
   describe("Expression Structure", () => {
     const calculator = new Calculator({
       data: [],
-      cache: new Map(),
       variables: new Map(),
     });
 
@@ -30,7 +29,6 @@ describe("Calculator", () => {
   describe("Basic Expression Evaluation", () => {
     const calculator = new Calculator({
       data: [],
-      cache: new Map(),
       variables: new Map(),
     });
 
@@ -107,7 +105,6 @@ describe("Calculator", () => {
 
       const calculator = new Calculator({
         data: [],
-        cache: new Map(),
         variables,
       });
 
@@ -126,7 +123,6 @@ describe("Calculator", () => {
 
       const calculator = new Calculator({
         data: [],
-        cache: new Map(),
         variables,
       });
 
@@ -139,7 +135,6 @@ describe("Calculator", () => {
     it("should handle undefined identifiers", async () => {
       const calculator = new Calculator({
         data: [],
-        cache: new Map(),
         variables: new Map(),
       });
 
@@ -157,7 +152,6 @@ describe("Calculator", () => {
 
       const calculator = new Calculator({
         data: [],
-        cache: new Map(),
         variables,
       });
 
@@ -171,7 +165,6 @@ describe("Calculator", () => {
   describe("Function Evaluation", () => {
     const calculator = new Calculator({
       data: [],
-      cache: new Map(),
       variables: new Map(),
     });
 
@@ -190,33 +183,6 @@ describe("Calculator", () => {
     });
   });
 
-  describe("Caching", () => {
-    it("should cache results", async () => {
-      const cache = new Map();
-      const calculator = new Calculator({
-        data: [],
-        cache,
-        variables: new Map(),
-      });
-
-      const expr = parseExpression("2 + 3");
-
-      // First evaluation
-      const result1 = await calculator.evaluate(expr);
-      expect(result1.success).toBe(true);
-      expect(result1.value).toBe(5);
-
-      // Second evaluation should use cache
-      const result2 = await calculator.evaluate(expr);
-      expect(result2.success).toBe(true);
-      expect(result2.value).toBe(5);
-
-      // Verify it's in the cache
-      expect(cache.has(expr.id)).toBe(true);
-      expect(cache.get(expr.id)).toBe(5);
-    });
-  });
-
   describe("Group Expression Evaluation", () => {
     const calculator = new Calculator({
       data: [
@@ -225,7 +191,6 @@ describe("Calculator", () => {
         { id: 3, category: "B", value: 30 },
         { id: 4, category: "B", value: 40 },
       ],
-      cache: new Map(),
       variables: new Map(),
     });
 
@@ -277,7 +242,6 @@ describe("Calculator", () => {
 
     const calculator = new Calculator({
       data: testData,
-      cache: new Map(),
       variables: new Map(),
     });
 
@@ -345,7 +309,6 @@ describe("Calculator", () => {
   describe("Error Handling", () => {
     const calculator = new Calculator({
       data: [],
-      cache: new Map(),
       variables: new Map(),
     });
 
@@ -417,7 +380,6 @@ describe("Calculator", () => {
   describe("Advanced Expression Types", () => {
     const calculator = new Calculator({
       data: [],
-      cache: new Map(),
       variables: new Map(),
     });
 
@@ -442,7 +404,6 @@ describe("Calculator", () => {
     describe("Date Processing", () => {
       const calculator = new Calculator({
         data: [],
-        cache: new Map(),
         variables: new Map([["testDate", new Date("2024-03-15T12:30:00Z")]]),
       });
 

@@ -7,7 +7,6 @@ export interface CalculationDefinition {
   expression: Expression;
   isActive: boolean;
   resultColumnName: string;
-  id: string;
 }
 
 export interface CalculationStateType {

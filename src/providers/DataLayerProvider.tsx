@@ -71,14 +71,14 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   addCalculation: (
     calculation: Omit<CalculationDefinition, "id">
   ) => Promise<CalculationDefinition>;
-  removeCalculation: (id: string) => void;
+  removeCalculation: (resultColumnName: string) => void;
   updateCalculation: (
-    id: string,
+    resultColumnName: string,
     updates: Partial<CalculationDefinition>
   ) => void;
   executeCalculations: () => Promise<void>;
   getVirtualColumns: () => Record<string, Record<number, any>>;
-  getCalculationResultForRow: (calculationId: string, rowId: number) => any;
+  getCalculationResultForRow: (resultColumnName: string, rowId: number) => any;
 }
 
 // Store type
@@ -379,17 +379,9 @@ const createDataLayerStore = <T extends DatumObject>(
         const newCalculations: CalculationDefinition[] = [];
         view.calculations.forEach(async (calc) => {
           if (calculationManager) {
-            const calcWithId: CalculationDefinition = {
-              name: calc.name,
-              expression: calc.expression,
-              isActive: calc.isActive,
-              resultColumnName: calc.resultColumnName,
-              id: calc.id || crypto.randomUUID(),
-            };
-
             try {
               const result = await calculationManager.addAndExecCalculation(
-                calcWithId
+                calc
               );
               newCalculations.push(result.calculation);
             } catch (error) {
@@ -416,14 +408,8 @@ const createDataLayerStore = <T extends DatumObject>(
         throw new Error("Calculation manager not initialized");
       }
 
-      // Add an id to the calculation
-      const calculationWithId: CalculationDefinition = {
-        ...calculation,
-        id: crypto.randomUUID(),
-      };
-
       const result = await calculationManager.addAndExecCalculation(
-        calculationWithId
+        calculation
       );
       const { calculation: newCalculation, results } = result;
 
@@ -448,60 +434,58 @@ const createDataLayerStore = <T extends DatumObject>(
       return newCalculation;
     },
 
-    removeCalculation: (id) => {
+    removeCalculation: (resultColumnName) => {
       const { calculationManager } = get();
       if (!calculationManager) {
         throw new Error("Calculation manager not initialized");
       }
 
-      const calculation = calculationManager.getCalculation(id);
-      if (!calculation) {
-        return;
-      }
-
-      calculationManager.removeCalculation(calculation.resultColumnName);
+      calculationManager.removeCalculation(resultColumnName);
 
       set((state) => ({
-        calculations: state.calculations.filter((calc) => calc.id !== id),
+        calculations: state.calculations.filter(
+          (calc) => calc.resultColumnName !== resultColumnName
+        ),
       }));
 
       // Remove from column cache
       set((state) => {
         const newColumnCache = { ...state.columnCache };
-        if (calculation.resultColumnName in newColumnCache) {
-          delete newColumnCache[calculation.resultColumnName];
+        if (resultColumnName in newColumnCache) {
+          delete newColumnCache[resultColumnName];
         }
         return { columnCache: newColumnCache };
       });
     },
 
-    updateCalculation: (id, updates) => {
+    updateCalculation: (resultColumnName, updates) => {
       const { calculationManager } = get();
       if (!calculationManager) {
         throw new Error("Calculation manager not initialized");
       }
 
-      // Find the calculation by id
-      const calculation = get().calculations.find((calc) => calc.id === id);
+      // Find the calculation by resultColumnName
+      const calculation = get().calculations.find(
+        (calc) => calc.resultColumnName === resultColumnName
+      );
       if (!calculation) {
         return;
       }
 
-      calculationManager.updateCalculation(
-        calculation.resultColumnName,
-        updates
-      );
+      calculationManager.updateCalculation(resultColumnName, updates);
 
       set((state) => ({
         calculations: state.calculations.map((calc) =>
-          calc.id === id ? { ...calc, ...updates } : calc
+          calc.resultColumnName === resultColumnName
+            ? { ...calc, ...updates }
+            : calc
         ),
       }));
 
       // If the calculation was updated, re-execute it
       if (updates.expression || updates.isActive !== undefined) {
         const updatedCalc = calculationManager.getCalculation(
-          updates.resultColumnName || calculation.resultColumnName
+          updates.resultColumnName || resultColumnName
         );
         if (updatedCalc && updatedCalc.isActive) {
           calculationManager.executeCalculation(updatedCalc);
@@ -515,7 +499,9 @@ const createDataLayerStore = <T extends DatumObject>(
           const newColumnCache = { ...state.columnCache };
 
           // Remove old column name from cache
-          const oldCalc = state.calculations.find((calc) => calc.id === id);
+          const oldCalc = state.calculations.find(
+            (calc) => calc.resultColumnName === resultColumnName
+          );
           if (oldCalc && oldCalc.resultColumnName in newColumnCache) {
             delete newColumnCache[oldCalc.resultColumnName];
           }
@@ -564,14 +550,14 @@ const createDataLayerStore = <T extends DatumObject>(
       return calculationManager.getVirtualColumns();
     },
 
-    getCalculationResultForRow: (calculationId, rowId) => {
+    getCalculationResultForRow: (resultColumnName, rowId) => {
       const { calculationManager } = get();
       if (!calculationManager) {
         return undefined;
       }
 
       return calculationManager.getCalculationResultForRow(
-        calculationId,
+        resultColumnName,
         rowId
       );
     },

@@ -1,55 +1,96 @@
 # Implementation plan and status
 
-## Implementation Phases
+## Implementation Progress
 
-#### Phase 1: Core Expression Engine
+### Phase 1: Core Expression Engine
 
-- Setup Ohm.js parser infrastructure
-- Implement basic mathematical operations
-- Build expression validation system
-- Create basic UI for expression building
-- **Function Support:**
-  - [ ] Create Ohm.js grammar file with function call support
-  - [ ] Implement function call semantics
-  - [ ] Add function validation
-  - [ ] Write parser tests for functions
-  - [ ] Implement function registry system
-- **Data Layer Integration:**
-  - [ ] Add calculation state to DataLayerProvider
-  - [ ] Implement virtual column system
-  - [ ] Setup caching integration
-  - [ ] Add calculation dependency tracking
+- [x] Parser Setup
 
-#### Phase 1.5: DataLayerProvider Integration
+  - [x] Create Ohm.js grammar file
+  - [x] Implement basic semantics
+  - [x] Add expression validation
+  - [x] Write parser tests
 
-- **Core Integration:**
+- [x] Basic Math Operations
+
+  - [x] Addition/Subtraction
+  - [x] Multiplication/Division
+  - [x] Exponentiation
+  - [x] Operator precedence handling
+
+- [x] Expression Builder UI
+
+  - [x] Expression input component
+  - [x] Validation feedback
+  - [x] Variable reference system
+  - [x] Basic error handling
+
+- [x] Function Support
+
+  - [x] Create Ohm.js grammar file with function call support
+  - [x] Implement function call semantics
+  - [x] Add function validation
+  - [x] Write parser tests for functions
+  - [x] Implement function registry system
+
+- [x] Data Layer Integration
+
+  - [x] Add calculation state to DataLayerProvider
+  - [x] Implement virtual column system
+  - [x] Setup caching integration
+  - [x] Add calculation dependency tracking
+
+### Phase 1.5: DataLayerProvider Integration
+
+- [x] Core Integration
 
   - [x] Extend DataLayerProvider with calculation capabilities
   - [x] Implement calculation state management
   - [x] Create virtual column system
   - [x] Setup calculation dependency tracking
 
-- **Data Flow:**
+- [x] Data Flow
 
   - [x] Implement reactive calculation updates
   - [x] Add change detection for dependencies
   - [x] Create calculation invalidation system
   - [x] Build calculation execution queue
 
-- **Performance:**
+- [x] Performance
 
   - [x] Implement calculation caching
-  - [ ] Add memoization for expensive operations
-  - [ ] Create lazy evaluation system
-  - [ ] Optimize recalculation triggers
 
-- **UI Integration:**
-  - [ ] Add calculation status indicators
-  - [ ] Create calculation progress feedback
-  - [ ] Implement error handling and display
-  - [ ] Build calculation debugging tools
+- [x] Function UI Components
 
-#### Phase 2: Function Implementation
+  - [x] Function autocomplete in editor
+  - [x] Function documentation tooltips
+  - [x] Argument validation feedback
+  - [x] Function browser/explorer
+
+- [x] UI Integration
+  - [x] Add calculation status indicators
+  - [x] Create calculation progress feedback
+  - [x] Implement error handling and display
+  - [x] Build calculation debugging tools
+
+### Phase 2: Function Implementation
+
+- [x] Mathematical Functions
+
+  - [x] Basic math library integration
+  - [x] Custom function implementations
+  - [x] Function documentation
+
+- [x] Date Processing
+
+  - [x] Date extraction functions
+  - [x] Date manipulation utilities
+
+- [x] Statistical Functions
+
+  - [x] Basic statistics (mean, median, etc.)
+  - [x] Z-score calculations
+  - [x] Percentile computations
 
 - [ ] Core Function Categories
 
@@ -75,97 +116,6 @@
   - [ ] Implement function discovery UI
   - [ ] Add parameter validation
 
-- [ ] Function UI Components
-  - [ ] Function autocomplete in editor
-  - [ ] Function documentation tooltips
-  - [ ] Argument validation feedback
-  - [ ] Function browser/explorer
-
-#### Phase 3: Advanced Analytics
-
-- Implement ML/dimensionality reduction
-- Add regression analysis capabilities
-- Build advanced statistical functions
-- Create visualization previews for results
-
-#### Phase 4: Performance & Polish
-
-- Implement caching system
-- Add performance monitoring
-- Optimize large dataset handling
-- Polish UI/UX elements
-
-## Status
-
-### Phase 1: Core Expression Engine
-
-- [x] Parser Setup
-
-  - [x] Create Ohm.js grammar file
-  - [x] Implement basic semantics
-  - [x] Add expression validation
-  - [x] Write parser tests
-
-- [x] Basic Math Operations
-
-  - [x] Addition/Subtraction
-  - [x] Multiplication/Division
-  - [x] Exponentiation
-  - [x] Operator precedence handling
-
-- [x] Expression Builder UI
-  - [x] Expression input component
-  - [x] Validation feedback
-  - [x] Variable reference system
-  - [x] Basic error handling
-
-### Phase 1.5: DataLayerProvider Integration
-
-- [x] Core Integration
-
-  - [x] Extend DataLayerProvider with calculation capabilities
-  - [x] Implement calculation state management
-  - [x] Create virtual column system
-  - [x] Setup calculation dependency tracking
-
-- [x] Data Flow
-
-  - [x] Implement reactive calculation updates
-  - [x] Add change detection for dependencies
-  - [x] Create calculation invalidation system
-  - [x] Build calculation execution queue
-
-- [ ] Performance
-
-  - [x] Implement calculation caching
-  - [ ] Add memoization for expensive operations
-  - [ ] Create lazy evaluation system
-  - [ ] Optimize recalculation triggers
-
-- [ ] UI Integration
-  - [ ] Add calculation status indicators
-  - [ ] Create calculation progress feedback
-  - [ ] Implement error handling and display
-  - [ ] Build calculation debugging tools
-
-### Phase 2: Function Implementation
-
-- [x] Mathematical Functions
-
-  - [x] Basic math library integration
-  - [x] Custom function implementations
-  - [x] Function documentation
-
-- [x] Date Processing
-
-  - [x] Date extraction functions
-  - [x] Date manipulation utilities
-
-- [x] Statistical Functions
-  - [x] Basic statistics (mean, median, etc.)
-  - [x] Z-score calculations
-  - [x] Percentile computations
-
 ### Phase 3: Advanced Analytics
 
 - [ ] Machine Learning Features
@@ -173,11 +123,18 @@
   - [ ] PCA implementation
   - [ ] UMAP integration
   - [ ] t-SNE setup
+  - [ ] Implement ML/dimensionality reduction
 
 - [ ] Regression Analysis
+
   - [ ] Linear regression
   - [ ] Polynomial regression
   - [ ] Residuals calculation
+  - [ ] Add regression analysis capabilities
+
+- [ ] Statistical Functions
+  - [ ] Build advanced statistical functions
+  - [ ] Create visualization previews for results
 
 ### Phase 4: Performance & Polish
 
@@ -191,6 +148,8 @@
   - [ ] Large dataset handling
   - [ ] Memory management
   - [ ] Computation batching
+  - [ ] Optimize large dataset handling
+  - [ ] Polish UI/UX elements
 
 ## Current Progress
 
@@ -202,14 +161,17 @@
 - [x] UI components built
 - [x] Expression evaluation engine completed
 - [x] DataLayerProvider integration completed
+- [x] Calculation management UI components implemented
+- [x] Function browser/explorer implemented
+- [x] Calculation debugging tools created
 - [ ] Advanced analytics integration pending
 - [ ] Performance optimization pending
 
 ### Next Steps
 
-1. Create UI components for calculation management
+1. Implement remaining core function categories
 2. Implement advanced analytics features (PCA, UMAP, t-SNE)
 3. Add regression analysis capabilities
 4. Optimize for large datasets
-5. Add comprehensive error handling
+5. Add comprehensive function documentation
 6. Implement batch computation for better performance

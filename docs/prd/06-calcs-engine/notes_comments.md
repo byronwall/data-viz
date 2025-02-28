@@ -14,14 +14,12 @@
 - Calculation preview is busted - track down error
 - Add calculated fields to the summary table - give a calc icon
 - Should probably remove the `isActive` flag and just make all active
-- Remove the calc name - just rely on the result name
 - Need to go clean up the data flows - they're not performant
-- Clean up the UX - the preview mode is good for a subset of values - maybe show dependents in that view also -- the other stuff is all too much
 - Put some icons in the available fields helper - if it stays
+- Allow the expression field to be a quick text edit instead of opening the whole menu
 
 ## Short list - do it now
 
-- Remove extra name field
 - Get the preview to work
 - Get the calculation to run when the column is requested - do not pre-compute them all
 - Remove calc status + calc debugger

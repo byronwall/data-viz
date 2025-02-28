@@ -3,7 +3,6 @@ import { Calculator } from "./engine/Calculator";
 import { CalculationContext, Expression } from "./types";
 
 export interface CalculationDefinition {
-  name: string;
   expression: Expression;
   isActive: boolean;
   resultColumnName: string;
@@ -234,7 +233,7 @@ export class CalculationManager<T extends DatumObject> {
         resultMap.set(row.__ID, result.value);
       } else {
         console.error(
-          `Calculation error for ${calculation.name}:`,
+          `Calculation error for ${calculation.resultColumnName}:`,
           result.error
         );
         resultMap.set(row.__ID, null);

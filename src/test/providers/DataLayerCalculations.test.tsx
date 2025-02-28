@@ -85,9 +85,8 @@ function CalculationTestComponent({
   useEffect(() => {
     const addAndExecute = async () => {
       if (calculationConfig) {
-        const { name, expression, resultColumnName } = calculationConfig;
+        const { expression, resultColumnName } = calculationConfig;
         addCalculation({
-          name,
           expression: parseExpression(expression),
           isActive: true,
           resultColumnName,
@@ -116,7 +115,6 @@ function CalculationTestComponent({
           data-testid={`add-calculation-${testId}`}
           onClick={async () => {
             addCalculation({
-              name: calculationConfig.name,
               expression: parseExpression(calculationConfig.expression),
               isActive: true,
               resultColumnName: calculationConfig.resultColumnName,

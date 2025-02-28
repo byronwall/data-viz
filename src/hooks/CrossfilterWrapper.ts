@@ -22,15 +22,17 @@ export class CrossfilterWrapper<T> {
   ref: crossfilter.Crossfilter<T>;
   charts: Map<string, ChartDimension<T, IdField>> = new Map();
   idFunction: (item: T) => IdField;
-  dataHash: Record<string, T> = {};
+
+  // assume this gets set after creation
+  fieldGetter: (name: string) => Record<IdField, datum> = () => ({});
 
   constructor(data: T[], idFunction: (item: T) => IdField) {
     this.ref = crossfilter(data);
     this.idFunction = idFunction;
-    this.dataHash = data.reduce((acc, item) => {
-      acc[idFunction(item)] = item;
-      return acc;
-    }, {} as Record<string, T>);
+  }
+
+  setFieldGetter(fieldGetter: (name: string) => Record<IdField, datum>) {
+    this.fieldGetter = fieldGetter;
   }
 
   updateChart(chart: ChartSettings) {
@@ -116,91 +118,90 @@ export class CrossfilterWrapper<T> {
 
   getFilterFunction(chart: ChartSettings): (d: IdField) => boolean {
     switch (chart.type) {
-      case "row":
-        return (d: IdField) => {
-          // check if value is in the filters
-          const filters = chart.filterValues?.values;
+      case "row": {
+        const dataHash = this.fieldGetter(chart.field);
+        const filters = chart.filterValues?.values;
 
-          const dataObj = this.dataHash[d];
+        return (d: IdField) => rowChartPureFilter(filters, dataHash[d]);
+      }
+      case "bar": {
+        const dataHash = this.fieldGetter(chart.field);
+        const filters = getFilterObj(chart);
 
-          const value = dataObj[chart.field as keyof T] as datum;
+        return (d: IdField) => barChartPureFilter(filters, dataHash[d]);
+      }
+      case "scatter": {
+        const xDataHash = this.fieldGetter(chart.xField);
+        const yDataHash = this.fieldGetter(chart.yField);
 
-          return rowChartPureFilter(filters, value);
-        };
-      case "bar":
-        return (d: IdField) => {
-          const filters = getFilterObj(chart);
-
-          const dataObj = this.dataHash[d];
-
-          const value = dataObj[chart.field as keyof T] as datum;
-
-          return barChartPureFilter(filters, value);
-        };
-      case "scatter":
-        return (d: IdField) => {
-          const dataObj = this.dataHash[d];
-
-          const xValue = dataObj[chart.xField as keyof T] as datum;
-          const yValue = dataObj[chart.yField as keyof T] as datum;
-
-          return scatterChartPureFilter(
+        return (d: IdField) =>
+          scatterChartPureFilter(
             chart.xFilterRange,
             chart.yFilterRange,
-            xValue,
-            yValue
+            xDataHash[d],
+            yDataHash[d]
           );
-        };
-      case "pivot":
+      }
+      case "pivot": {
+        // BEWARE: VERY UNLIKELY this is correct
+        const pivotSettings = chart as PivotTableSettings;
+
+        // Check if any row or column filters are active
+        const rowFilters: FilterConfig[] = pivotSettings.rowFields.map(
+          (field: string) => ({
+            field,
+            values: new Set(pivotSettings.rowFilterValues?.[field] || []),
+          })
+        );
+
+        const columnFilters: FilterConfig[] = pivotSettings.columnFields.map(
+          (field: string) => ({
+            field,
+            values: new Set(pivotSettings.columnFilterValues?.[field] || []),
+          })
+        );
+
+        const noMatchingFilters =
+          rowFilters.every((f: FilterConfig) => f.values.size === 0) &&
+          columnFilters.every((f: FilterConfig) => f.values.size === 0);
+
+        const rowGetter = rowFilters.map((f: FilterConfig) => {
+          return this.fieldGetter(f.field);
+        });
+
+        const columnGetter = columnFilters.map((f: FilterConfig) => {
+          return this.fieldGetter(f.field);
+        });
+
         return (d: IdField) => {
-          const dataObj = this.dataHash[d];
-          const pivotSettings = chart as PivotTableSettings;
-
-          // Check if any row or column filters are active
-          const rowFilters: FilterConfig[] = pivotSettings.rowFields.map(
-            (field: string) => ({
-              field,
-              values: new Set(pivotSettings.rowFilterValues?.[field] || []),
-            })
-          );
-
-          const columnFilters: FilterConfig[] = pivotSettings.columnFields.map(
-            (field: string) => ({
-              field,
-              values: new Set(pivotSettings.columnFilterValues?.[field] || []),
-            })
-          );
-
-          // If no filters are active, include all data
-          if (
-            rowFilters.every((f: FilterConfig) => f.values.size === 0) &&
-            columnFilters.every((f: FilterConfig) => f.values.size === 0)
-          ) {
+          if (noMatchingFilters) {
             return true;
           }
-
           // Check if the data point matches any active row filters
-          const matchesRowFilters = rowFilters.every((filter: FilterConfig) => {
-            if (filter.values.size === 0) {
-              return true;
-            }
-            const value = dataObj[filter.field as keyof T] as string | number;
-            return filter.values.has(value);
-          });
-
-          // Check if the data point matches any active column filters
-          const matchesColumnFilters = columnFilters.every(
-            (filter: FilterConfig) => {
+          const matchesRowFilters = rowFilters.every(
+            (filter: FilterConfig, index: number) => {
               if (filter.values.size === 0) {
                 return true;
               }
-              const value = dataObj[filter.field as keyof T] as string | number;
-              return filter.values.has(value);
+              const value = rowGetter[index][d];
+              return filter.values.has(value as string | number);
+            }
+          );
+
+          // Check if the data point matches any active column filters
+          const matchesColumnFilters = columnFilters.every(
+            (filter: FilterConfig, index: number) => {
+              if (filter.values.size === 0) {
+                return true;
+              }
+              const value = columnGetter[index][d];
+              return filter.values.has(value as string | number);
             }
           );
 
           return matchesRowFilters && matchesColumnFilters;
         };
+      }
     }
   }
 

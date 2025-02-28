@@ -1,4 +1,3 @@
-import { produce } from "immer";
 import {
   CrossfilterWrapper,
   LiveItem,
@@ -79,7 +78,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
     newCalculation: CalculationDefinition
   ) => void;
 
-  calcColumnCache: Record<string, Record<IdType, datum>>;
+  calcColumnCache: Record<string, Record<IdType, datum> | undefined>;
 }
 
 // Store type
@@ -127,7 +126,7 @@ const createDataLayerStore = <T extends DatumObject>(
     );
   }
 
-  return createStore<DataLayerState<T>>()((set, get) => ({
+  const store = createStore<DataLayerState<T>>()((set, get) => ({
     data: initData,
     emptyColumn: initData.reduce((acc, row) => {
       acc[row.__ID as IdType] = undefined;
@@ -321,11 +320,11 @@ const createDataLayerStore = <T extends DatumObject>(
         });
 
         // update the column cache
-        set(
-          produce((draft) => {
-            draft.calcColumnCache[field] = columnData;
-          })
-        );
+        set((state) => {
+          const newCalcColumnCache = { ...state.calcColumnCache };
+          newCalcColumnCache[field] = columnData;
+          return { calcColumnCache: newCalcColumnCache };
+        });
 
         return columnData;
       }
@@ -342,11 +341,11 @@ const createDataLayerStore = <T extends DatumObject>(
         columnData[row.__ID] = row[field];
       });
 
-      set(
-        produce((draft) => {
-          draft.columnCache[field] = columnData;
-        })
-      );
+      set((state) => {
+        const newColumnCache = { ...state.columnCache };
+        newColumnCache[field] = columnData;
+        return { columnCache: newColumnCache };
+      });
 
       return columnData;
     },
@@ -444,15 +443,18 @@ const createDataLayerStore = <T extends DatumObject>(
 
       const affectedColumns = calculationManager.addCalculation(calculation);
 
-      set(
-        produce((draft) => {
-          draft.calculations.push(calculation);
-          for (const columnName of affectedColumns) {
-            draft.calcColumnCache[columnName] = undefined;
-          }
-          draft.nonce = draft.nonce + 1;
-        })
-      );
+      set((state) => {
+        const newCalculations = [...state.calculations, calculation];
+        const newCalcColumnCache = { ...state.calcColumnCache };
+        for (const columnName of affectedColumns) {
+          newCalcColumnCache[columnName] = undefined;
+        }
+        return {
+          calculations: newCalculations,
+          calcColumnCache: newCalcColumnCache,
+          nonce: state.nonce + 1,
+        };
+      });
 
       console.log("DataLayerProvider addCalculation: executed");
 
@@ -492,6 +494,12 @@ const createDataLayerStore = <T extends DatumObject>(
       addCalculation(newCalculation);
     },
   }));
+
+  // this madness passes the column getter back into the crossfilter wrapper
+  // this ensures that crossfilter has access to calculated fields
+  crossfilterWrapper.setFieldGetter(store.getState().getColumnData);
+
+  return store;
 };
 
 // Create context

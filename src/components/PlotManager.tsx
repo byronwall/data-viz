@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { ColorScaleManager } from "./ColorScaleManager";
 import { MainLayout } from "./layout/MainLayout";
 
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { ChartLayout } from "@/types/ChartTypes";
 import { Calculator, FilterX, X } from "lucide-react";
@@ -10,11 +12,6 @@ import type { Layout } from "react-grid-layout";
 import { ChartGridLayout } from "./ChartGridLayout";
 import { PlotChartPanel } from "./PlotChartPanel";
 import { CalculationManager } from "./calculations/CalculationManager";
-import { CalculationStatus } from "./calculations/CalculationStatus";
-import { CalculationDebugger } from "./calculations/CalculationDebugger";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 // Add these constants at the top of the file, after imports
 const GRID_ROW_HEIGHT = 100; // pixels per grid row
@@ -29,20 +26,6 @@ const gridToPixels = (layout: ChartLayout, containerWidth: number) => {
     height: layout.h * GRID_ROW_HEIGHT,
   };
 };
-
-// New component for the calculations panel
-function CalculationsPanel() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CalculationManager />
-        <CalculationStatus />
-      </div>
-      <Separator />
-      <CalculationDebugger />
-    </div>
-  );
-}
 
 export function PlotManager() {
   const getColumnNames = useDataLayer((state) => state.getColumnNames);
@@ -177,7 +160,7 @@ export function PlotManager() {
         <TabsContent value="calculations" className="mt-0">
           <Card>
             <CardContent className="pt-6">
-              <CalculationsPanel />
+              <CalculationManager />
             </CardContent>
           </Card>
         </TabsContent>

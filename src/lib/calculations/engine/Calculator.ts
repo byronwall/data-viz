@@ -12,13 +12,15 @@ import {
   type TernaryExpression,
   type UnaryExpression,
 } from "../types";
+import { datum } from "@/types/ChartTypes";
+import { Data } from "@dnd-kit/core";
 
 type CalcFunction = (...args: any[]) => any;
 
 export class Calculator {
   constructor(private context: CalculationContext) {}
 
-  async evaluate(expression: Expression): Promise<CalculationResult> {
+  evaluate(expression: Expression): CalculationResult {
     try {
       console.log(
         `[Calculator.evaluate] Starting evaluation of expression type: ${expression.type}`
@@ -29,12 +31,10 @@ export class Calculator {
 
       switch (expression.type) {
         case "basic":
-          result = await this.evaluateBasic(expression as BasicExpression);
+          result = this.evaluateBasic(expression as BasicExpression);
           break;
         case "function":
-          funcResult = await this.evaluateFunction(
-            expression as FunctionExpression
-          );
+          funcResult = this.evaluateFunction(expression as FunctionExpression);
           if (!funcResult.success) {
             console.error(
               `[Calculator.evaluate] Function evaluation failed: ${funcResult.error}`
@@ -44,21 +44,19 @@ export class Calculator {
           result = funcResult.value;
           break;
         case "group":
-          result = await this.evaluateGroup(expression as GroupExpression);
+          result = this.evaluateGroup(expression as GroupExpression);
           break;
         case "rank":
-          result = await this.evaluateRank(expression as RankExpression);
+          result = this.evaluateRank(expression as RankExpression);
           break;
         case "advanced":
-          result = await this.evaluateAdvanced(
-            expression as AdvancedExpression
-          );
+          result = this.evaluateAdvanced(expression as AdvancedExpression);
           break;
         case "ternary":
-          result = await this.evaluateTernary(expression as TernaryExpression);
+          result = this.evaluateTernary(expression as TernaryExpression);
           break;
         case "unary":
-          result = await this.evaluateUnary(expression as UnaryExpression);
+          result = this.evaluateUnary(expression as UnaryExpression);
           break;
         case "literal":
           result = this.evaluateLiteral(expression as LiteralExpression);
@@ -88,17 +86,17 @@ export class Calculator {
     }
   }
 
-  private async evaluateBasic(expression: BasicExpression): Promise<any> {
+  private evaluateBasic(expression: BasicExpression): datum {
     if (!expression.left || !expression.right) {
       throw new Error(`Invalid basic expression: missing operands`);
     }
 
-    const leftResult = await this.evaluate(expression.left);
+    const leftResult = this.evaluate(expression.left);
     if (!leftResult.success) {
       throw new Error(`Failed to evaluate left operand: ${leftResult.error}`);
     }
 
-    const rightResult = await this.evaluate(expression.right);
+    const rightResult = this.evaluate(expression.right);
     if (!rightResult.success) {
       throw new Error(`Failed to evaluate right operand: ${rightResult.error}`);
     }
@@ -135,9 +133,7 @@ export class Calculator {
     }
   }
 
-  private async evaluateFunction(
-    expression: FunctionExpression
-  ): Promise<CalculationResult> {
+  private evaluateFunction(expression: FunctionExpression): CalculationResult {
     console.log(
       `[Calculator.evaluateFunction] Evaluating function: ${expression.functionName}`
     );
@@ -159,66 +155,64 @@ export class Calculator {
       console.log(
         `[Calculator.evaluateFunction] Evaluating ${expression.arguments.length} arguments`
       );
-      const evaluatedArgs = await Promise.all(
-        expression.arguments.map(async (arg: Expression) => {
-          if (arg.type === "literal") {
-            const literalArg = arg as LiteralExpression;
-            console.log(
-              `[Calculator.evaluateFunction] Processing literal argument:`,
-              literalArg
-            );
+      const evaluatedArgs = expression.arguments.map((arg: Expression) => {
+        if (arg.type === "literal") {
+          const literalArg = arg as LiteralExpression;
+          console.log(
+            `[Calculator.evaluateFunction] Processing literal argument:`,
+            literalArg
+          );
 
-            // If it has a numeric value, use it directly
-            if (literalArg.value !== undefined) {
-              if (typeof literalArg.value === "number") {
-                return literalArg.value;
-              }
-
-              // If it's a string literal, use it directly
-              if (typeof literalArg.value === "string") {
-                // Check if it's a variable reference
-                if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(literalArg.value)) {
-                  const value = this.context.variables.get(literalArg.value);
-                  if (value !== undefined) {
-                    return value;
-                  }
-                }
-                return literalArg.value;
-              }
-
+          // If it has a numeric value, use it directly
+          if (literalArg.value !== undefined) {
+            if (typeof literalArg.value === "number") {
               return literalArg.value;
             }
 
-            // If name is defined and it's a number, use it directly
-            if (typeof literalArg.name === "string") {
-              // If it looks like a number, convert it
-              if (!isNaN(Number(literalArg.name))) {
-                return Number(literalArg.name);
-              }
-
-              // If it looks like a variable, try to resolve it
-              if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(literalArg.name)) {
-                const value = this.context.variables.get(literalArg.name);
+            // If it's a string literal, use it directly
+            if (typeof literalArg.value === "string") {
+              // Check if it's a variable reference
+              if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(literalArg.value)) {
+                const value = this.context.variables.get(literalArg.value);
                 if (value !== undefined) {
                   return value;
                 }
               }
-
-              return literalArg.name;
+              return literalArg.value;
             }
 
-            return literalArg.value !== undefined
-              ? literalArg.value
-              : literalArg.name;
+            return literalArg.value;
           }
 
-          const result = await this.evaluate(arg);
-          if (!result.success) {
-            throw new Error(`Failed to evaluate argument: ${result.error}`);
+          // If name is defined and it's a number, use it directly
+          if (typeof literalArg.name === "string") {
+            // If it looks like a number, convert it
+            if (!isNaN(Number(literalArg.name))) {
+              return Number(literalArg.name);
+            }
+
+            // If it looks like a variable, try to resolve it
+            if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(literalArg.name)) {
+              const value = this.context.variables.get(literalArg.name);
+              if (value !== undefined) {
+                return value;
+              }
+            }
+
+            return literalArg.name;
           }
-          return result.value;
-        })
-      );
+
+          return literalArg.value !== undefined
+            ? literalArg.value
+            : literalArg.name;
+        }
+
+        const result = this.evaluate(arg);
+        if (!result.success) {
+          throw new Error(`Failed to evaluate argument: ${result.error}`);
+        }
+        return result.value;
+      });
 
       console.log(
         `[Calculator.evaluateFunction] Arguments evaluated:`,
@@ -306,9 +300,7 @@ export class Calculator {
     }
   }
 
-  private async evaluateGroup(
-    expression: GroupExpression
-  ): Promise<Record<string, any>> {
+  private evaluateGroup(expression: GroupExpression): Record<string, datum> {
     const groupBy = expression.groupBy;
     const aggregation = expression.aggregation;
 
@@ -331,9 +323,7 @@ export class Calculator {
     return Object.fromEntries(results);
   }
 
-  private async evaluateRank(
-    expression: RankExpression
-  ): Promise<Record<number, number>> {
+  private evaluateRank(expression: RankExpression): Record<number, number> {
     const rankBy = expression.rankBy;
     const isNormalized = expression.isNormalized;
     const isCumulative = expression.isCumulative;
@@ -386,7 +376,7 @@ export class Calculator {
     return Object.fromEntries(ranks);
   }
 
-  private async evaluateAdvanced(expression: AdvancedExpression): Promise<any> {
+  private evaluateAdvanced(expression: AdvancedExpression): Promise<any> {
     // This would be implemented based on the specific advanced analytics needed
     throw new Error("Advanced analytics not implemented yet");
   }
@@ -562,14 +552,14 @@ export class Calculator {
     throw new Error(`Unsupported expression type: ${expr.type}`);
   }
 
-  private async evaluateUnary(expression: UnaryExpression): Promise<number> {
+  private evaluateUnary(expression: UnaryExpression): datum {
     if (!expression.operand) {
       throw new Error(`Invalid unary expression: missing operand`);
     }
     return this.evaluateExpression(expression);
   }
 
-  private async evaluateTernary(expression: TernaryExpression): Promise<any> {
+  private evaluateTernary(expression: TernaryExpression): datum {
     if (
       !expression.condition ||
       !expression.trueBranch ||

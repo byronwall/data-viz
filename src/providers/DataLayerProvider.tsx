@@ -1,3 +1,4 @@
+import { produce } from "immer";
 import {
   CrossfilterWrapper,
   LiveItem,
@@ -74,10 +75,11 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   removeCalculation: (resultColumnName: string) => void;
   updateCalculation: (
     resultColumnName: string,
-    updates: Partial<CalculationDefinition>
+    newCalculation: CalculationDefinition
   ) => void;
-  executeCalculations: () => Promise<void>;
-  getVirtualColumns: () => Record<string, Record<number, any>>;
+
+  calcColumnCache: Record<string, { [key: IdType]: datum }>;
+
   getCalculationResultForRow: (resultColumnName: string, rowId: number) => any;
 }
 
@@ -271,15 +273,16 @@ const createDataLayerStore = <T extends DatumObject>(
     },
 
     getColumnNames() {
-      const { data, getVirtualColumns } = get();
+      const { data, calculations } = get();
       const baseColumns = Object.keys(data[0] || {});
-      const virtualColumns = Object.keys(getVirtualColumns());
 
-      return [...baseColumns, ...virtualColumns];
+      const calcFields = calculations.map((calc) => calc.resultColumnName);
+
+      return [...baseColumns, ...calcFields];
     },
 
     getColumnData(field: string | undefined) {
-      const { columnCache, data, getVirtualColumns } = get();
+      const { columnCache, data, calcColumnCache, calculations } = get();
 
       if (!field) {
         return {};
@@ -294,15 +297,42 @@ const createDataLayerStore = <T extends DatumObject>(
         return columnCache[field];
       }
 
-      // Check if it's a virtual column
-      const virtualColumns = getVirtualColumns();
-      console.log("DataLayerProvider getColumnData", {
-        field,
-        virtualColumns,
-      });
-      if (field in virtualColumns) {
-        columnCache[field] = virtualColumns[field];
-        return virtualColumns[field];
+      const calculation = calculations.find(
+        (calc) => calc.resultColumnName === field
+      );
+
+      if (calculation) {
+        if (calcColumnCache[field]) {
+          return calcColumnCache[field];
+        }
+
+        // Otherwise, calculate the column data
+        // TODO: Implement calculation in the manager for whole column
+        // needs to account for dependencies
+        const resultMap = calculationManager.executeCalculation(calculation);
+
+        // convert to Record<IdType, datum>
+        const columnData: { [key: IdType]: datum } = {};
+        resultMap.forEach((value, key) => {
+          columnData[key] = value;
+        });
+
+        // update the column cache
+        set(
+          produce((draft) => {
+            draft.calcColumnCache[field] = columnData;
+          })
+        );
+
+        return columnData;
+      }
+
+      // check if field is in the data -- if not, return all undefined
+      // do not add to column cache
+      if (!data.some((row) => field in row)) {
+        return data.map((row) => ({
+          [row.__ID]: undefined,
+        }));
       }
 
       // Otherwise, it's a regular column
@@ -311,7 +341,12 @@ const createDataLayerStore = <T extends DatumObject>(
         columnData[row.__ID] = row[field];
       });
 
-      columnCache[field] = columnData;
+      set(
+        produce((draft) => {
+          draft.columnCache[field] = columnData;
+        })
+      );
+
       return columnData;
     },
 
@@ -380,10 +415,8 @@ const createDataLayerStore = <T extends DatumObject>(
         view.calculations.forEach(async (calc) => {
           if (calculationManager) {
             try {
-              const result = await calculationManager.addAndExecCalculation(
-                calc
-              );
-              newCalculations.push(result.calculation);
+              await calculationManager.addCalculation(calc);
+              newCalculations.push(calc);
             } catch (error) {
               console.error("Error adding calculation:", error);
             }
@@ -408,30 +441,21 @@ const createDataLayerStore = <T extends DatumObject>(
         throw new Error("Calculation manager not initialized");
       }
 
-      const result = await calculationManager.addAndExecCalculation(
-        calculation
-      );
-      const { calculation: newCalculation, results } = result;
+      const affectedColumns = calculationManager.addCalculation(calculation);
 
-      set((state) => ({
-        calculations: [...state.calculations, newCalculation],
-      }));
+      set(
+        produce((draft) => {
+          draft.calculations.push(calculation);
+          for (const columnName of affectedColumns) {
+            draft.calcColumnCache[columnName] = undefined;
+          }
+          draft.nonce = draft.nonce + 1;
+        })
+      );
 
       console.log("DataLayerProvider addCalculation: executed");
 
-      // Update column cache to include the new virtual column and any dependent columns
-      set((state) => {
-        const newColumnCache = { ...state.columnCache };
-
-        // Add all affected columns to the cache
-        for (const [columnName, columnData] of Object.entries(results)) {
-          newColumnCache[columnName] = columnData;
-        }
-
-        return { columnCache: newColumnCache, nonce: state.nonce + 1 };
-      });
-
-      return newCalculation;
+      return calculation;
     },
 
     removeCalculation: (resultColumnName) => {
@@ -458,108 +482,13 @@ const createDataLayerStore = <T extends DatumObject>(
       });
     },
 
-    updateCalculation: (resultColumnName, updates) => {
-      const { calculationManager } = get();
-      if (!calculationManager) {
-        throw new Error("Calculation manager not initialized");
-      }
+    calcColumnCache: {},
 
-      // Find the calculation by resultColumnName
-      const calculation = get().calculations.find(
-        (calc) => calc.resultColumnName === resultColumnName
-      );
-      if (!calculation) {
-        return;
-      }
+    updateCalculation: (resultColumnName, newCalculation) => {
+      const { addCalculation, removeCalculation } = get();
 
-      calculationManager.updateCalculation(resultColumnName, updates);
-
-      set((state) => ({
-        calculations: state.calculations.map((calc) =>
-          calc.resultColumnName === resultColumnName
-            ? { ...calc, ...updates }
-            : calc
-        ),
-      }));
-
-      // If the calculation was updated, re-execute it
-      if (updates.expression || updates.isActive !== undefined) {
-        const updatedCalc = calculationManager.getCalculation(
-          updates.resultColumnName || resultColumnName
-        );
-        if (updatedCalc && updatedCalc.isActive) {
-          calculationManager.executeCalculation(updatedCalc);
-        }
-      }
-
-      // Update column cache if the result column name changed
-      if (updates.resultColumnName) {
-        set((state) => {
-          const virtualColumns = calculationManager.getVirtualColumns();
-          const newColumnCache = { ...state.columnCache };
-
-          // Remove old column name from cache
-          const oldCalc = state.calculations.find(
-            (calc) => calc.resultColumnName === resultColumnName
-          );
-          if (oldCalc && oldCalc.resultColumnName in newColumnCache) {
-            delete newColumnCache[oldCalc.resultColumnName];
-          }
-
-          // Add new column name to cache
-          if (
-            updates.resultColumnName &&
-            updates.resultColumnName in virtualColumns
-          ) {
-            newColumnCache[updates.resultColumnName] =
-              virtualColumns[updates.resultColumnName];
-          }
-
-          return { columnCache: newColumnCache };
-        });
-      }
-    },
-
-    executeCalculations: async () => {
-      const { calculationManager } = get();
-      if (!calculationManager) {
-        throw new Error("Calculation manager not initialized");
-      }
-
-      await calculationManager.executeCalculations();
-
-      // Update column cache with virtual columns
-      set((state) => {
-        const virtualColumns = calculationManager.getVirtualColumns();
-        const newColumnCache = { ...state.columnCache };
-
-        for (const [columnName, columnData] of Object.entries(virtualColumns)) {
-          newColumnCache[columnName] = columnData;
-        }
-
-        return { columnCache: newColumnCache };
-      });
-    },
-
-    getVirtualColumns: () => {
-      const { calculationManager } = get();
-      if (!calculationManager) {
-        return {};
-      }
-
-      return calculationManager.getVirtualColumns();
-    },
-
-    getCalculationResultForRow: (resultColumnName, rowId) => {
-      const { calculationManager } = get();
-      if (!calculationManager) {
-        return undefined;
-      }
-
-      return calculationManager.getCalculationResultForRow(
-        resultColumnName,
-        rowId
-      );
+      removeCalculation(resultColumnName);
+      addCalculation(newCalculation);
     },
   }));
 };

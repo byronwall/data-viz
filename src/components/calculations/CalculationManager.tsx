@@ -33,9 +33,6 @@ export function CalculationManager() {
   const addCalculation = useDataLayer((state) => state.addCalculation);
   const removeCalculation = useDataLayer((state) => state.removeCalculation);
   const updateCalculation = useDataLayer((state) => state.updateCalculation);
-  const executeCalculations = useDataLayer(
-    (state) => state.executeCalculations
-  );
   const getColumnNames = useDataLayer((state) => state.getColumnNames);
   const data = useDataLayer((state) => state.data);
 
@@ -50,7 +47,6 @@ export function CalculationManager() {
   const [newExpression, setNewExpression] = useState("");
 
   const availableFields = getColumnNames();
-  const availableFunctions: string[] = []; // This would come from a function registry
 
   const handleAddCalculation = async () => {
     if (!newCalcColumn.trim()) {
@@ -64,12 +60,9 @@ export function CalculationManager() {
     }
 
     try {
-      console.log("add new ", newExpression, parseExpression(newExpression));
-
       await addCalculation({
         resultColumnName: newCalcColumn,
         expression: parseExpression(newExpression),
-        isActive: true,
       });
 
       toast.success("Calculation added successfully");
@@ -133,7 +126,6 @@ export function CalculationManager() {
         expression: parseExpression(newExpression),
       });
 
-      await executeCalculations();
       toast.success("Calculation updated successfully");
       setIsFormDialogOpen(false);
     } catch (error) {

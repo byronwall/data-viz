@@ -107,6 +107,10 @@ export class CalculationManager<T extends DatumObject> {
 
     visit(calculation.resultColumnName);
 
+    if (precedents.size === 0) {
+      return [];
+    }
+
     const precedentsArray = Array.from(precedents);
     return precedentsArray
       .map(

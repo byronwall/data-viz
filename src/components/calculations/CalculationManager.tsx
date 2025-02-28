@@ -283,12 +283,11 @@ export function CalculationManager() {
                 (calc) => calc.resultColumnName === currentCalculation
               )?.expression && (
                 <CalculationPreview
-                  expression={
+                  calculation={
                     calculations.find(
                       (calc) => calc.resultColumnName === currentCalculation
-                    )!.expression
+                    )!
                   }
-                  data={data}
                   previewRows={10}
                 />
               )}

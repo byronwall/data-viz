@@ -1,3 +1,4 @@
+import { datum } from "@/types/ChartTypes";
 import { timeFormat } from "d3-time-format";
 import {
   type AdvancedExpression,
@@ -12,8 +13,6 @@ import {
   type TernaryExpression,
   type UnaryExpression,
 } from "../types";
-import { datum } from "@/types/ChartTypes";
-import { Data } from "@dnd-kit/core";
 
 type CalcFunction = (...args: any[]) => any;
 
@@ -22,10 +21,6 @@ export class Calculator {
 
   evaluate(expression: Expression): CalculationResult {
     try {
-      console.log(
-        `[Calculator.evaluate] Starting evaluation of expression type: ${expression.type}`
-      );
-
       let result: any;
       let funcResult: CalculationResult;
 
@@ -134,9 +129,6 @@ export class Calculator {
   }
 
   private evaluateFunction(expression: FunctionExpression): CalculationResult {
-    console.log(
-      `[Calculator.evaluateFunction] Evaluating function: ${expression.functionName}`
-    );
     // Get the function implementation first
     const func = this.getFunction(expression.functionName);
     if (!func) {
@@ -152,16 +144,10 @@ export class Calculator {
 
     try {
       // Evaluate all arguments
-      console.log(
-        `[Calculator.evaluateFunction] Evaluating ${expression.arguments.length} arguments`
-      );
+
       const evaluatedArgs = expression.arguments.map((arg: Expression) => {
         if (arg.type === "literal") {
           const literalArg = arg as LiteralExpression;
-          console.log(
-            `[Calculator.evaluateFunction] Processing literal argument:`,
-            literalArg
-          );
 
           // If it has a numeric value, use it directly
           if (literalArg.value !== undefined) {
@@ -214,11 +200,6 @@ export class Calculator {
         return result.value;
       });
 
-      console.log(
-        `[Calculator.evaluateFunction] Arguments evaluated:`,
-        evaluatedArgs
-      );
-
       // For date functions, ensure the first argument is a Date object
       if (
         expression.functionName.toLowerCase() === "formatdate" ||
@@ -226,11 +207,6 @@ export class Calculator {
       ) {
         if (!(evaluatedArgs[0] instanceof Date)) {
           try {
-            console.log(
-              `[Calculator.evaluateFunction] Converting to Date:`,
-              evaluatedArgs[0]
-            );
-
             // If it's a variable name, try to get the actual date from variables
             if (
               typeof evaluatedArgs[0] === "string" &&
@@ -239,16 +215,8 @@ export class Calculator {
               const dateValue = this.context.variables.get(evaluatedArgs[0]);
               if (dateValue instanceof Date) {
                 evaluatedArgs[0] = dateValue;
-                console.log(
-                  `[Calculator.evaluateFunction] Found date in variables:`,
-                  evaluatedArgs[0]
-                );
               } else if (dateValue !== undefined) {
                 evaluatedArgs[0] = new Date(dateValue);
-                console.log(
-                  `[Calculator.evaluateFunction] Converted variable to date:`,
-                  evaluatedArgs[0]
-                );
               }
             } else {
               evaluatedArgs[0] = new Date(evaluatedArgs[0]);
@@ -283,7 +251,6 @@ export class Calculator {
 
       // Execute the function with evaluated arguments
       const result = func(...evaluatedArgs);
-      console.log(`[Calculator.evaluateFunction] Function result:`, result);
       return {
         success: true,
         value: result,
@@ -385,39 +352,29 @@ export class Calculator {
     console.log(`[Calculator.getFunction] Looking up function: ${name}`);
     const functions: Record<string, CalcFunction> = {
       sum: (...values: number[]) => {
-        console.log(`[Calculator.sum] Calculating sum of:`, values);
         return values.reduce((a, b) => Number(a) + Number(b), 0);
       },
       avg: (...values: number[]) => {
-        console.log(`[Calculator.avg] Calculating average of:`, values);
         return (
           values.reduce((a, b) => Number(a) + Number(b), 0) / values.length
         );
       },
       min: (...values: number[]) => {
-        console.log(`[Calculator.min] Calculating min of:`, values);
         return Math.min(...values.map((v) => Number(v)));
       },
       max: (...values: number[]) => {
-        console.log(`[Calculator.max] Calculating max of:`, values);
         return Math.max(...values.map((v) => Number(v)));
       },
       count: (...values: any[]) => {
-        console.log(`[Calculator.count] Counting values:`, values);
         return values.length;
       },
       formatdate: (date: Date, format: string) => {
-        console.log(`[Calculator.formatdate] Formatting date:`, date, format);
         return this.formatDate(date, format);
       },
       extractdatecomponent: (
         date: Date,
         component: "year" | "month" | "day" | "quarter" | "week"
       ) => {
-        console.log(
-          `[Calculator.extractdatecomponent] Extracting ${component} from:`,
-          date
-        );
         return this.extractDateComponent(date, component);
       },
     };
@@ -620,12 +577,6 @@ export class Calculator {
     component: "year" | "month" | "day" | "quarter" | "week"
   ): number {
     try {
-      console.log(
-        `[Calculator.extractDateComponent] Processing date:`,
-        date,
-        `for component:`,
-        component
-      );
       let result: number;
       switch (component) {
         case "year":
@@ -646,7 +597,6 @@ export class Calculator {
         default:
           throw new Error(`Unknown date component: ${component}`);
       }
-      console.log(`[Calculator.extractDateComponent] Result:`, result);
       return result;
     } catch (error) {
       console.error(`[Calculator.extractDateComponent] Error:`, error);

@@ -11,18 +11,14 @@
 - Need better organization around calc defs -- cannot all be in one big file
 - Need to review coverage and find all of the dead code - clean it out
 - Crossfilter needs to be able to access calculated fields so that filtering on them works
-- Calculation preview is busted - track down error
-- Add calculated fields to the summary table - give a calc icon
 - Should probably remove the `isActive` flag and just make all active
 - Need to go clean up the data flows - they're not performant
 - Put some icons in the available fields helper - if it stays
 - Allow the expression field to be a quick text edit instead of opening the whole menu
 
-## Short list - do it now
+## Maybe
 
-- Get the preview to work
-- Get the calculation to run when the column is requested - do not pre-compute them all
-- Remove calc status + calc debugger
+- Add calculated fields to the summary table - give a calc icon
 
 ## More ideas
 

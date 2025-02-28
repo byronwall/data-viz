@@ -29,6 +29,7 @@ export type HasId = { __ID: IdType };
 
 interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   data: (T & HasId)[];
+  emptyColumn: Record<IdType, datum>;
   fileName: string | undefined;
   setData: (data: T[], fileName?: string) => void;
 
@@ -56,9 +57,9 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   getLiveItems: (chart: ChartSettings) => LiveItem;
 
   // data and key functions
-  getColumnData: (field: string | undefined) => { [key: IdType]: datum };
+  getColumnData: (field: string | undefined) => Record<IdType, datum>;
   getColumnNames: () => string[];
-  columnCache: Record<string, { [key: IdType]: datum }>;
+  columnCache: Record<string, Record<IdType, datum>>;
 
   // Project and View Management
   currentProject: SavedProject | null;
@@ -78,9 +79,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
     newCalculation: CalculationDefinition
   ) => void;
 
-  calcColumnCache: Record<string, { [key: IdType]: datum }>;
-
-  getCalculationResultForRow: (resultColumnName: string, rowId: number) => any;
+  calcColumnCache: Record<string, Record<IdType, datum>>;
 }
 
 // Store type
@@ -97,6 +96,10 @@ function getDataAndCrossfilterWrapper<T extends DatumObject>(
   }));
   return {
     data: dataWithIds,
+    emptyColumn: data.reduce((acc, row) => {
+      acc[row.__ID as IdType] = undefined;
+      return acc;
+    }, {} as Record<IdType, datum>),
     crossfilterWrapper: new CrossfilterWrapper<T & HasId>(
       dataWithIds,
       (d) => d.__ID
@@ -126,6 +129,10 @@ const createDataLayerStore = <T extends DatumObject>(
 
   return createStore<DataLayerState<T>>()((set, get) => ({
     data: initData,
+    emptyColumn: initData.reduce((acc, row) => {
+      acc[row.__ID as IdType] = undefined;
+      return acc;
+    }, {} as Record<IdType, datum>),
     fileName: undefined,
     crossfilterWrapper,
     calculationManager,
@@ -282,16 +289,12 @@ const createDataLayerStore = <T extends DatumObject>(
     },
 
     getColumnData(field: string | undefined) {
-      const { columnCache, data, calcColumnCache, calculations } = get();
+      const { columnCache, data, calcColumnCache, calculations, emptyColumn } =
+        get();
 
       if (!field) {
-        return {};
+        return emptyColumn;
       }
-
-      console.log("DataLayerProvider getColumnData", {
-        field,
-        columnCache,
-      });
 
       if (columnCache[field]) {
         return columnCache[field];
@@ -330,9 +333,7 @@ const createDataLayerStore = <T extends DatumObject>(
       // check if field is in the data -- if not, return all undefined
       // do not add to column cache
       if (!data.some((row) => field in row)) {
-        return data.map((row) => ({
-          [row.__ID]: undefined,
-        }));
+        return emptyColumn;
       }
 
       // Otherwise, it's a regular column

@@ -1,6 +1,5 @@
-import React from "react";
-import { type Expression } from "@/lib/calculations/types";
-import { Calculator } from "@/lib/calculations/engine/Calculator";
+import { useGetColumnData } from "@/components/charts/useGetColumnData";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -9,97 +8,62 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
+import { CalculationDefinition } from "@/lib/calculations/CalculationState";
+import { useDataLayer } from "@/providers/DataLayerProvider";
+import { useMemo } from "react";
 
 interface CalculationPreviewProps {
-  expression: Expression;
-  data: any[];
+  calculation: CalculationDefinition;
+
   previewRows?: number;
 }
 
 export function CalculationPreview({
-  expression,
-  data,
-  previewRows = 5,
+  calculation,
+  previewRows = 10,
 }: CalculationPreviewProps) {
-  const calculator = new Calculator({ data, variables: {} });
-  const [result, setResult] = React.useState<any>(null);
-  const [error, setError] = React.useState<string | null>(null);
+  const rawData = useGetColumnData(calculation.resultColumnName);
 
-  React.useEffect(() => {
-    const evaluate = async () => {
-      try {
-        const calculationResult = await calculator.evaluate(expression);
-        if (calculationResult.success) {
-          setResult(calculationResult.value);
-          setError(null);
-        } else {
-          setError(calculationResult.error || "Unknown error");
-          setResult(null);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-        setResult(null);
-      }
-    };
+  // Prepare the preview data
+  const previewData = useMemo(() => {
+    return Object.entries(rawData).map(([id, result]) => ({
+      __ID: id,
+      [calculation.resultColumnName]: result,
+    }));
+  }, [rawData, calculation.resultColumnName]);
 
-    evaluate();
-  }, [expression, data]);
-
-  const previewData = data.slice(0, previewRows);
+  const totalRows = useDataLayer((state) => state.data.length);
 
   return (
-    <Card className="p-4">
-      <h3 className="font-semibold mb-4">Calculation Preview</h3>
-      {error ? (
-        <p className="text-sm text-red-500">{error}</p>
-      ) : (
-        <div className="space-y-4">
-          <div>
-            <h4 className="text-sm font-medium mb-2">Result</h4>
-            <pre className="bg-muted p-2 rounded text-sm overflow-auto">
-              {JSON.stringify(result, null, 2)}
-            </pre>
-          </div>
+    <div className="space-y-4">
+      <p>Expression: {calculation.expression.rawInput}</p>
 
-          <div>
-            <h4 className="text-sm font-medium mb-2">Preview Data</h4>
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Row</TableHead>
-                    {expression.dependencies.map((dep) => (
-                      <TableHead key={dep}>{dep}</TableHead>
-                    ))}
-                    <TableHead>Result</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {previewData.map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{index + 1}</TableCell>
-                      {expression.dependencies.map((dep) => (
-                        <TableCell key={dep}>{row[dep]}</TableCell>
-                      ))}
-                      <TableCell>
-                        {result && result[index] !== undefined
-                          ? JSON.stringify(result[index])
-                          : "N/A"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            {data.length > previewRows && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Showing {previewRows} of {data.length} rows
-              </p>
-            )}
-          </div>
+      <div>
+        <h4 className="text-sm font-medium mb-2">Preview Data</h4>
+        <div className="border rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Result</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {previewData.slice(0, previewRows).map((row) => (
+                <TableRow key={row.__ID}>
+                  <TableCell>{row.__ID}</TableCell>
+                  <TableCell>{row[calculation.resultColumnName]}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
-      )}
-    </Card>
+        {totalRows > previewRows && (
+          <p className="text-sm text-muted-foreground mt-2">
+            Showing {previewRows} of {totalRows} rows
+          </p>
+        )}
+      </div>
+    </div>
   );
 }

@@ -1,5 +1,3 @@
-import crossfilter from "crossfilter2";
-import { cloneDeep } from "./cloneDeep";
 import { ChartSettings } from "@/types/ChartTypes";
 
 export const demoData = [

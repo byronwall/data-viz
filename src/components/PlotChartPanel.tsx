@@ -1,13 +1,9 @@
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import {
-  ChartSettings,
-  GridFacetSettings,
-  WrapFacetSettings,
-} from "@/types/ChartTypes";
+import { FacetAxisProvider } from "@/providers/FacetAxisProvider";
+import { ChartSettings, WrapFacetSettings } from "@/types/ChartTypes";
 import { Copy, FilterX, GripVertical, Settings2, X } from "lucide-react";
-import { BarChart } from "./charts/BarChart";
-import { RowChart } from "./charts/RowChart";
-import { ScatterPlot } from "./charts/ScatterPlot";
+import { ChartRenderer } from "./charts/ChartRenderer";
+import { FacetContainer } from "./charts/FacetContainer";
 import { ChartSettingsContent } from "./ChartSettingsContent";
 import {
   AlertDialog,
@@ -22,9 +18,6 @@ import {
 } from "./ui/alert-dialog";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { PivotTable } from "./charts/PivotTable/PivotTable";
-import { FacetContainer } from "./charts/FacetContainer";
-import { FacetAxisProvider } from "@/providers/FacetAxisProvider";
 
 interface PlotChartPanelProps {
   settings: ChartSettings;
@@ -46,49 +39,6 @@ export function PlotChartPanel({
   const clearFilter = useDataLayer((state) => state.clearFilter);
 
   console.log("PlotChartPanel", settings);
-
-  const renderChart = () => {
-    console.log("render single row chart");
-
-    switch (settings.type) {
-      case "row":
-        return (
-          <RowChart
-            settings={settings}
-            width={width - 32}
-            height={height - 56}
-            facetIds={undefined}
-          />
-        );
-      case "bar":
-        return (
-          <BarChart
-            settings={settings}
-            width={width - 32}
-            height={height - 56}
-            facetIds={undefined}
-          />
-        );
-      case "scatter":
-        return (
-          <ScatterPlot
-            settings={settings}
-            width={width - 32}
-            height={height - 56}
-            facetIds={undefined}
-          />
-        );
-      case "pivot":
-        return (
-          <PivotTable
-            settings={settings}
-            width={width - 32}
-            height={height - 56}
-            facetIds={undefined}
-          />
-        );
-    }
-  };
 
   // Helper function to calculate facet dimensions
   const getFacetDimensions = (facetIds: string[]) => {
@@ -185,48 +135,25 @@ export function PlotChartPanel({
               const { width: facetWidth, height: facetHeight } =
                 getFacetDimensions(facetIds);
 
-              switch (settings.type) {
-                case "row":
-                  return (
-                    <RowChart
-                      settings={settings}
-                      width={facetWidth}
-                      height={facetHeight}
-                      facetIds={facetIds}
-                    />
-                  );
-                case "bar":
-                  return (
-                    <BarChart
-                      settings={settings}
-                      width={facetWidth}
-                      height={facetHeight}
-                      facetIds={facetIds}
-                    />
-                  );
-                case "scatter":
-                  return (
-                    <ScatterPlot
-                      settings={settings}
-                      width={facetWidth}
-                      height={facetHeight}
-                      facetIds={facetIds}
-                    />
-                  );
-                case "pivot":
-                  return (
-                    <PivotTable
-                      settings={settings}
-                      width={facetWidth}
-                      height={facetHeight}
-                      facetIds={facetIds}
-                    />
-                  );
-              }
+              return (
+                <ChartRenderer
+                  settings={settings}
+                  width={facetWidth}
+                  height={facetHeight}
+                  facetIds={facetIds}
+                />
+              );
             }}
           />
         ) : (
-          <FacetAxisProvider>{renderChart()}</FacetAxisProvider>
+          <FacetAxisProvider>
+            <ChartRenderer
+              settings={settings}
+              width={width - 32}
+              height={height - 56}
+              facetIds={undefined}
+            />
+          </FacetAxisProvider>
         )}
       </div>
     </div>

@@ -94,25 +94,27 @@ export function FacetContainer({
 
   return (
     <FacetAxisProvider>
-      {settings.facet.type === "grid" ? (
-        <FacetGridLayout
-          width={width}
-          height={height}
-          rowVariable={settings.facet.rowVariable}
-          columnVariable={settings.facet.columnVariable}
-          facetData={facetData}
-          renderChart={renderChart}
-        />
-      ) : (
-        <FacetWrapLayout
-          width={width}
-          height={height}
-          rowVariable={settings.facet.rowVariable}
-          columns={settings.facet.columns}
-          facetData={facetData}
-          renderChart={renderChart}
-        />
-      )}
+      <div className="bg-red-500 w-full h-full">
+        {settings.facet.type === "grid" ? (
+          <FacetGridLayout
+            width={width}
+            height={height}
+            rowVariable={settings.facet.rowVariable}
+            columnVariable={settings.facet.columnVariable}
+            facetData={facetData}
+            renderChart={renderChart}
+          />
+        ) : (
+          <FacetWrapLayout
+            width={width}
+            height={height}
+            rowVariable={settings.facet.rowVariable}
+            columns={settings.facet.columns}
+            facetData={facetData}
+            renderChart={renderChart}
+          />
+        )}
+      </div>
     </FacetAxisProvider>
   );
 }

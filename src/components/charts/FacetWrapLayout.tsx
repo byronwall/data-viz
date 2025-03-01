@@ -1,34 +1,23 @@
-import { ReactNode, useMemo } from "react";
-
-interface FacetData {
-  id: string;
-  rowValue: string;
-  columnValue: string | null;
-  ids: string[];
-}
+import { ChartSettings } from "@/types/ChartTypes";
+import { ChartRenderer } from "./ChartRenderer";
+import { FacetData } from "./FacetContainer";
 
 interface FacetWrapLayoutProps {
   width: number;
   height: number;
-  rowVariable: string;
   columns: number;
   facetData: FacetData[];
-  renderChart: (
-    facetData: string[],
-    facetValue: string,
-    facetId: string
-  ) => ReactNode;
+  settings: ChartSettings;
 }
 
 export function FacetWrapLayout({
   width,
   height,
-  rowVariable,
   columns,
   facetData,
-  renderChart,
+  settings,
 }: FacetWrapLayoutProps) {
-  // Calculate dimensions
+  // Calculate dimensions based on the number of facet values
   const facetWidth = width / (columns || 1);
   const rows = Math.ceil(facetData.length / (columns || 1));
   const facetHeight = height / (rows || 1);
@@ -45,7 +34,12 @@ export function FacetWrapLayout({
         <div key={facet.id} className="border p-2">
           <div className="font-medium mb-1">{facet.rowValue}</div>
           <div style={{ height: facetHeight - 30 }}>
-            {renderChart(facet.ids, facet.rowValue, facet.id)}
+            <ChartRenderer
+              settings={settings}
+              width={facetWidth - 16} // Adjust for padding
+              height={facetHeight - 30} // Adjust for header and padding
+              facetIds={facet.ids}
+            />
           </div>
         </div>
       ))}

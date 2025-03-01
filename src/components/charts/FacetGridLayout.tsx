@@ -1,11 +1,7 @@
 import { ReactNode, useMemo } from "react";
-
-interface FacetData {
-  id: string;
-  rowValue: string;
-  columnValue: string | null;
-  ids: string[];
-}
+import { ChartSettings } from "@/types/ChartTypes";
+import { ChartRenderer } from "./ChartRenderer";
+import { FacetData } from "./FacetContainer";
 
 interface FacetGridLayoutProps {
   width: number;
@@ -13,11 +9,7 @@ interface FacetGridLayoutProps {
   rowVariable: string;
   columnVariable: string;
   facetData: FacetData[];
-  renderChart: (
-    facetData: string[],
-    facetValue: string,
-    facetId: string
-  ) => ReactNode;
+  settings: ChartSettings;
 }
 
 export function FacetGridLayout({
@@ -26,7 +18,7 @@ export function FacetGridLayout({
   rowVariable,
   columnVariable,
   facetData,
-  renderChart,
+  settings,
 }: FacetGridLayoutProps) {
   // Extract unique row and column values
   const { rows, columns, grid } = useMemo(() => {
@@ -58,9 +50,9 @@ export function FacetGridLayout({
     return { rows, columns, grid };
   }, [facetData]);
 
-  // Calculate cell dimensions
-  const cellWidth = width / (columns.length || 1);
-  const cellHeight = height / (rows.length || 1);
+  // Calculate cell dimensions based on the number of rows and columns
+  const cellWidth = width / (columns.length + 1); // +1 for the row headers
+  const cellHeight = height / (rows.length + 1); // +1 for the column headers
 
   return (
     <div className="w-full h-full overflow-auto">
@@ -93,11 +85,12 @@ export function FacetGridLayout({
                 <td key={`${row}-${col}`} className="border p-0">
                   <div style={{ width: cellWidth, height: cellHeight }}>
                     {grid[row]?.[col]?.length > 0 ? (
-                      renderChart(
-                        grid[row][col],
-                        `${row}, ${col}`,
-                        `${row}__${col}`
-                      )
+                      <ChartRenderer
+                        settings={settings}
+                        width={cellWidth}
+                        height={cellHeight}
+                        facetIds={grid[row][col]}
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                         No data

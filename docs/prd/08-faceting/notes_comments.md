@@ -6,6 +6,8 @@
 - Facet wrap is using `grid` layout
 - The height and width logic is bad for the `PlotChartPanel` - need to fix that
 - Need to ensure the zustand hooks are single access - avoid infinite re-renders
+- Clean up the `FacetContainer` component - types are bad
+- Only the Row chart works currently - need to resolve axis problems and apply to all charts
 
 ## Conclusions
 

@@ -40,28 +40,6 @@ export function PlotChartPanel({
 
   console.log("PlotChartPanel", settings);
 
-  // Helper function to calculate facet dimensions
-  const getFacetDimensions = (facetIds: string[]) => {
-    if (!settings.facet) {
-      return { width: 0, height: 0 };
-    }
-
-    const facetWidth =
-      settings.facet.type === "grid"
-        ? width / 3
-        : width / (settings.facet as WrapFacetSettings).columns;
-
-    const facetHeight =
-      settings.facet.type === "grid"
-        ? height / 3
-        : height /
-          Math.ceil(
-            facetIds.length / (settings.facet as WrapFacetSettings).columns
-          );
-
-    return { width: facetWidth, height: facetHeight };
-  };
-
   return (
     <div
       className="bg-card border rounded-lg"
@@ -129,21 +107,6 @@ export function PlotChartPanel({
             settings={settings}
             width={width - 32}
             height={height - 56}
-            renderChart={(facetIds, facetValue, facetId) => {
-              console.log("render faceted chart");
-              // Create a faceted version of the chart
-              const { width: facetWidth, height: facetHeight } =
-                getFacetDimensions(facetIds);
-
-              return (
-                <ChartRenderer
-                  settings={settings}
-                  width={facetWidth}
-                  height={facetHeight}
-                  facetIds={facetIds}
-                />
-              );
-            }}
           />
         ) : (
           <FacetAxisProvider>

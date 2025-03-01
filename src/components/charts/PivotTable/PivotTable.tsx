@@ -2,9 +2,10 @@ import { calculatePivotData } from "@/components/charts/PivotTable/utils/calcula
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDataLayer } from "@/providers/DataLayerProvider";
+import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { BaseChartProps, PivotTableSettings } from "@/types/ChartTypes";
 import { Search } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { PivotCell, PivotHeader, PivotRow } from "./types";
 
@@ -12,18 +13,26 @@ type PivotTableProps = BaseChartProps & {
   settings: PivotTableSettings;
 };
 
-export function PivotTable({ settings, width, height }: PivotTableProps) {
+export function PivotTable({
+  settings,
+  width,
+  height,
+  facetIds,
+}: PivotTableProps) {
   console.log("Pivot Table Settings:", settings);
 
   const liveItems = useDataLayer((state) => state.getLiveItems(settings));
   const getColumnData = useDataLayer((state) => state.getColumnData);
   const updateChart = useDataLayer((state) => state.updateChart);
+  const { registerAxisLimits } = useFacetAxis((s) => ({
+    registerAxisLimits: s.registerAxisLimits,
+  }));
 
   // Get all required field data
   const pivotData = useMemo(() => {
-    const liveIds = liveItems.items
-      .filter((c) => c.value > 0)
-      .map((d) => d.key);
+    // Use facetIds if provided, otherwise use liveItems
+    const liveIds =
+      facetIds || liveItems.items.filter((c) => c.value > 0).map((d) => d.key);
 
     // Gather all required fields
     const allFields = new Set([
@@ -48,7 +57,34 @@ export function PivotTable({ settings, width, height }: PivotTableProps) {
     });
 
     return calculatePivotData(data, settings);
-  }, [liveItems, getColumnData, settings]);
+  }, [liveItems, getColumnData, settings, facetIds]);
+
+  // Register pivot table structure with facet context if in a facet
+  useEffect(() => {
+    if (facetIds && pivotData) {
+      // Register row headers from rows
+      const rowCategories = new Set(
+        pivotData.rows.flatMap((row) =>
+          row.headers.map((header) => header.label)
+        )
+      );
+
+      registerAxisLimits(settings.id, "x", {
+        type: "categorical",
+        categories: rowCategories,
+      });
+
+      // Register column headers
+      const columnCategories = new Set(
+        pivotData.headers.map((header) => header.label)
+      );
+
+      registerAxisLimits(settings.id, "y", {
+        type: "categorical",
+        categories: columnCategories,
+      });
+    }
+  }, [settings.id, facetIds, pivotData, registerAxisLimits]);
 
   const handleFilterClick = useCallback(
     (field: string, value: string | number) => {

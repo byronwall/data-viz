@@ -1,9 +1,10 @@
 import { barChartPureFilter } from "@/hooks/barChartPureFilter";
 import { getFilterObj, isEmptyFilter } from "@/hooks/getFilterValues";
 import { useDataLayer } from "@/providers/DataLayerProvider";
+import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { BarChartSettings, BaseChartProps } from "@/types/ChartTypes";
 import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from "d3-scale";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import isEqual from "react-fast-compare";
 import { useCustomCompareMemo } from "use-custom-compare";
 import { BaseChart } from "./BaseChart";
@@ -30,10 +31,14 @@ type BarChartProps = BaseChartProps & {
   settings: BarChartSettings;
 };
 
-export function BarChart({ settings, width, height }: BarChartProps) {
-  const allColData = useGetLiveData(settings);
+export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
+  const allColData = useGetLiveData(settings, undefined, facetIds);
   const updateChart = useDataLayer((s) => s.updateChart);
   const { getColorForValue } = useColorScales();
+  const { registerAxisLimits, getGlobalAxisLimits } = useFacetAxis((s) => ({
+    registerAxisLimits: s.registerAxisLimits,
+    getGlobalAxisLimits: s.getGlobalAxisLimits,
+  }));
 
   // Chart dimensions
   const margin = { top: 20, right: 20, bottom: 30, left: 60 };
@@ -98,26 +103,71 @@ export function BarChart({ settings, width, height }: BarChartProps) {
     };
   }, [chartData]);
 
-  // Create scales
+  // Register axis limits with the facet context if in a facet
+  useEffect(() => {
+    if (facetIds && chartData.length > 0) {
+      // Register x-axis limits (categorical for bar chart)
+      registerAxisLimits(settings.id, "x", {
+        type: "categorical",
+        categories: new Set(chartData.map((d) => d.label)),
+      });
+
+      // Register y-axis limits (numerical for bar chart)
+      const maxValue = Math.max(...chartData.map((d) => d.value));
+      registerAxisLimits(settings.id, "y", {
+        type: "numerical",
+        min: 0,
+        max: maxValue,
+      });
+    }
+  }, [settings.id, facetIds, chartData, registerAxisLimits]);
+
+  // Get global axis limits if in a facet
+  const globalXLimits = facetIds ? getGlobalAxisLimits("x") : null;
+  const globalYLimits = facetIds ? getGlobalAxisLimits("y") : null;
+
+  // Create scales with synchronized limits if in a facet
   const xScale = useCustomCompareMemo(
     () => {
       if (min !== undefined && max !== undefined) {
+        // Numerical x-axis
+        if (globalXLimits && globalXLimits.type === "numerical") {
+          return scaleLinear()
+            .domain([globalXLimits.min, globalXLimits.max])
+            .range([0, innerWidth]);
+        }
         return scaleLinear().domain([min, max]).range([0, innerWidth]);
       } else {
+        // Categorical x-axis
+        if (globalXLimits && globalXLimits.type === "categorical") {
+          const allCategories = Array.from(globalXLimits.categories);
+          return scaleBand()
+            .domain(allCategories)
+            .range([0, innerWidth])
+            .padding(0.3);
+        }
         return scaleBand()
           .domain(uniqueValues)
           .range([0, innerWidth])
           .padding(0.3);
       }
     },
-    [innerWidth, max, min, uniqueValues],
+    [innerWidth, max, min, uniqueValues, globalXLimits],
     isEqual
   ) as ScaleLinear<number, number> | ScaleBand<string>;
 
   const yScale = useMemo(() => {
     const maxValue = Math.max(...chartData.map((d) => d.value));
+
+    if (globalYLimits && globalYLimits.type === "numerical") {
+      return scaleLinear()
+        .domain([0, globalYLimits.max])
+        .range([innerHeight, 0])
+        .nice();
+    }
+
     return scaleLinear().domain([0, maxValue]).range([innerHeight, 0]).nice();
-  }, [chartData, innerHeight]);
+  }, [chartData, innerHeight, globalYLimits]);
 
   const isBandScale = "bandwidth" in xScale;
 

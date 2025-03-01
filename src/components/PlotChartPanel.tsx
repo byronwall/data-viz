@@ -1,5 +1,9 @@
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { ChartSettings } from "@/types/ChartTypes";
+import {
+  ChartSettings,
+  GridFacetSettings,
+  WrapFacetSettings,
+} from "@/types/ChartTypes";
 import { Copy, FilterX, GripVertical, Settings2, X } from "lucide-react";
 import { BarChart } from "./charts/BarChart";
 import { RowChart } from "./charts/RowChart";
@@ -19,6 +23,8 @@ import {
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { PivotTable } from "./charts/PivotTable/PivotTable";
+import { FacetContainer } from "./charts/FacetContainer";
+import { FacetAxisProvider } from "@/providers/FacetAxisProvider";
 
 interface PlotChartPanelProps {
   settings: ChartSettings;
@@ -39,14 +45,19 @@ export function PlotChartPanel({
 }: PlotChartPanelProps) {
   const clearFilter = useDataLayer((state) => state.clearFilter);
 
+  console.log("PlotChartPanel", settings);
+
   const renderChart = () => {
+    console.log("render single row chart");
+
     switch (settings.type) {
       case "row":
         return (
           <RowChart
             settings={settings}
             width={width - 32}
-            height={height - 32}
+            height={height - 56}
+            facetIds={undefined}
           />
         );
       case "bar":
@@ -54,7 +65,8 @@ export function PlotChartPanel({
           <BarChart
             settings={settings}
             width={width - 32}
-            height={height - 32}
+            height={height - 56}
+            facetIds={undefined}
           />
         );
       case "scatter":
@@ -62,7 +74,8 @@ export function PlotChartPanel({
           <ScatterPlot
             settings={settings}
             width={width - 32}
-            height={height - 32}
+            height={height - 56}
+            facetIds={undefined}
           />
         );
       case "pivot":
@@ -70,15 +83,38 @@ export function PlotChartPanel({
           <PivotTable
             settings={settings}
             width={width - 32}
-            height={height - 32}
+            height={height - 56}
+            facetIds={undefined}
           />
         );
     }
   };
 
+  // Helper function to calculate facet dimensions
+  const getFacetDimensions = (facetIds: string[]) => {
+    if (!settings.facet) {
+      return { width: 0, height: 0 };
+    }
+
+    const facetWidth =
+      settings.facet.type === "grid"
+        ? width / 3
+        : width / (settings.facet as WrapFacetSettings).columns;
+
+    const facetHeight =
+      settings.facet.type === "grid"
+        ? height / 3
+        : height /
+          Math.ceil(
+            facetIds.length / (settings.facet as WrapFacetSettings).columns
+          );
+
+    return { width: facetWidth, height: facetHeight };
+  };
+
   return (
     <div
-      className="bg-card border rounded-lg "
+      className="bg-card border rounded-lg"
       style={{ width: width, height: height }}
     >
       <div
@@ -106,7 +142,7 @@ export function PlotChartPanel({
                 <Settings2 className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80">
+            <PopoverContent className="w-80" side="right">
               <ChartSettingsContent
                 settings={settings}
                 availableFields={availableFields}
@@ -137,7 +173,62 @@ export function PlotChartPanel({
           </AlertDialog>
         </div>
       </div>
-      <div>{renderChart()}</div>
+      <div>
+        {settings.facet?.enabled ? (
+          <FacetContainer
+            settings={settings}
+            width={width - 32}
+            height={height - 56}
+            renderChart={(facetIds, facetValue, facetId) => {
+              console.log("render faceted chart");
+              // Create a faceted version of the chart
+              const { width: facetWidth, height: facetHeight } =
+                getFacetDimensions(facetIds);
+
+              switch (settings.type) {
+                case "row":
+                  return (
+                    <RowChart
+                      settings={settings}
+                      width={facetWidth}
+                      height={facetHeight}
+                      facetIds={facetIds}
+                    />
+                  );
+                case "bar":
+                  return (
+                    <BarChart
+                      settings={settings}
+                      width={facetWidth}
+                      height={facetHeight}
+                      facetIds={facetIds}
+                    />
+                  );
+                case "scatter":
+                  return (
+                    <ScatterPlot
+                      settings={settings}
+                      width={facetWidth}
+                      height={facetHeight}
+                      facetIds={facetIds}
+                    />
+                  );
+                case "pivot":
+                  return (
+                    <PivotTable
+                      settings={settings}
+                      width={facetWidth}
+                      height={facetHeight}
+                      facetIds={facetIds}
+                    />
+                  );
+              }
+            }}
+          />
+        ) : (
+          <FacetAxisProvider>{renderChart()}</FacetAxisProvider>
+        )}
+      </div>
     </div>
   );
 }

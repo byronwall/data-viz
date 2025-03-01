@@ -14,6 +14,29 @@ export interface ChartLayout {
   h: number;
 }
 
+// Base facet settings interface
+export interface BaseFacetSettings {
+  enabled: boolean;
+  type: "grid" | "wrap";
+}
+
+// Grid facet settings
+export interface GridFacetSettings extends BaseFacetSettings {
+  type: "grid";
+  rowVariable: string;
+  columnVariable: string;
+}
+
+// Wrap facet settings
+export interface WrapFacetSettings extends BaseFacetSettings {
+  type: "wrap";
+  rowVariable: string;
+  columns: number; // Number of columns in wrap mode
+}
+
+// Discriminated union for facet settings
+export type FacetSettings = GridFacetSettings | WrapFacetSettings;
+
 export interface BaseChartSettings {
   id: string;
   title: string;
@@ -21,6 +44,7 @@ export interface BaseChartSettings {
   layout: ChartLayout;
   colorScaleId?: string;
   colorField?: string;
+  facet?: FacetSettings;
 }
 
 export interface RowChartSettings extends BaseChartSettings {
@@ -95,6 +119,7 @@ export interface BaseChartProps {
   settings: ChartSettings;
   width: number;
   height: number;
+  facetIds?: string[]; // IDs for the current facet when in facet mode
 }
 
 export type datum = string | number | boolean | undefined;

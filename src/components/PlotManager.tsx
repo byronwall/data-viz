@@ -5,7 +5,7 @@ import { MainLayout } from "./layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import type { ChartLayout } from "@/types/ChartTypes";
+import type { ChartLayout, ChartSettings } from "@/types/ChartTypes";
 import { Calculator, FilterX, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Layout } from "react-grid-layout";
@@ -62,6 +62,7 @@ export function PlotManager() {
   }, []);
 
   const handleLayoutChange = (newLayout: Layout[]) => {
+    console.log("handleLayoutChange", { newLayout });
     charts.forEach((chart) => {
       const updatedLayout = newLayout.find((l) => l.i === chart.id);
       if (updatedLayout) {

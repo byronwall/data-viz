@@ -199,6 +199,8 @@ const createDataLayerStore = <T extends DatumObject>(
     updateChart: (id, settings) => {
       const { crossfilterWrapper } = get();
 
+      console.warn("updateChart", { id, settings });
+
       const chart = get().charts.find((chart) => chart.id === id);
 
       if (!chart) {

@@ -17,7 +17,7 @@ import {
 } from "d3-scale-chromatic";
 import { scaleOrdinal, scaleSequential } from "d3-scale";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 const DEFAULT_NUMERICAL_PALETTES = [
   { name: "Viridis", interpolator: interpolateViridis },
@@ -73,29 +73,33 @@ export function useColorScales(): UseColorScalesReturn {
     return scales;
   }, [colorScales]);
 
-  const getColorForValue = (
-    scaleId: string,
-    value: string | number
-  ): string => {
-    const scale = colorScales.find((s) => s.id === scaleId);
-    if (!scale) {
-      console.warn(`Color scale ${scaleId} not found`);
-      return "#000000";
-    }
+  const getColorForValue = useCallback(
+    (scaleId: string, value: string | number): string => {
+      const scale = colorScales.find((s) => s.id === scaleId);
+      if (!scale) {
+        console.warn(`Color scale ${scaleId} not found`);
+        return "#000000";
+      }
 
-    const d3Scale = d3Scales.get(scaleId);
-    if (!d3Scale) {
-      console.warn(`D3 scale for ${scaleId} not found`);
-      return "#000000";
-    }
+      const d3Scale = d3Scales.get(scaleId);
+      if (!d3Scale) {
+        console.warn(`D3 scale for ${scaleId} not found`);
+        return "#000000";
+      }
 
-    try {
-      return d3Scale(value);
-    } catch (error) {
-      console.error("Error getting color for value", { scaleId, value, error });
-      return "#000000";
-    }
-  };
+      try {
+        return d3Scale(value);
+      } catch (error) {
+        console.error("Error getting color for value", {
+          scaleId,
+          value,
+          error,
+        });
+        return "#000000";
+      }
+    },
+    [colorScales, d3Scales]
+  );
 
   const getScaleById = (id: string): ColorScaleType | undefined => {
     return colorScales.find((s) => s.id === id);

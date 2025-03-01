@@ -13,11 +13,7 @@
 - Need to go clean up the data flows - they're not performant
 - Put some icons in the available fields helper - if it stays
 - Allow the expression field to be a quick text edit instead of opening the whole menu
-- Calc engine needs to get new data when import is done - or just nuke it
 - Calcs should be case insensitive by default with name lookups
-- Figure out why calcs produce undefined results with new data - likely need to just recreate the whole provider?
-  - Problem is likely that the fieldGetter is stale
-  - Getting an early execution against 30 rows of data (old data) instead of the new one -- execute happens before update is pressed on the settings though?
 
 ## Maybe
 

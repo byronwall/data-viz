@@ -5,10 +5,11 @@ import { MainLayout } from "./layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import type { ChartLayout, ChartSettings } from "@/types/ChartTypes";
-import { Calculator, FilterX, X } from "lucide-react";
+import type { ChartLayout } from "@/types/ChartTypes";
+import { Calculator, Copy, FilterX, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Layout } from "react-grid-layout";
+import { toast } from "sonner";
 import { ChartGridLayout } from "./ChartGridLayout";
 import { PlotChartPanel } from "./PlotChartPanel";
 import { CalculationManager } from "./calculations/CalculationManager";
@@ -78,6 +79,22 @@ export function PlotManager() {
     });
   };
 
+  const copyChartsToClipboard = () => {
+    if (charts.length === 0) {
+      toast("No charts to copy");
+      return;
+    }
+
+    try {
+      const chartsJson = JSON.stringify(charts, null, 2);
+      navigator.clipboard.writeText(chartsJson);
+      toast("Chart configuration copied to clipboard");
+    } catch (error) {
+      console.error("Failed to copy charts to clipboard:", error);
+      toast.error("Failed to copy charts to clipboard");
+    }
+  };
+
   const mainContent = (
     <div className="w-full pb-40" ref={containerRef}>
       <div className="flex justify-between items-center mb-4">
@@ -104,6 +121,15 @@ export function PlotManager() {
         <div className="flex items-center gap-2">
           {charts.length > 0 && activeTab === "charts" && (
             <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyChartsToClipboard}
+                className="flex items-center gap-2"
+              >
+                <Copy className="h-4 w-4" />
+                Copy Charts
+              </Button>
               <Button
                 variant="outline"
                 size="sm"

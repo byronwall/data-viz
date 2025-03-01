@@ -1,14 +1,13 @@
 import { BaseChartProps, datum, RowChartSettings } from "@/types/ChartTypes";
 
 import { rowChartPureFilter } from "@/hooks/rowChartPureFilter";
+import { useColorScales } from "@/hooks/useColorScales";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { scaleBand, scaleLinear } from "d3-scale";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
-import { useColorScales } from "@/hooks/useColorScales";
-import { useWhatChanged } from "./useWhatChanged";
 
 type RowChartProps = BaseChartProps & {
   settings: RowChartSettings;
@@ -16,6 +15,9 @@ type RowChartProps = BaseChartProps & {
 
 export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
   const data = useGetLiveData(settings, undefined, facetIds);
+
+  console.log("RowChart", settings.field, { data });
+
   const { getColorForValue } = useColorScales();
   const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);
   const registerAxisLimits = useFacetAxis((s) => s.registerAxisLimits);

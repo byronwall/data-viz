@@ -20,6 +20,7 @@ export type { DatumObject };
 // Props and State interfaces
 interface DataLayerProps<T extends DatumObject> {
   data?: T[];
+  charts?: ChartSettings[];
 }
 
 // Add ID to the data type
@@ -53,7 +54,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
 
   crossfilterWrapper: CrossfilterWrapper<T & HasId>;
   nonce: number;
-  getLiveItems: (chart: ChartSettings) => LiveItem;
+  getLiveItems: (chart: ChartSettings) => LiveItem | undefined;
 
   // data and key functions
   getColumnData: (field: string | undefined) => Record<IdType, datum>;
@@ -88,7 +89,8 @@ type DataLayerStore<T extends DatumObject> = ReturnType<
 
 function getDataAndCrossfilterWrapper<T extends DatumObject>(
   data: T[],
-  fieldGetter?: (name: string) => Record<IdType, datum>
+  fieldGetter?: (name: string) => Record<IdType, datum>,
+  charts?: ChartSettings[]
 ): Partial<DataLayerState<T>> {
   const dataWithIds = data.map((row, index) => ({
     ...row,
@@ -103,6 +105,12 @@ function getDataAndCrossfilterWrapper<T extends DatumObject>(
     newCrossFilter.setFieldGetter(fieldGetter);
   }
 
+  if (charts) {
+    charts.forEach((chart) => {
+      newCrossFilter.addChart(chart);
+    });
+  }
+
   return {
     data: dataWithIds,
     emptyColumn: data.reduce((acc, row) => {
@@ -110,7 +118,7 @@ function getDataAndCrossfilterWrapper<T extends DatumObject>(
       return acc;
     }, {} as Record<IdType, datum>),
     crossfilterWrapper: newCrossFilter,
-    charts: [],
+    charts: charts ?? [],
     colorScales: [],
     calculationManager: new CalculationManager<T>(dataWithIds),
     calculations: [],
@@ -125,7 +133,11 @@ const createDataLayerStore = <T extends DatumObject>(
     data: initData,
     crossfilterWrapper,
     calculationManager: ogCalculationManager,
-  } = getDataAndCrossfilterWrapper(initProps?.data ?? []);
+  } = getDataAndCrossfilterWrapper(
+    initProps?.data ?? [],
+    undefined,
+    initProps?.charts ?? []
+  );
 
   if (!crossfilterWrapper || !initData || !ogCalculationManager) {
     throw new Error(
@@ -170,7 +182,7 @@ const createDataLayerStore = <T extends DatumObject>(
     liveItems: {},
 
     // Chart management
-    charts: [],
+    charts: initProps?.charts ?? [],
     addChart: (chartSettings) => {
       const { crossfilterWrapper } = get();
       const newChart = {
@@ -283,7 +295,7 @@ const createDataLayerStore = <T extends DatumObject>(
     getLiveItems: (chart) => {
       const { liveItems } = get();
 
-      const liveItemsForChart = liveItems[chart.id];
+      const liveItemsForChart = liveItems[chart.id] ?? undefined;
 
       return liveItemsForChart;
     },
@@ -310,6 +322,8 @@ const createDataLayerStore = <T extends DatumObject>(
       if (!field) {
         return emptyColumn;
       }
+
+      console.log("*** getColumnData", { field, columnCache, calcColumnCache });
 
       if (columnCache[field]) {
         return columnCache[field];

@@ -1,5 +1,6 @@
 import crossfilter from "crossfilter2";
 import { cloneDeep } from "./cloneDeep";
+import { ChartSettings } from "@/types/ChartTypes";
 
 export const demoData = [
   {
@@ -424,46 +425,46 @@ export const demoData = [
   },
 ];
 
-export function useDemoCrossfilter() {
-  const ref = crossfilter(demoData);
-
-  const dim1 = ref.dimension((d) => d.ID);
-  const dim2 = ref.dimension((d) => d.ID);
-
-  const dataHash = demoData.reduce((acc, d) => {
-    acc[d.ID] = d;
-    return acc;
-  }, {} as Record<number, (typeof demoData)[number]>);
-
-  const group1 = dim1.group().reduceCount();
-  const group2 = dim2.group().reduceCount();
-
-  // get counts as they sit
-  const counts1 = group1.all();
-  const counts2 = group2.all();
-
-  console.log("all categories", cloneDeep(demoData.map((d) => d.Category)));
-
-  console.log("counts1", cloneDeep(counts1));
-  console.log("counts2", cloneDeep(counts2));
-
-  // apply filtering
-  dim1.filterFunction((c) => dataHash[c].Category === "Electronics");
-
-  console.log("counts1After_post_filter", cloneDeep(group1.all()));
-  console.log("counts2After_post_filter", cloneDeep(group2.all()));
-
-  dim2.filterFunction((c) => dataHash[c].Category === "Sports");
-
-  // get counts after filtering
-
-  console.log("counts1After", cloneDeep(group1.all()));
-  console.log("counts2After", cloneDeep(group2.all()));
-
-  return {
-    ref,
-    dim1,
-    dim2,
-    dataHash,
-  };
-}
+export const demoSettings: ChartSettings[] = [
+  {
+    id: "cffc1655-4e70-4564-aec0-91aaa6b247d5",
+    type: "row",
+    title: "Row Chart - Category",
+    field: "Category",
+    layout: {
+      x: 0,
+      y: 0,
+      w: 8,
+      h: 4,
+    },
+    colorScaleId: "c719f887-fbb8-477e-b132-903189fc2cda",
+    minRowHeight: 10,
+    maxRowHeight: 100,
+    filterValues: {
+      values: [],
+    },
+    facet: {
+      enabled: true,
+      type: "wrap",
+      rowVariable: "Size",
+      columns: 2,
+    },
+  },
+  {
+    id: "9f11ed89-bd1a-436b-949f-b0f213a95c14",
+    type: "row",
+    title: "Row Chart - Category",
+    field: "Category",
+    layout: {
+      x: 8,
+      y: 0,
+      w: 4,
+      h: 4,
+    },
+    minRowHeight: 10,
+    maxRowHeight: 100,
+    filterValues: {
+      values: [],
+    },
+  },
+];

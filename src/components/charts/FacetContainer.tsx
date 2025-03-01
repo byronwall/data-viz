@@ -1,11 +1,10 @@
-import { ReactNode, useMemo } from "react";
-import { ChartSettings } from "@/types/ChartTypes";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { FacetAxisProvider } from "@/providers/FacetAxisProvider";
+import { ChartSettings } from "@/types/ChartTypes";
+import { ReactNode, useMemo } from "react";
 import { FacetGridLayout } from "./FacetGridLayout";
 import { FacetWrapLayout } from "./FacetWrapLayout";
-import { useWhatChanged } from "./useWhatChanged";
-import { useGetLiveData, useGetLiveIds } from "./useGetLiveData";
+import { useGetLiveIds } from "./useGetLiveData";
 
 interface FacetContainerProps {
   settings: ChartSettings;
@@ -88,11 +87,6 @@ export function FacetContainer({
       };
     }) as FacetData[];
   }, [settings.facet, getColumnData, liveIds]);
-
-  useWhatChanged(
-    [settings, liveIds, getColumnData],
-    `[settings, liveIds, getColumnData]`
-  );
 
   if (!settings.facet?.enabled) {
     return null;

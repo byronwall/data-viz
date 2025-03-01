@@ -67,7 +67,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   loadView: (view: SavedView) => void;
 
   // Calculation state
-  calculationManager: CalculationManager<T> | null;
+  calculationManager: CalculationManager<T>;
   calculations: CalculationDefinition[];
   addCalculation: (
     calculation: Omit<CalculationDefinition, "id">
@@ -87,22 +87,29 @@ type DataLayerStore<T extends DatumObject> = ReturnType<
 >;
 
 function getDataAndCrossfilterWrapper<T extends DatumObject>(
-  data: T[]
+  data: T[],
+  fieldGetter?: (name: string) => Record<IdType, datum>
 ): Partial<DataLayerState<T>> {
   const dataWithIds = data.map((row, index) => ({
     ...row,
     __ID: index,
   }));
+  const newCrossFilter = new CrossfilterWrapper<T & HasId>(
+    dataWithIds,
+    (d) => d.__ID
+  );
+
+  if (fieldGetter) {
+    newCrossFilter.setFieldGetter(fieldGetter);
+  }
+
   return {
     data: dataWithIds,
     emptyColumn: data.reduce((acc, row) => {
       acc[row.__ID as IdType] = undefined;
       return acc;
     }, {} as Record<IdType, datum>),
-    crossfilterWrapper: new CrossfilterWrapper<T & HasId>(
-      dataWithIds,
-      (d) => d.__ID
-    ),
+    crossfilterWrapper: newCrossFilter,
     charts: [],
     colorScales: [],
     calculationManager: new CalculationManager<T>(dataWithIds),
@@ -117,10 +124,10 @@ const createDataLayerStore = <T extends DatumObject>(
   const {
     data: initData,
     crossfilterWrapper,
-    calculationManager,
+    calculationManager: ogCalculationManager,
   } = getDataAndCrossfilterWrapper(initProps?.data ?? []);
 
-  if (!crossfilterWrapper || !initData || !calculationManager) {
+  if (!crossfilterWrapper || !initData || !ogCalculationManager) {
     throw new Error(
       "Data, crossfilterWrapper, or calculationManager not found"
     );
@@ -134,7 +141,7 @@ const createDataLayerStore = <T extends DatumObject>(
     }, {} as Record<IdType, datum>),
     fileName: undefined,
     crossfilterWrapper,
-    calculationManager,
+    calculationManager: ogCalculationManager,
     calculations: [],
     setData: (rawData, fileName) => {
       // Get fresh crossfilter and data with IDs
@@ -142,7 +149,7 @@ const createDataLayerStore = <T extends DatumObject>(
         data: newData,
         crossfilterWrapper: newCrossfilter,
         calculationManager: newCalculationManager,
-      } = getDataAndCrossfilterWrapper(rawData);
+      } = getDataAndCrossfilterWrapper(rawData, get().getColumnData);
 
       // Reset everything to initial state
       set({
@@ -155,6 +162,7 @@ const createDataLayerStore = <T extends DatumObject>(
         colorScales: [],
         liveItems: {},
         columnCache: {},
+        calcColumnCache: {},
         nonce: 0,
         currentProject: null,
       });
@@ -288,8 +296,14 @@ const createDataLayerStore = <T extends DatumObject>(
     },
 
     getColumnData(field: string | undefined) {
-      const { columnCache, data, calcColumnCache, calculations, emptyColumn } =
-        get();
+      const {
+        columnCache,
+        data,
+        calcColumnCache,
+        calculations,
+        emptyColumn,
+        calculationManager,
+      } = get();
 
       if (!field) {
         return emptyColumn;
@@ -455,8 +469,6 @@ const createDataLayerStore = <T extends DatumObject>(
           nonce: state.nonce + 1,
         };
       });
-
-      console.log("DataLayerProvider addCalculation: executed");
 
       return calculation;
     },

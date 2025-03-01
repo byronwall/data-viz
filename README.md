@@ -10,9 +10,10 @@ Will be updated when done...
 
 ## Major work remaining
 
+- Calc engine - around 50% done - add more functions, including special ones
+
 ### Core data viz
 
-- Add calculation engine on raw data - create derived fields - show in summary table
 - Add support for faceting
 - Top level filter + steps = ability to quickly segment data and work on slices
 - Improve UX everywhere
@@ -28,6 +29,7 @@ Will be updated when done...
 
 - Export the core data viewer as a component to be installed elsewhere
 - Allow the comp to export the current config so it can be brought into code easily
+- Split out the chart components, so that the charting portion can be rented on its own with just data as props make it so that users can use it without needing all of the cross filter machinery still show a setting button that way they can self configure the chart
 
 ### Docs and help
 
@@ -47,6 +49,7 @@ Will be updated when done...
 
 ## Small problems
 
+- Got a weird double scroll bar on plot manager
 - Scatter plot needs to allow new drag filter on off-click if already brushed
 - Charts are all missing consistent gridlines
 - Bools should be shown as `true`/`false` not `1`/`0`
@@ -65,3 +68,7 @@ Will be updated when done...
 - Add button to create blank chart by choosing type
 - Allow the summary table to show up in a popover if the sidebar is collapsed
 - `Remove all charts` needs a warning
+- Default chart width needs to allow 4-5 charts in grid (12 and 2?)
+- Need to build chart title from data fields
+- Scatter points need to render on top of gridlines
+- Add small grid marks to the background of the chart containing interface so that it’s clear where the size break points are

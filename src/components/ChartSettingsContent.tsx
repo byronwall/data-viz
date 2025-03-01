@@ -217,11 +217,9 @@ export function ChartSettingsContent({
             value={localSettings.field}
             availableFields={availableFields}
             onChange={(value) => {
-              const colorScaleId = getOrCreateScaleForField(value);
               setLocalSettings({
                 ...localSettings,
                 field: value,
-                colorScaleId,
               });
             }}
           />

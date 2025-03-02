@@ -1,11 +1,11 @@
-import { useDataLayer } from "@/providers/DataLayerProvider";
+import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
 import { ChartSettings, ScatterChartSettings, datum } from "@/types/ChartTypes";
 import { useMemo } from "react";
 
 export function useGetLiveData(
   settings: ChartSettings,
   field?: "xField" | "yField",
-  facetIds?: string[]
+  facetIds?: IdType[]
 ) {
   const getLiveItems = useDataLayer((s) => s.getLiveItems);
   const getColumnData = useDataLayer((s) => s.getColumnData);

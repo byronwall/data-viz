@@ -35,10 +35,9 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
   const allColData = useGetLiveData(settings, undefined, facetIds);
   const updateChart = useDataLayer((s) => s.updateChart);
   const { getColorForValue } = useColorScales();
-  const { registerAxisLimits, getGlobalAxisLimits } = useFacetAxis((s) => ({
-    registerAxisLimits: s.registerAxisLimits,
-    getGlobalAxisLimits: s.getGlobalAxisLimits,
-  }));
+
+  const registerAxisLimits = useFacetAxis((s) => s.registerAxisLimits);
+  const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);
 
   // Chart dimensions
   const margin = { top: 20, right: 20, bottom: 30, left: 60 };

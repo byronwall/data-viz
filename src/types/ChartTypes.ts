@@ -1,3 +1,5 @@
+import { IdType } from "@/providers/DataLayerProvider";
+
 export const CHART_TYPES = [
   { value: "row", label: "Row Chart" },
   { value: "bar", label: "Bar Chart" },
@@ -119,7 +121,7 @@ export interface BaseChartProps {
   settings: ChartSettings;
   width: number;
   height: number;
-  facetIds?: string[]; // IDs for the current facet when in facet mode
+  facetIds?: IdType[];
 }
 
 export type datum = string | number | boolean | undefined;

@@ -44,14 +44,9 @@ const createFacetAxisStore = () => {
       const before = get().axisLimits[axis][chartId];
       const after = limits;
 
-      console.log("before", before);
-      console.log("after", after);
-
       if (before && after && isEqual(before, after)) {
         return;
       }
-
-      console.log("setting axis limits");
 
       set((state) => ({
         axisLimits: {

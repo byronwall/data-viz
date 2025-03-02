@@ -18,6 +18,7 @@ Will be updated when done...
 - Top level filter + steps = ability to quickly segment data and work on slices
 - Improve UX everywhere
   - Settings needs a numeric input that works
+  - Settings needs to have tabs + maybe search + more settings + overflow
   - Add keyboard shortcuts + a guide
 - Allow controlling settings better
   - Grid layout
@@ -72,3 +73,5 @@ Will be updated when done...
 - Need to build chart title from data fields
 - Scatter points need to render on top of gridlines
 - Add small grid marks to the background of the chart containing interface so that it’s clear where the size break points are
+- Calculation def should describe the available fields created by the calc - default is just producing the calc name - regression would generate estimate, residual, etc. need to declare in advance so drop down menus show what is possible
+- bar chart - figure out why barChartPureFilter is not being used

@@ -1,6 +1,6 @@
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { FacetAxisProvider } from "@/providers/FacetAxisProvider";
-import { ChartSettings, WrapFacetSettings } from "@/types/ChartTypes";
+import { ChartSettings } from "@/types/ChartTypes";
 import { Copy, FilterX, GripVertical, Settings2, X } from "lucide-react";
 import { ChartRenderer } from "./charts/ChartRenderer";
 import { FacetContainer } from "./charts/FacetContainer";
@@ -37,8 +37,6 @@ export function PlotChartPanel({
   height,
 }: PlotChartPanelProps) {
   const clearFilter = useDataLayer((state) => state.clearFilter);
-
-  console.log("PlotChartPanel", settings);
 
   return (
     <div
@@ -102,22 +100,22 @@ export function PlotChartPanel({
         </div>
       </div>
       <div>
-        {settings.facet?.enabled ? (
-          <FacetContainer
-            settings={settings}
-            width={width - 32}
-            height={height - 56}
-          />
-        ) : (
-          <FacetAxisProvider>
+        <FacetAxisProvider>
+          {settings.facet?.enabled ? (
+            <FacetContainer
+              settings={settings}
+              width={width - 32}
+              height={height - 56}
+            />
+          ) : (
             <ChartRenderer
               settings={settings}
               width={width - 32}
               height={height - 56}
               facetIds={undefined}
             />
-          </FacetAxisProvider>
-        )}
+          )}
+        </FacetAxisProvider>
       </div>
     </div>
   );

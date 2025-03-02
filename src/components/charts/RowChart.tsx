@@ -8,7 +8,6 @@ import { scaleBand, scaleLinear } from "d3-scale";
 import { useEffect, useMemo } from "react";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
-import { useWhatChanged } from "./useWhatChanged";
 
 type RowChartProps = BaseChartProps & {
   settings: RowChartSettings;
@@ -16,8 +15,6 @@ type RowChartProps = BaseChartProps & {
 
 export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
   const data = useGetLiveData(settings, undefined, facetIds);
-
-  console.log("RowChart", settings.field, { data });
 
   const { getColorForValue } = useColorScales();
   const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);
@@ -105,19 +102,9 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
     }
   }, [settings.id, facetIds, displayCounts, registerAxisLimits]);
 
-  useWhatChanged(
-    [settings.id, facetIds, displayCounts, registerAxisLimits],
-    `[settings.id, facetIds, displayCounts, registerAxisLimits]`
-  );
-
   // Get global axis limits if in a facet
   const globalXLimits = facetIds ? getGlobalAxisLimits("x") : null;
   const globalYLimits = facetIds ? getGlobalAxisLimits("y") : null;
-
-  console.log("globalXLimits", {
-    globalXLimits,
-    globalYLimits,
-  });
 
   // Create scales with synchronized limits if in a facet
   const xScale = useMemo(() => {

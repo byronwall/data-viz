@@ -1,5 +1,5 @@
-import { ReactNode, useMemo } from "react";
 import { ChartSettings } from "@/types/ChartTypes";
+import { useMemo } from "react";
 import { ChartRenderer } from "./ChartRenderer";
 import { FacetData } from "./FacetContainer";
 

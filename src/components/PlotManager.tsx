@@ -63,7 +63,6 @@ export function PlotManager() {
   }, []);
 
   const handleLayoutChange = (newLayout: Layout[]) => {
-    console.log("handleLayoutChange", { newLayout });
     charts.forEach((chart) => {
       const updatedLayout = newLayout.find((l) => l.i === chart.id);
       if (updatedLayout) {

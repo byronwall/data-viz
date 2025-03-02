@@ -1,5 +1,5 @@
 import { AppContent } from "./AppContent";
-import { demoData, demoSettings } from "./hooks/useDemoCrossfilter";
+import { demoData, demoSettings } from "./hooks/demo_data_settings";
 import { DataLayerProvider } from "./providers/DataLayerProvider";
 
 function App() {

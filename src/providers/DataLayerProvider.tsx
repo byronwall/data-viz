@@ -24,7 +24,7 @@ interface DataLayerProps<T extends DatumObject> {
 }
 
 // Add ID to the data type
-type IdType = number;
+export type IdType = number;
 export type HasId = { __ID: IdType };
 
 interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {

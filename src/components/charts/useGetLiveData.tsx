@@ -13,8 +13,6 @@ export function useGetLiveData(
 
   const liveItems = getLiveItems(settings);
 
-  console.log("useGetLiveData", settings.field, { liveItems });
-
   const data = useMemo(() => {
     if (!liveItems) {
       return [];

@@ -1,5 +1,4 @@
-import { useDataLayer } from "@/providers/DataLayerProvider";
-import { FacetAxisProvider } from "@/providers/FacetAxisProvider";
+import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
 import { ChartSettings } from "@/types/ChartTypes";
 import { useMemo } from "react";
 import { FacetGridLayout } from "./FacetGridLayout";
@@ -47,9 +46,9 @@ export function FacetContainer({
     const facets: Record<string, string[]> = {};
 
     liveIds.forEach((id) => {
-      const rowValue = String(rowData[id] ?? "undefined");
+      const rowValue = String(rowData[id as IdType] ?? "undefined");
       const colValue = columnData
-        ? String(columnData[id] ?? "undefined")
+        ? String(columnData[id as IdType] ?? "undefined")
         : null;
 
       const facetKey = colValue ? `${rowValue}__${colValue}` : rowValue;
@@ -87,27 +86,25 @@ export function FacetContainer({
   }
 
   return (
-    <FacetAxisProvider>
-      <div className="w-full h-full">
-        {settings.facet.type === "grid" ? (
-          <FacetGridLayout
-            width={width}
-            height={height}
-            rowVariable={settings.facet.rowVariable}
-            columnVariable={settings.facet.columnVariable}
-            facetData={facetData}
-            settings={settings}
-          />
-        ) : (
-          <FacetWrapLayout
-            width={width}
-            height={height}
-            columns={settings.facet.columnCount}
-            facetData={facetData}
-            settings={settings}
-          />
-        )}
-      </div>
-    </FacetAxisProvider>
+    <div className="w-full h-full">
+      {settings.facet.type === "grid" ? (
+        <FacetGridLayout
+          width={width}
+          height={height}
+          rowVariable={settings.facet.rowVariable}
+          columnVariable={settings.facet.columnVariable}
+          facetData={facetData}
+          settings={settings}
+        />
+      ) : (
+        <FacetWrapLayout
+          width={width}
+          height={height}
+          columns={settings.facet.columnCount}
+          facetData={facetData}
+          settings={settings}
+        />
+      )}
+    </div>
   );
 }

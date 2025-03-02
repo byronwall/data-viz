@@ -1,12 +1,12 @@
-import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { scatterChartPureFilter } from "@/hooks/scatterChartPureFilter";
+import { useColorScales } from "@/hooks/useColorScales";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
-import { BaseChart } from "./BaseChart";
+import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
 import { ScaleLinear, scaleLinear } from "d3-scale";
-import { scatterChartPureFilter } from "@/hooks/scatterChartPureFilter";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
-import { useColorScales } from "@/hooks/useColorScales";
 
 interface ScatterPlotProps extends BaseChartProps {
   settings: ScatterChartSettings;
@@ -21,10 +21,8 @@ export function ScatterPlot({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const updateChart = useDataLayer((s) => s.updateChart);
   const { getColorForValue } = useColorScales();
-  const { registerAxisLimits, getGlobalAxisLimits } = useFacetAxis((s) => ({
-    registerAxisLimits: s.registerAxisLimits,
-    getGlobalAxisLimits: s.getGlobalAxisLimits,
-  }));
+  const registerAxisLimits = useFacetAxis((s) => s.registerAxisLimits);
+  const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);
 
   const xData = useGetLiveData(settings, "xField", facetIds);
   const yData = useGetLiveData(settings, "yField", facetIds);

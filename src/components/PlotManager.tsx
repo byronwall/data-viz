@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { ChartLayout } from "@/types/ChartTypes";
-import { Calculator, Copy, FilterX, X } from "lucide-react";
+import { Calculator, Copy, FilterX, X, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Layout } from "react-grid-layout";
 import { toast } from "sonner";
@@ -37,6 +37,7 @@ export function PlotManager() {
   const removeAllCharts = useDataLayer((state) => state.removeAllCharts);
   const clearAllFilters = useDataLayer((state) => state.clearAllFilters);
   const [activeTab, setActiveTab] = useState("charts");
+  const [isCopying, setIsCopying] = useState(false);
 
   // Get column names
   const columns = getColumnNames();
@@ -87,6 +88,15 @@ export function PlotManager() {
     try {
       const chartsJson = JSON.stringify(charts, null, 2);
       navigator.clipboard.writeText(chartsJson);
+
+      // Set copying state to true to trigger animation
+      setIsCopying(true);
+
+      // Reset after animation duration
+      setTimeout(() => {
+        setIsCopying(false);
+      }, 1500);
+
       toast("Chart configuration copied to clipboard");
     } catch (error) {
       console.error("Failed to copy charts to clipboard:", error);
@@ -124,10 +134,24 @@ export function PlotManager() {
                 variant="outline"
                 size="sm"
                 onClick={copyChartsToClipboard}
-                className="flex items-center gap-2"
+                className={`flex items-center gap-2 transition-all duration-300 ${
+                  isCopying
+                    ? "bg-green-100 text-green-700 border-green-300"
+                    : ""
+                }`}
+                disabled={isCopying}
               >
-                <Copy className="h-4 w-4" />
-                Copy Charts
+                {isCopying ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4" />
+                    Copy Charts
+                  </>
+                )}
               </Button>
               <Button
                 variant="outline"

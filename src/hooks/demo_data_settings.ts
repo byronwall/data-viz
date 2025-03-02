@@ -471,7 +471,7 @@ export const demoSettings: ChartSettings[] = [
     field: "Category",
     layout: {
       x: 0,
-      y: 4,
+      y: 11,
       w: 12,
       h: 4,
     },
@@ -488,5 +488,28 @@ export const demoSettings: ChartSettings[] = [
       columnVariable: "In Stock",
     },
     id: "a1d00ac6-5255-476b-a0a9-93ed78bd152e",
+  },
+  {
+    id: "0f14fcfa-f7ed-477c-9ed1-f01ad217b2c4",
+    type: "scatter",
+    title: "Scatter Plot - ID vs __ID",
+    field: "ID",
+    xField: "ID",
+    yField: "Rating",
+    layout: {
+      x: 0,
+      y: 4,
+      w: 12,
+      h: 7,
+    },
+    colorScaleId: "55a5565e-292b-4ad3-b24b-12055c13b2c0",
+    xFilterRange: null,
+    yFilterRange: null,
+    facet: {
+      enabled: true,
+      type: "wrap",
+      rowVariable: "Color",
+      columnCount: 4,
+    },
   },
 ];

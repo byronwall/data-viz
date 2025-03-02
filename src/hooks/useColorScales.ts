@@ -77,7 +77,7 @@ export function useColorScales(): UseColorScalesReturn {
     (scaleId: string, value: string | number): string => {
       const scale = colorScales.find((s) => s.id === scaleId);
       if (!scale) {
-        console.warn(`Color scale ${scaleId} not found`);
+        // console.warn(`Color scale ${scaleId} not found`);
         return "#000000";
       }
 

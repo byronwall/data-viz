@@ -102,8 +102,7 @@ export function FacetContainer({
           <FacetWrapLayout
             width={width}
             height={height}
-            rowVariable={settings.facet.rowVariable}
-            columns={settings.facet.columns}
+            columns={settings.facet.columnCount}
             facetData={facetData}
             settings={settings}
           />

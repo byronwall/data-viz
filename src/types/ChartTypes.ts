@@ -31,7 +31,7 @@ export interface GridFacetSettings extends BaseFacetSettings {
 export interface WrapFacetSettings extends BaseFacetSettings {
   type: "wrap";
   rowVariable: string;
-  columns: number; // Number of columns in wrap mode
+  columnCount: number; // Number of columns in wrap mode
 }
 
 // Discriminated union for facet settings

@@ -5,9 +5,10 @@ import { useColorScales } from "@/hooks/useColorScales";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { scaleBand, scaleLinear } from "d3-scale";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
+import { useWhatChanged } from "./useWhatChanged";
 
 type RowChartProps = BaseChartProps & {
   settings: RowChartSettings;
@@ -91,23 +92,23 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
     settings.maxRowHeight,
   ]);
 
-  // // Register axis limits with the facet context if in a facet
-  // useEffect(() => {
-  //   if (facetIds && displayCounts.length > 0) {
-  //     // Register x-axis limits (numerical for row chart)
-  //     const maxValue = Math.max(...displayCounts.map((d) => d.count));
-  //     registerAxisLimits(settings.id, "x", {
-  //       type: "numerical",
-  //       min: 0,
-  //       max: maxValue,
-  //     });
-  //   }
-  // }, [settings.id, facetIds, displayCounts, registerAxisLimits]);
+  // Register axis limits with the facet context if in a facet
+  useEffect(() => {
+    if (facetIds && displayCounts.length > 0) {
+      // Register x-axis limits (numerical for row chart)
+      const maxValue = Math.max(...displayCounts.map((d) => d.count));
+      registerAxisLimits(settings.id, "x", {
+        type: "numerical",
+        min: 0,
+        max: maxValue,
+      });
+    }
+  }, [settings.id, facetIds, displayCounts, registerAxisLimits]);
 
-  // useWhatChanged(
-  //   [settings.id, facetIds, displayCounts, registerAxisLimits],
-  //   `[settings.id, facetIds, displayCounts, registerAxisLimits]`
-  // );
+  useWhatChanged(
+    [settings.id, facetIds, displayCounts, registerAxisLimits],
+    `[settings.id, facetIds, displayCounts, registerAxisLimits]`
+  );
 
   // Get global axis limits if in a facet
   const globalXLimits = facetIds ? getGlobalAxisLimits("x") : null;

@@ -323,8 +323,6 @@ const createDataLayerStore = <T extends DatumObject>(
         return emptyColumn;
       }
 
-      console.log("*** getColumnData", { field, columnCache, calcColumnCache });
-
       if (columnCache[field]) {
         return columnCache[field];
       }

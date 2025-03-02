@@ -445,7 +445,7 @@ export const demoSettings: ChartSettings[] = [
       enabled: true,
       type: "wrap",
       rowVariable: "Size",
-      columns: 2,
+      columnCount: 2,
     },
   },
   {
@@ -464,5 +464,29 @@ export const demoSettings: ChartSettings[] = [
     filterValues: {
       values: [],
     },
+  },
+  {
+    type: "row",
+    title: "Row Chart - Category",
+    field: "Category",
+    layout: {
+      x: 0,
+      y: 4,
+      w: 12,
+      h: 4,
+    },
+    colorScaleId: "c719f887-fbb8-477e-b132-903189fc2cda",
+    minRowHeight: 10,
+    maxRowHeight: 100,
+    filterValues: {
+      values: [],
+    },
+    facet: {
+      enabled: true,
+      type: "grid",
+      rowVariable: "Size",
+      columnVariable: "In Stock",
+    },
+    id: "a1d00ac6-5255-476b-a0a9-93ed78bd152e",
   },
 ];

@@ -30,6 +30,11 @@ interface AggregationOption {
   value: AggregationType;
 }
 
+interface FacetTypeOption {
+  label: string;
+  value: FacetSettings["type"];
+}
+
 export function ChartSettingsContent({
   settings,
   availableFields,
@@ -186,6 +191,11 @@ export function ChartSettingsContent({
   };
 
   const renderFacetSettings = () => {
+    const facetTypeOptions: FacetTypeOption[] = [
+      { value: "wrap", label: "Wrap" },
+      { value: "grid", label: "Grid" },
+    ];
+
     return (
       <div className="space-y-4 pt-4 border-t">
         <div className="flex items-center justify-between">
@@ -201,7 +211,7 @@ export function ChartSettingsContent({
                     enabled: true,
                     type: "wrap",
                     rowVariable: "",
-                    columns: 2,
+                    columnCount: 2,
                   },
                 });
               } else if (localSettings.facet) {
@@ -221,24 +231,23 @@ export function ChartSettingsContent({
           <>
             <div className="space-y-2">
               <Label htmlFor="facetType">Facet Type</Label>
-              <ComboBox
-                value={localSettings.facet.type}
-                options={[
-                  { value: "wrap", label: "Wrap" },
-                  { value: "grid", label: "Grid" },
-                ]}
+              <ComboBox<FacetTypeOption>
+                value={facetTypeOptions.find(
+                  (option) => option.value === localSettings.facet?.type
+                )}
+                options={facetTypeOptions}
                 onChange={(option) => {
-                  if (option === "wrap") {
+                  if (option?.value === "wrap") {
                     setLocalSettings({
                       ...localSettings,
                       facet: {
                         enabled: true,
                         type: "wrap",
                         rowVariable: localSettings.facet?.rowVariable || "",
-                        columns: 2,
-                      },
+                        columnCount: 2,
+                      } as WrapFacetSettings,
                     });
-                  } else if (option === "grid") {
+                  } else if (option?.value === "grid") {
                     setLocalSettings({
                       ...localSettings,
                       facet: {
@@ -246,12 +255,11 @@ export function ChartSettingsContent({
                         type: "grid",
                         rowVariable: localSettings.facet?.rowVariable || "",
                         columnVariable: "",
-                      },
+                      } as GridFacetSettings,
                     });
                   }
                 }}
                 optionToLabel={(option) => option.label}
-                optionToValue={(option) => option.value}
                 placeholder="Select facet type"
               />
             </div>
@@ -266,7 +274,8 @@ export function ChartSettingsContent({
                   facet: {
                     ...localSettings.facet,
                     rowVariable: value,
-                  },
+                    enabled: true,
+                  } as FacetSettings,
                 });
               }}
             />
@@ -274,7 +283,10 @@ export function ChartSettingsContent({
             {localSettings.facet.type === "grid" ? (
               <FieldSelector
                 label="Column Variable"
-                value={(localSettings.facet as any).columnVariable || ""}
+                value={
+                  (localSettings.facet as GridFacetSettings).columnVariable ||
+                  ""
+                }
                 availableFields={availableFields}
                 onChange={(value) => {
                   setLocalSettings({
@@ -282,7 +294,9 @@ export function ChartSettingsContent({
                     facet: {
                       ...localSettings.facet,
                       columnVariable: value,
-                    },
+                      enabled: true,
+                      type: "grid",
+                    } as GridFacetSettings,
                   });
                 }}
               />
@@ -294,15 +308,19 @@ export function ChartSettingsContent({
                   type="number"
                   min={1}
                   max={10}
-                  value={(localSettings.facet as any).columns || 2}
+                  value={
+                    (localSettings.facet as WrapFacetSettings).columnCount || 2
+                  }
                   onChange={(e) => {
-                    const columns = parseInt(e.target.value) || 2;
+                    const columnCount = parseInt(e.target.value) || 2;
                     setLocalSettings({
                       ...localSettings,
                       facet: {
                         ...localSettings.facet,
-                        columns,
-                      },
+                        columnCount,
+                        enabled: true,
+                        type: "wrap",
+                      } as WrapFacetSettings,
                     });
                   }}
                 />

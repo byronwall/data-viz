@@ -8,6 +8,7 @@
 - Need to ensure the zustand hooks are single access - avoid infinite re-renders
 - Clean up the `FacetContainer` component - types are bad
 - Only the Row chart works currently - need to resolve axis problems and apply to all charts
+- The colorScaleId should not be saved - or need to save the scales too
 
 ## Conclusions
 

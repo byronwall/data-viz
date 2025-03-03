@@ -8,6 +8,7 @@ import { Search } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { PivotCell, PivotHeader, PivotRow } from "./types";
+import { useGetLiveIds } from "../useGetLiveData";
 
 type PivotTableProps = BaseChartProps & {
   settings: PivotTableSettings;
@@ -19,20 +20,15 @@ export function PivotTable({
   height,
   facetIds,
 }: PivotTableProps) {
-  console.log("Pivot Table Settings:", settings);
-
-  const liveItems = useDataLayer((state) => state.getLiveItems(settings));
   const getColumnData = useDataLayer((state) => state.getColumnData);
   const updateChart = useDataLayer((state) => state.updateChart);
-  const { registerAxisLimits } = useFacetAxis((s) => ({
-    registerAxisLimits: s.registerAxisLimits,
-  }));
+
+  const allLiveIds = useGetLiveIds(settings);
 
   // Get all required field data
   const pivotData = useMemo(() => {
     // Use facetIds if provided, otherwise use liveItems
-    const liveIds =
-      facetIds || liveItems.items.filter((c) => c.value > 0).map((d) => d.key);
+    const liveIds = facetIds || allLiveIds;
 
     // Gather all required fields
     const allFields = new Set([
@@ -57,34 +53,7 @@ export function PivotTable({
     });
 
     return calculatePivotData(data, settings);
-  }, [liveItems, getColumnData, settings, facetIds]);
-
-  // Register pivot table structure with facet context if in a facet
-  useEffect(() => {
-    if (facetIds && pivotData) {
-      // Register row headers from rows
-      const rowCategories = new Set(
-        pivotData.rows.flatMap((row) =>
-          row.headers.map((header) => header.label)
-        )
-      );
-
-      registerAxisLimits(settings.id, "x", {
-        type: "categorical",
-        categories: rowCategories,
-      });
-
-      // Register column headers
-      const columnCategories = new Set(
-        pivotData.headers.map((header) => header.label)
-      );
-
-      registerAxisLimits(settings.id, "y", {
-        type: "categorical",
-        categories: columnCategories,
-      });
-    }
-  }, [settings.id, facetIds, pivotData, registerAxisLimits]);
+  }, [facetIds, allLiveIds, settings, getColumnData]);
 
   const handleFilterClick = useCallback(
     (field: string, value: string | number) => {

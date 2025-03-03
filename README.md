@@ -14,7 +14,6 @@ Will be updated when done...
 
 ### Core data viz
 
-- Add support for faceting
 - Top level filter + steps = ability to quickly segment data and work on slices
 - Improve UX everywhere
   - Settings needs a numeric input that works
@@ -25,6 +24,7 @@ Will be updated when done...
 - Add a filter summary + filter controller
 - Wire up "load examples" buttons for main data sets - get rid of current default state
 - Improve handling of times stamps
+- Need a `SavedChartSettings` that contain chart defs, color scales, calcs, etc.
 
 ### Packaging and usages
 
@@ -75,3 +75,7 @@ Will be updated when done...
 - Add small grid marks to the background of the chart containing interface so that it’s clear where the size break points are
 - Calculation def should describe the available fields created by the calc - default is just producing the calc name - regression would generate estimate, residual, etc. need to declare in advance so drop down menus show what is possible
 - bar chart - figure out why barChartPureFilter is not being used
+- Do not attempt to render 0 width and 0 height bars + rows
+- Do not attempt to render points and bars that are not visible due to axis limits
+- Pivot table - implement filtering and sorting
+- Should not be creating colorScaleId all the time

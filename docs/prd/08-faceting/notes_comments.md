@@ -1,13 +1,8 @@
 # Notes and comments for faceting
 
-- Need to ensure the zustand hooks are single access - avoid infinite re-renders
-- Only the Row chart works currently - need to resolve axis problems and apply to all charts
-- Fix the bar chart and verify facetting works
 - Need to show all facets - show blanks when filtering - add an option to hide facets in wrap mode
-
-## Conclusions
-
-- The adjusted layout stuff was making a mess of things - should have not allowed
+- Filtering causes the axis limits to be constrained when faceted - will not return to full scale when filter is removed
+- Facetted bar chart with categorical x-axis does not work
 
 ## Issues to resolve in new work
 

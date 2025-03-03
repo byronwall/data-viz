@@ -471,7 +471,7 @@ export const demoSettings: ChartSettings[] = [
     field: "Category",
     layout: {
       x: 0,
-      y: 14,
+      y: 18,
       w: 12,
       h: 4,
     },
@@ -498,7 +498,7 @@ export const demoSettings: ChartSettings[] = [
     yField: "Rating",
     layout: {
       x: 0,
-      y: 4,
+      y: 8,
       w: 12,
       h: 7,
     },
@@ -520,7 +520,7 @@ export const demoSettings: ChartSettings[] = [
     yField: "Rating",
     layout: {
       x: 0,
-      y: 11,
+      y: 15,
       w: 8,
       h: 3,
     },
@@ -534,5 +534,28 @@ export const demoSettings: ChartSettings[] = [
       columnCount: 4,
     },
     id: "0ef4c4ee-6a4d-48ec-9641-402f94b11e6b",
+  },
+  {
+    id: "c2328c28-8c82-41bc-9174-92525abf77f8",
+    type: "bar",
+    title: "Bar Chart - Rating",
+    field: "Rating",
+    layout: {
+      x: 0,
+      y: 4,
+      w: 9,
+      h: 4,
+    },
+    colorScaleId: "8dff36f8-b964-4ad0-a005-e669c25647e8",
+    filterValues: {
+      values: [],
+    },
+    filterRange: null,
+    facet: {
+      enabled: true,
+      type: "wrap",
+      rowVariable: "In Stock",
+      columnCount: 2,
+    },
   },
 ];

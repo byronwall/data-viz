@@ -1,5 +1,6 @@
 import { barChartPureFilter } from "@/hooks/barChartPureFilter";
 import { getFilterObj, isEmptyFilter } from "@/hooks/getFilterValues";
+import { useColorScales } from "@/hooks/useColorScales";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { BarChartSettings, BaseChartProps } from "@/types/ChartTypes";
@@ -9,7 +10,6 @@ import isEqual from "react-fast-compare";
 import { useCustomCompareMemo } from "use-custom-compare";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
-import { useColorScales } from "@/hooks/useColorScales";
 
 type NumericBin = {
   label: string;
@@ -24,8 +24,6 @@ type CategoryBin = {
   value: number;
   isNumeric: false;
 };
-
-type ChartDataItem = NumericBin | CategoryBin;
 
 type BarChartProps = BaseChartProps & {
   settings: BarChartSettings;
@@ -252,17 +250,10 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
               barWidth = bandScale.bandwidth();
             }
 
-            const isFiltered = isNumeric
-              ? activeFilters &&
-                "min" in activeFilters &&
-                "max" in activeFilters &&
-                typeof activeFilters.min === "number" &&
-                typeof activeFilters.max === "number" &&
-                (d as NumericBin).start >= activeFilters.min &&
-                (d as NumericBin).end <= activeFilters.max
-              : settings.filterValues?.values.includes(
-                  (d as CategoryBin).label
-                );
+            const isFiltered = barChartPureFilter(
+              activeFilters,
+              isNumeric ? (d as NumericBin).start : (d as CategoryBin).label
+            );
 
             const color =
               activeFilters && !isFilterEmpty && !isFiltered

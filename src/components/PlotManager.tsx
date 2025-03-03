@@ -36,6 +36,7 @@ export function PlotManager() {
   const removeChart = useDataLayer((state) => state.removeChart);
   const removeAllCharts = useDataLayer((state) => state.removeAllCharts);
   const clearAllFilters = useDataLayer((state) => state.clearAllFilters);
+
   const [activeTab, setActiveTab] = useState("charts");
   const [isCopying, setIsCopying] = useState(false);
 

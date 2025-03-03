@@ -51,15 +51,17 @@ const createFacetAxisStore = () => {
       // call new function to determine new limits
       const newLimits = determineNewLimits(before, after);
 
-      set((state) => ({
-        axisLimits: {
-          ...state.axisLimits,
-          [axis]: {
-            ...state.axisLimits[axis],
-            [chartId]: newLimits,
+      requestAnimationFrame(() => {
+        set((state) => ({
+          axisLimits: {
+            ...state.axisLimits,
+            [axis]: {
+              ...state.axisLimits[axis],
+              [chartId]: newLimits,
+            },
           },
-        },
-      }));
+        }));
+      });
     },
 
     getGlobalAxisLimits: (axis: "x" | "y"): AxisLimits | null => {

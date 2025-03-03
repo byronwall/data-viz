@@ -79,3 +79,6 @@ Will be updated when done...
 - Do not attempt to render points and bars that are not visible due to axis limits
 - Pivot table - implement filtering and sorting
 - Should not be creating colorScaleId all the time
+- The colorScaleId should not be saved - or need to save the scales too
+- Decide if it is worth allowing the y categories to be globally shared in Row charts w/ facets
+- Need to implement the full suite of control for axis limits - scatter defaults to all available global data

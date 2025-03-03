@@ -27,7 +27,6 @@ export function ScatterPlot({
   const { getColorForValue } = useColorScales();
   const registerAxisLimits = useFacetAxis((s) => s.registerAxisLimits);
   const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);
-  const rafIdRef = useRef<number | null>(null);
 
   // Get all data for axis limits calculation (not filtered by current selections)
   const allXData = useGetColumnDataForIds(settings.xField, facetIds);
@@ -66,38 +65,20 @@ export function ScatterPlot({
   // Register axis limits with the facet context if in a facet using requestAnimationFrame
   useEffect(() => {
     if (facetIds && allXData.length > 0) {
-      // Cancel any existing rAF
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-      }
+      // Register x-axis limits
+      registerAxisLimits(settings.id, "x", {
+        type: "numerical",
+        min: xMin,
+        max: xMax,
+      });
 
-      // Schedule axis registration in rAF to avoid during render
-      rafIdRef.current = requestAnimationFrame(() => {
-        // Register x-axis limits
-        registerAxisLimits(settings.id, "x", {
-          type: "numerical",
-          min: xMin,
-          max: xMax,
-        });
-
-        // Register y-axis limits
-        registerAxisLimits(settings.id, "y", {
-          type: "numerical",
-          min: yMin,
-          max: yMax,
-        });
-
-        rafIdRef.current = null;
+      // Register y-axis limits
+      registerAxisLimits(settings.id, "y", {
+        type: "numerical",
+        min: yMin,
+        max: yMax,
       });
     }
-
-    // Cleanup function to cancel rAF if component unmounts
-    return () => {
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
-      }
-    };
   }, [
     settings.id,
     facetIds,

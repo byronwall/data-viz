@@ -346,10 +346,13 @@ const createDataLayerStore = <T extends DatumObject>(
         });
 
         // update the column cache
-        set((state) => {
-          const newCalcColumnCache = { ...state.calcColumnCache };
-          newCalcColumnCache[field] = columnData;
-          return { calcColumnCache: newCalcColumnCache };
+        // doing the RAF since this is called in the render loop
+        requestAnimationFrame(() => {
+          set((state) => {
+            const newCalcColumnCache = { ...state.calcColumnCache };
+            newCalcColumnCache[field] = columnData;
+            return { calcColumnCache: newCalcColumnCache };
+          });
         });
 
         return columnData;
@@ -367,10 +370,13 @@ const createDataLayerStore = <T extends DatumObject>(
         columnData[row.__ID] = row[field];
       });
 
-      set((state) => {
-        const newColumnCache = { ...state.columnCache };
-        newColumnCache[field] = columnData;
-        return { columnCache: newColumnCache };
+      // doing the RAF since this is called in the render loop
+      requestAnimationFrame(() => {
+        set((state) => {
+          const newColumnCache = { ...state.columnCache };
+          newColumnCache[field] = columnData;
+          return { columnCache: newColumnCache };
+        });
       });
 
       return columnData;

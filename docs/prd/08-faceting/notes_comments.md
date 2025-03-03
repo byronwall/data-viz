@@ -1,9 +1,3 @@
-# Notes and comments for faceting
-
-- Need to show all facets - show blanks when filtering - add an option to hide facets in wrap mode
-- Filtering causes the axis limits to be constrained when faceted - will not return to full scale when filter is removed
-- Facetted bar chart with categorical x-axis does not work
-
 ## Issues to resolve in new work
 
 - The colorScaleId should not be saved - or need to save the scales too

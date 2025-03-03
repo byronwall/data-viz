@@ -135,6 +135,10 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
       .padding(0.1);
   }, [displayCounts, innerHeight, globalYLimits]);
 
+  if (displayCounts.length === 0) {
+    return <div style={{ width, height }}>No data to display</div>;
+  }
+
   return (
     <div style={{ width, height }}>
       <BaseChart

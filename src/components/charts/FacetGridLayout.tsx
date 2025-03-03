@@ -32,6 +32,10 @@ export function FacetGridLayout({
       )
     ).sort();
 
+    console.log("rows", rows);
+    console.log("columns", columns);
+    console.log("facetData", facetData);
+
     // Create a grid of facets
     const grid: Record<string, Record<string, IdType[]>> = {};
 

@@ -1,5 +1,5 @@
 import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
-import { ChartSettings } from "@/types/ChartTypes";
+import { ChartSettings, datum } from "@/types/ChartTypes";
 import { useMemo } from "react";
 import { FacetGridLayout } from "./FacetGridLayout";
 import { FacetWrapLayout } from "./FacetWrapLayout";
@@ -51,7 +51,10 @@ export function FacetContainer({
         ? columnData[id as IdType] ?? "undefined"
         : null;
 
-      const facetKey = colValue ? `${rowValue}__${colValue}` : String(rowValue);
+      const rowLabel = getFacetLabel(rowValue);
+      const colLabel = colValue !== null ? getFacetLabel(colValue) : null;
+
+      const facetKey = colLabel ? `${rowLabel}__${colLabel}` : rowLabel;
 
       if (!facets[facetKey]) {
         facets[facetKey] = [];
@@ -107,4 +110,28 @@ export function FacetContainer({
       )}
     </div>
   );
+}
+
+function getFacetLabel(value: datum) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return String(value);
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+
+  if (value === null) {
+    return "null";
+  }
+
+  if (value === undefined) {
+    return "undefined";
+  }
+
+  return "unknown";
 }

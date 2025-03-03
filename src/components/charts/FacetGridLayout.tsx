@@ -2,6 +2,7 @@ import { ChartSettings } from "@/types/ChartTypes";
 import { useMemo } from "react";
 import { ChartRenderer } from "./ChartRenderer";
 import { FacetData } from "./FacetContainer";
+import { IdType } from "@/providers/DataLayerProvider";
 
 interface FacetGridLayoutProps {
   width: number;
@@ -32,7 +33,7 @@ export function FacetGridLayout({
     ).sort();
 
     // Create a grid of facets
-    const grid: Record<string, Record<string, string[]>> = {};
+    const grid: Record<string, Record<string, IdType[]>> = {};
 
     rows.forEach((row) => {
       grid[row] = {};

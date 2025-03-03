@@ -48,12 +48,15 @@ const createFacetAxisStore = () => {
         return;
       }
 
+      // call new function to determine new limits
+      const newLimits = determineNewLimits(before, after);
+
       set((state) => ({
         axisLimits: {
           ...state.axisLimits,
           [axis]: {
             ...state.axisLimits[axis],
-            [chartId]: limits,
+            [chartId]: newLimits,
           },
         },
       }));
@@ -138,4 +141,45 @@ export function useFacetAxis<T>(selector: (state: FacetAxisState) => T): T {
   }
 
   return useStore(store, selector);
+}
+function determineNewLimits(before: AxisLimits | undefined, after: AxisLimits) {
+  // determine new limits by taking extremes
+  // min of mins
+  // max of maxes
+
+  // if categorical, take union of categories
+  if (!before) {
+    return after;
+  }
+
+  if (before.type === "numerical" && after.type === "numerical") {
+    return {
+      type: "numerical",
+      min: Math.min(before.min, after.min),
+      max: Math.max(before.max, after.max),
+    };
+  }
+
+  if (before.type === "categorical" && after.type === "categorical") {
+    return {
+      type: "categorical",
+      categories: new Set([...before.categories, ...after.categories]),
+    };
+  }
+
+  if (before.type === "numerical" && after.type === "categorical") {
+    return {
+      type: "categorical",
+      categories: new Set([...after.categories]),
+    };
+  }
+
+  if (before.type === "categorical" && after.type === "numerical") {
+    return {
+      type: "categorical",
+      categories: new Set([...before.categories]),
+    };
+  }
+
+  throw new Error("Invalid axis limits");
 }

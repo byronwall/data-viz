@@ -541,9 +541,9 @@ export const demoSettings: ChartSettings[] = [
     title: "Bar Chart - Rating",
     field: "Rating",
     layout: {
-      x: 0,
+      x: 5,
       y: 4,
-      w: 9,
+      w: 7,
       h: 4,
     },
     colorScaleId: "8dff36f8-b964-4ad0-a005-e669c25647e8",
@@ -557,5 +557,21 @@ export const demoSettings: ChartSettings[] = [
       rowVariable: "In Stock",
       columnCount: 2,
     },
+  },
+  {
+    id: "e2b6237d-a558-4faf-8430-774d91744e9f",
+    type: "bar",
+    title: "Bar Chart - Rating",
+    field: "Rating",
+    layout: {
+      x: 0,
+      y: 4,
+      w: 5,
+      h: 4,
+    },
+    filterValues: {
+      values: [],
+    },
+    filterRange: null,
   },
 ];

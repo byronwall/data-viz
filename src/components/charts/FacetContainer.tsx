@@ -15,7 +15,7 @@ export interface FacetData {
   id: string;
   rowValue: string;
   columnValue: string | null;
-  ids: string[];
+  ids: IdType[];
 }
 
 export function FacetContainer({
@@ -43,21 +43,21 @@ export function FacetContainer({
       facet.type === "grid" ? getColumnData(facet.columnVariable) : null;
 
     // Group data by facet variables
-    const facets: Record<string, string[]> = {};
+    const facets: Record<string, IdType[]> = {};
 
     liveIds.forEach((id) => {
-      const rowValue = String(rowData[id as IdType] ?? "undefined");
+      const rowValue = rowData[id] ?? "undefined";
       const colValue = columnData
-        ? String(columnData[id as IdType] ?? "undefined")
+        ? columnData[id as IdType] ?? "undefined"
         : null;
 
-      const facetKey = colValue ? `${rowValue}__${colValue}` : rowValue;
+      const facetKey = colValue ? `${rowValue}__${colValue}` : String(rowValue);
 
       if (!facets[facetKey]) {
         facets[facetKey] = [];
       }
 
-      facets[facetKey].push(String(id));
+      facets[facetKey].push(id);
     });
 
     return Object.entries(facets).map(([key, ids]) => {

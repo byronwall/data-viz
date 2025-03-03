@@ -14,7 +14,7 @@ export function useGetColumnData(field: string | undefined) {
 
 export function useGetColumnDataForIds(
   field: string | undefined,
-  ids: IdType[] | undefined
+  ids?: IdType[]
 ) {
   const getColumnData = useDataLayer((s) => s.getColumnData);
   const nonce = useDataLayer((s) => s.nonce);

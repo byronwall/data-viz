@@ -3,12 +3,13 @@ import { BarChart } from "./BarChart";
 import { RowChart } from "./RowChart";
 import { ScatterPlot } from "./ScatterPlot";
 import { PivotTable } from "./PivotTable/PivotTable";
+import { IdType } from "@/providers/DataLayerProvider";
 
 interface ChartRendererProps {
   settings: ChartSettings;
   width: number;
   height: number;
-  facetIds?: string[];
+  facetIds?: IdType[];
 }
 
 export function ChartRenderer({

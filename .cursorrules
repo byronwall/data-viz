@@ -16,6 +16,7 @@
 - When creating new comps or adding functionality DO NOT EDIT OTHER STUFF. DO NOT REFACTOR OTHER STUFF even if it looks like a good idea.
 
 - Use import + `useState` etc instead of `React.useState` etc.
+- When accessing zustand stores, always use a selector for a SINGLE item. Repeat each line for as many items as needed.
 
 ## Comp preferences
 

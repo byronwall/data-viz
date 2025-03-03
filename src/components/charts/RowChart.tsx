@@ -1,20 +1,24 @@
 import { BaseChartProps, datum, RowChartSettings } from "@/types/ChartTypes";
 
 import { rowChartPureFilter } from "@/hooks/rowChartPureFilter";
+import { useColorScales } from "@/hooks/useColorScales";
 import { useDataLayer } from "@/providers/DataLayerProvider";
+import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { scaleBand, scaleLinear } from "d3-scale";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
-import { useColorScales } from "@/hooks/useColorScales";
 
 type RowChartProps = BaseChartProps & {
   settings: RowChartSettings;
 };
 
-export function RowChart({ settings, width, height }: RowChartProps) {
-  const data = useGetLiveData(settings);
+export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
+  const data = useGetLiveData(settings, undefined, facetIds);
+
   const { getColorForValue } = useColorScales();
+  const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);
+  const registerAxisLimits = useFacetAxis((s) => s.registerAxisLimits);
 
   const updateChart = useDataLayer((s) => s.updateChart);
 
@@ -85,18 +89,55 @@ export function RowChart({ settings, width, height }: RowChartProps) {
     settings.maxRowHeight,
   ]);
 
-  // Create scales
+  // Register axis limits with the facet context if in a facet
+  useEffect(() => {
+    if (facetIds && displayCounts.length > 0) {
+      // Register x-axis limits (numerical for row chart)
+      const maxValue = Math.max(...displayCounts.map((d) => d.count));
+      registerAxisLimits(settings.id, "x", {
+        type: "numerical",
+        min: 0,
+        max: maxValue,
+      });
+    }
+  }, [settings.id, facetIds, displayCounts, registerAxisLimits]);
+
+  // Get global axis limits if in a facet
+  const globalXLimits = facetIds ? getGlobalAxisLimits("x") : null;
+  const globalYLimits = facetIds ? getGlobalAxisLimits("y") : null;
+
+  // Create scales with synchronized limits if in a facet
   const xScale = useMemo(() => {
     const maxValue = Math.max(...displayCounts.map((d) => d.count));
+
+    if (globalXLimits && globalXLimits.type === "numerical") {
+      return scaleLinear()
+        .domain([0, globalXLimits.max])
+        .range([0, innerWidth])
+        .nice();
+    }
+
     return scaleLinear().domain([0, maxValue]).range([0, innerWidth]).nice();
-  }, [displayCounts, innerWidth]);
+  }, [displayCounts, innerWidth, globalXLimits]);
 
   const yScale = useMemo(() => {
+    if (globalYLimits && globalYLimits.type === "categorical") {
+      const allCategories = Array.from(globalYLimits.categories);
+      return scaleBand()
+        .domain(allCategories)
+        .range([0, innerHeight])
+        .padding(0.1);
+    }
+
     return scaleBand()
       .domain(displayCounts.map((d) => String(d.label)))
       .range([0, innerHeight])
       .padding(0.1);
-  }, [displayCounts, innerHeight]);
+  }, [displayCounts, innerHeight, globalYLimits]);
+
+  if (displayCounts.length === 0) {
+    return <div style={{ width, height }}>No data to display</div>;
+  }
 
   return (
     <div style={{ width, height }}>
@@ -119,13 +160,20 @@ export function RowChart({ settings, width, height }: RowChartProps) {
                 ? getColorForValue(settings.colorScaleId, String(label))
                 : "hsl(217.2 91.2% 59.8%)";
 
+            const barWidth = xScale(count);
+            const barHeight = yScale.bandwidth();
+
+            if (barWidth < 1 || barHeight < 1) {
+              return null;
+            }
+
             return (
               <rect
                 key={String(label)}
                 x={0}
                 y={yScale(String(label))}
-                width={xScale(count)}
-                height={yScale.bandwidth()}
+                width={barWidth}
+                height={barHeight}
                 className={`${
                   label === "Others"
                     ? "fill-muted/80 hover:fill-muted"

@@ -1,14 +1,19 @@
 import { barChartPureFilter } from "@/hooks/barChartPureFilter";
 import { getFilterObj, isEmptyFilter } from "@/hooks/getFilterValues";
+import { useColorScales } from "@/hooks/useColorScales";
 import { useDataLayer } from "@/providers/DataLayerProvider";
+import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { BarChartSettings, BaseChartProps } from "@/types/ChartTypes";
 import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from "d3-scale";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import isEqual from "react-fast-compare";
 import { useCustomCompareMemo } from "use-custom-compare";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
-import { useColorScales } from "@/hooks/useColorScales";
+import { useGetColumnDataForIds } from "./useGetColumnData";
+
+const X_SCALE_PADDING = 0.05; // 5% padding on each side
+const Y_SCALE_PADDING = 0.1; // 10% padding for top of bars
 
 type NumericBin = {
   label: string;
@@ -24,33 +29,42 @@ type CategoryBin = {
   isNumeric: false;
 };
 
-type ChartDataItem = NumericBin | CategoryBin;
-
 type BarChartProps = BaseChartProps & {
   settings: BarChartSettings;
 };
 
-export function BarChart({ settings, width, height }: BarChartProps) {
-  const allColData = useGetLiveData(settings);
+export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
+  // Get all data for axis limits calculation (not filtered by current selections)
+  const allColData = useGetColumnDataForIds(settings.field);
+  // Get filtered data for rendering
+  const liveColData = useGetLiveData(settings, undefined, facetIds);
+
   const updateChart = useDataLayer((s) => s.updateChart);
   const { getColorForValue } = useColorScales();
+
+  const registerAxisLimits = useFacetAxis((s) => s.registerAxisLimits);
+  const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);
 
   // Chart dimensions
   const margin = { top: 20, right: 20, bottom: 30, left: 60 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
+  const isNumeric = useMemo(
+    () => allColData.every((d) => !isNaN(Number(d))),
+    [allColData]
+  );
+
+  // Calculate chart data from live (filtered) data for rendering
   const chartData = useMemo(() => {
-    // Check if all values are numeric
-    const isNumeric = allColData.every((d) => !isNaN(Number(d)));
-
     if (isNumeric) {
-      const numericData = allColData.map(Number);
+      const numericData = liveColData.map(Number);
+      const allNumericData = allColData.map(Number);
 
-      // Create bins
+      // Create bins using full data range
       const binCount = settings.binCount || 10;
-      const min = Math.min(...numericData);
-      const max = Math.max(...numericData);
+      const min = Math.min(...allNumericData);
+      const max = Math.max(...allNumericData);
       const binWidth = (max - min) / binCount;
 
       const bins = Array.from({ length: binCount }, (_, i) => {
@@ -62,9 +76,15 @@ export function BarChart({ settings, width, height }: BarChartProps) {
 
       return bins;
     } else {
-      // Handle categorical data
+      // Handle categorical data using all possible categories
+      const uniqueCats = new Set(allColData.map(String));
       const countMap = new Map<string, number>();
-      allColData.forEach((value) => {
+
+      // Initialize all categories with 0
+      uniqueCats.forEach((cat) => countMap.set(cat, 0));
+
+      // Count occurrences from live data
+      liveColData.forEach((value) => {
         const key = String(value);
         countMap.set(key, (countMap.get(key) || 0) + 1);
       });
@@ -78,46 +98,127 @@ export function BarChart({ settings, width, height }: BarChartProps) {
           } as CategoryBin)
       );
     }
-  }, [allColData, settings.binCount]);
+  }, [liveColData, allColData, isNumeric, settings.binCount]);
 
+  // Calculate min/max from ALL data for axis limits
   const { min, max, uniqueValues } = useMemo(() => {
-    if (chartData[0]?.isNumeric) {
-      const numericData = chartData as NumericBin[];
+    if (isNumeric) {
+      const numericData = allColData.map(Number);
+      const binCount = settings.binCount || 10;
+      const dataMin = Math.min(...numericData);
+      const dataMax = Math.max(...numericData);
+      const binWidth = (dataMax - dataMin) / binCount;
+
       return {
-        min: Math.min(...numericData.map((d) => d.start)),
-        max: Math.max(...numericData.map((d) => d.end)),
+        min: dataMin,
+        max: dataMax + binWidth, // Add one bin width to include the last bin's end
         uniqueValues: undefined,
       };
     }
 
-    const categoryData = chartData as CategoryBin[];
     return {
       min: undefined,
       max: undefined,
-      uniqueValues: categoryData.map((d) => d.label),
+      uniqueValues: Array.from(new Set(allColData.map(String))),
     };
-  }, [chartData]);
+  }, [allColData, isNumeric, settings.binCount]);
 
-  // Create scales
+  // Get global axis limits if in a facet
+  const globalXLimits = facetIds ? getGlobalAxisLimits("x") : null;
+  const globalYLimits = facetIds ? getGlobalAxisLimits("y") : null;
+
+  // Create scales with synchronized limits if in a facet
   const xScale = useCustomCompareMemo(
     () => {
       if (min !== undefined && max !== undefined) {
-        return scaleLinear().domain([min, max]).range([0, innerWidth]);
+        // Numerical x-axis
+        const globalMin =
+          globalXLimits?.type === "numerical" ? globalXLimits.min : min;
+        const globalMax =
+          globalXLimits?.type === "numerical" ? globalXLimits.max : max;
+
+        // Only pad if using local limits
+        const range = max - min;
+        const padding = range * X_SCALE_PADDING;
+        const minToUse = globalXLimits ? globalMin : min - padding;
+        const maxToUse = globalXLimits ? globalMax : max + padding;
+
+        return scaleLinear()
+          .domain([minToUse, maxToUse])
+          .range([0, innerWidth]);
       } else {
+        const globalCategories =
+          globalXLimits?.type === "categorical"
+            ? globalXLimits.categories
+            : uniqueValues;
+
+        const allCategories = Array.from(globalCategories);
+
         return scaleBand()
-          .domain(uniqueValues)
+          .domain(allCategories)
           .range([0, innerWidth])
           .padding(0.3);
       }
     },
-    [innerWidth, max, min, uniqueValues],
+    [innerWidth, max, min, uniqueValues, globalXLimits],
     isEqual
   ) as ScaleLinear<number, number> | ScaleBand<string>;
 
   const yScale = useMemo(() => {
     const maxValue = Math.max(...chartData.map((d) => d.value));
-    return scaleLinear().domain([0, maxValue]).range([innerHeight, 0]).nice();
-  }, [chartData, innerHeight]);
+    const paddedMax = maxValue * (1 + Y_SCALE_PADDING);
+
+    // take larger of global or padded max
+    const globalMax =
+      globalYLimits?.type === "numerical" ? globalYLimits.max : paddedMax;
+
+    const limitToUse = Math.max(globalMax, paddedMax);
+
+    return scaleLinear().domain([0, limitToUse]).range([innerHeight, 0]);
+  }, [chartData, innerHeight, globalYLimits]);
+
+  // Register axis limits with the facet context if in a facet
+  useEffect(() => {
+    if (facetIds && chartData.length > 0) {
+      // Register x-axis limits (categorical for bar chart)
+      // registerAxisLimits(settings.id, "x", {
+      //   type: "categorical",
+      //   categories: new Set(chartData.map((d) => d.label)),
+      // });
+
+      // determine x limits based on data type
+      if (isNumeric) {
+        registerAxisLimits(settings.id, "x", {
+          type: "numerical",
+          min: Number(xScale.domain()[0]),
+          max: Number(xScale.domain()[1]),
+        });
+      } else {
+        registerAxisLimits(settings.id, "x", {
+          type: "categorical",
+          categories: new Set(chartData.map((d) => d.label)),
+        });
+      }
+      // Register y-axis limits (numerical for bar chart)
+      const maxValue = yScale.domain()[1];
+
+      registerAxisLimits(settings.id, "y", {
+        type: "numerical",
+        min: 0,
+        max: maxValue,
+      });
+    }
+  }, [
+    settings.id,
+    facetIds,
+    chartData,
+    registerAxisLimits,
+    isNumeric,
+    min,
+    max,
+    yScale,
+    xScale,
+  ]);
 
   const isBandScale = "bandwidth" in xScale;
 
@@ -203,17 +304,10 @@ export function BarChart({ settings, width, height }: BarChartProps) {
               barWidth = bandScale.bandwidth();
             }
 
-            const isFiltered = isNumeric
-              ? activeFilters &&
-                "min" in activeFilters &&
-                "max" in activeFilters &&
-                typeof activeFilters.min === "number" &&
-                typeof activeFilters.max === "number" &&
-                (d as NumericBin).start >= activeFilters.min &&
-                (d as NumericBin).end <= activeFilters.max
-              : settings.filterValues?.values.includes(
-                  (d as CategoryBin).label
-                );
+            const isFiltered = barChartPureFilter(
+              activeFilters,
+              isNumeric ? (d as NumericBin).start : (d as CategoryBin).label
+            );
 
             const color =
               activeFilters && !isFilterEmpty && !isFiltered
@@ -227,19 +321,33 @@ export function BarChart({ settings, width, height }: BarChartProps) {
                   )
                 : "hsl(217.2 91.2% 59.8%)";
 
+            const barHeight = innerHeight - yScale(d.value);
+
+            if (barWidth < 1 || barHeight < 1) {
+              return null;
+            }
+
             return (
               <rect
                 key={i}
                 x={x}
                 y={yScale(d.value)}
                 width={barWidth}
-                height={innerHeight - yScale(d.value)}
+                height={barHeight}
                 className={isBandScale ? "cursor-pointer" : ""}
                 style={{ fill: color }}
                 onClick={() =>
                   isBandScale && handleBarClick((d as CategoryBin).label)
                 }
-              />
+              >
+                <title>
+                  {isNumeric
+                    ? `Range: ${(d as NumericBin).start.toFixed(2)} - ${(
+                        d as NumericBin
+                      ).end.toFixed(2)}, Count: ${d.value}`
+                    : `${(d as CategoryBin).label}, Count: ${d.value}`}
+                </title>
+              </rect>
             );
           })}
         </g>

@@ -2,6 +2,9 @@ import {
   ChartSettings,
   CHART_TYPES,
   PivotTableSettings,
+  FacetSettings,
+  GridFacetSettings,
+  WrapFacetSettings,
 } from "@/types/ChartTypes";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
@@ -25,6 +28,11 @@ type AggregationType = PivotTableSettings["valueFields"][0]["aggregation"];
 interface AggregationOption {
   label: string;
   value: AggregationType;
+}
+
+interface FacetTypeOption {
+  label: string;
+  value: FacetSettings["type"];
 }
 
 export function ChartSettingsContent({
@@ -179,6 +187,148 @@ export function ChartSettingsContent({
           </Button>
         </div>
       </>
+    );
+  };
+
+  const renderFacetSettings = () => {
+    const facetTypeOptions: FacetTypeOption[] = [
+      { value: "wrap", label: "Wrap" },
+      { value: "grid", label: "Grid" },
+    ];
+
+    return (
+      <div className="space-y-4 pt-4 border-t">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="enableFacet">Enable Faceting</Label>
+          <Switch
+            id="enableFacet"
+            checked={!!localSettings.facet?.enabled}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                setLocalSettings({
+                  ...localSettings,
+                  facet: {
+                    enabled: true,
+                    type: "wrap",
+                    rowVariable: "",
+                    columnCount: 2,
+                  },
+                });
+              } else if (localSettings.facet) {
+                setLocalSettings({
+                  ...localSettings,
+                  facet: {
+                    ...localSettings.facet,
+                    enabled: false,
+                  },
+                });
+              }
+            }}
+          />
+        </div>
+
+        {localSettings.facet?.enabled && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="facetType">Facet Type</Label>
+              <ComboBox<FacetTypeOption>
+                value={facetTypeOptions.find(
+                  (option) => option.value === localSettings.facet?.type
+                )}
+                options={facetTypeOptions}
+                onChange={(option) => {
+                  if (option?.value === "wrap") {
+                    setLocalSettings({
+                      ...localSettings,
+                      facet: {
+                        enabled: true,
+                        type: "wrap",
+                        rowVariable: localSettings.facet?.rowVariable || "",
+                        columnCount: 2,
+                      } as WrapFacetSettings,
+                    });
+                  } else if (option?.value === "grid") {
+                    setLocalSettings({
+                      ...localSettings,
+                      facet: {
+                        enabled: true,
+                        type: "grid",
+                        rowVariable: localSettings.facet?.rowVariable || "",
+                        columnVariable: "",
+                      } as GridFacetSettings,
+                    });
+                  }
+                }}
+                optionToLabel={(option) => option.label}
+                placeholder="Select facet type"
+              />
+            </div>
+
+            <FieldSelector
+              label="Row Variable"
+              value={localSettings.facet.rowVariable || ""}
+              availableFields={availableFields}
+              onChange={(value) => {
+                setLocalSettings({
+                  ...localSettings,
+                  facet: {
+                    ...localSettings.facet,
+                    rowVariable: value,
+                    enabled: true,
+                  } as FacetSettings,
+                });
+              }}
+            />
+
+            {localSettings.facet.type === "grid" ? (
+              <FieldSelector
+                label="Column Variable"
+                value={
+                  (localSettings.facet as GridFacetSettings).columnVariable ||
+                  ""
+                }
+                availableFields={availableFields}
+                onChange={(value) => {
+                  setLocalSettings({
+                    ...localSettings,
+                    facet: {
+                      ...localSettings.facet,
+                      columnVariable: value,
+                      enabled: true,
+                      type: "grid",
+                    } as GridFacetSettings,
+                  });
+                }}
+              />
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="columns">Number of Columns</Label>
+                <Input
+                  id="columns"
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={
+                    (localSettings.facet as WrapFacetSettings).columnCount || 2
+                  }
+                  onChange={(e) => {
+                    const columnCount = parseInt(e.target.value) || 2;
+                    setLocalSettings({
+                      ...localSettings,
+                      facet: {
+                        ...localSettings.facet,
+                        columnCount,
+                        enabled: true,
+                        type: "wrap",
+                      } as WrapFacetSettings,
+                    });
+                  }}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
     );
   };
 
@@ -341,6 +491,8 @@ export function ChartSettingsContent({
       )}
 
       {renderPivotTableSettings()}
+
+      {renderFacetSettings()}
 
       <Button className="w-full" onClick={handleUpdate}>
         Update Chart

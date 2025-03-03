@@ -1,23 +1,40 @@
-import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useDataLayer } from "@/providers/DataLayerProvider";
-import { BaseChart } from "./BaseChart";
-import { ScaleLinear, scaleLinear } from "d3-scale";
 import { scatterChartPureFilter } from "@/hooks/scatterChartPureFilter";
-import { useGetLiveData } from "./useGetLiveData";
 import { useColorScales } from "@/hooks/useColorScales";
+import { useDataLayer } from "@/providers/DataLayerProvider";
+import { useFacetAxis } from "@/providers/FacetAxisProvider";
+import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
+import { ScaleLinear, scaleLinear } from "d3-scale";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { BaseChart } from "./BaseChart";
+import { useGetLiveData } from "./useGetLiveData";
+import { useGetColumnDataForIds } from "./useGetColumnData";
+
+// Configurable constant for axis buffer (10%)
+const AXIS_BUFFER_PERCENTAGE = 0.1;
 
 interface ScatterPlotProps extends BaseChartProps {
   settings: ScatterChartSettings;
 }
 
-export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
+export function ScatterPlot({
+  settings,
+  width,
+  height,
+  facetIds,
+}: ScatterPlotProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const updateChart = useDataLayer((s) => s.updateChart);
   const { getColorForValue } = useColorScales();
+  const registerAxisLimits = useFacetAxis((s) => s.registerAxisLimits);
+  const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);
 
-  const xData = useGetLiveData(settings, "xField");
-  const yData = useGetLiveData(settings, "yField");
+  // Get all data for axis limits calculation (not filtered by current selections)
+  const allXData = useGetColumnDataForIds(settings.xField, facetIds);
+  const allYData = useGetColumnDataForIds(settings.yField, facetIds);
+
+  // Get filtered data for rendering
+  const xData = useGetLiveData(settings, "xField", facetIds);
+  const yData = useGetLiveData(settings, "yField", facetIds);
 
   // Convert object to array and map to numbers
   const xValues = xData.map(Number);
@@ -28,28 +45,106 @@ export function ScatterPlot({ settings, width, height }: ScatterPlotProps) {
     throw new Error("X and Y arrays must have the same length");
   }
 
-  // Calculate data bounds
-  const xMin = Math.min(...xValues);
-  const xMax = Math.max(...xValues);
-  const yMin = Math.min(...yValues);
-  const yMax = Math.max(...yValues);
+  // Calculate data bounds from ALL data (not just filtered data)
+  const xMin = Math.min(...(allXData as number[]));
+  const xMax = Math.max(...(allXData as number[]));
+  const yMin = Math.min(...(allYData as number[]));
+  const yMax = Math.max(...(allYData as number[]));
 
-  // Create scales for BaseChart
-  const xScale = useMemo(
-    () =>
-      scaleLinear()
-        .domain([xMin, xMax])
-        .range([0, width - 80]),
-    [xMin, xMax, width]
-  ) as ScaleLinear<number, number>;
+  // Calculate buffered bounds for scales
+  const xRange = xMax - xMin;
+  const yRange = yMax - yMin;
+  const xBuffer = xRange * AXIS_BUFFER_PERCENTAGE;
+  const yBuffer = yRange * AXIS_BUFFER_PERCENTAGE;
 
-  const yScale = useMemo(
-    () =>
-      scaleLinear()
-        .domain([yMin, yMax])
-        .range([height - 50, 20]),
-    [yMin, yMax, height]
-  ) as ScaleLinear<number, number>;
+  const bufferedXMin = xMin - xBuffer;
+  const bufferedXMax = xMax + xBuffer;
+  const bufferedYMin = yMin - yBuffer;
+  const bufferedYMax = yMax + yBuffer;
+
+  // Register axis limits with the facet context if in a facet using requestAnimationFrame
+  useEffect(() => {
+    if (facetIds && allXData.length > 0) {
+      // Register x-axis limits
+      registerAxisLimits(settings.id, "x", {
+        type: "numerical",
+        min: xMin,
+        max: xMax,
+      });
+
+      // Register y-axis limits
+      registerAxisLimits(settings.id, "y", {
+        type: "numerical",
+        min: yMin,
+        max: yMax,
+      });
+    }
+  }, [
+    settings.id,
+    facetIds,
+    allXData,
+    allYData,
+    xMin,
+    xMax,
+    yMin,
+    yMax,
+    registerAxisLimits,
+  ]);
+
+  // Get global axis limits if in a facet
+  const globalXLimits = facetIds ? getGlobalAxisLimits("x") : null;
+  const globalYLimits = facetIds ? getGlobalAxisLimits("y") : null;
+
+  // Create scales for BaseChart with synchronized limits if in a facet
+  const xScale = useMemo(() => {
+    if (globalXLimits && globalXLimits.type === "numerical" && facetIds) {
+      // Apply buffer to global limits
+      const globalRange = globalXLimits.max - globalXLimits.min;
+      const globalBuffer = globalRange * AXIS_BUFFER_PERCENTAGE;
+
+      return scaleLinear()
+        .domain([
+          globalXLimits.min - globalBuffer,
+          globalXLimits.max + globalBuffer,
+        ])
+        .range([0, width - 80]);
+    }
+
+    return scaleLinear()
+      .domain([bufferedXMin, bufferedXMax])
+      .range([0, width - 80]);
+  }, [
+    bufferedXMin,
+    bufferedXMax,
+    width,
+    globalXLimits,
+    facetIds,
+  ]) as ScaleLinear<number, number>;
+
+  const yScale = useMemo(() => {
+    if (globalYLimits && globalYLimits.type === "numerical" && facetIds) {
+      // Apply buffer to global limits
+      const globalRange = globalYLimits.max - globalYLimits.min;
+      const globalBuffer = globalRange * AXIS_BUFFER_PERCENTAGE;
+
+      return scaleLinear()
+        .domain([
+          globalYLimits.min - globalBuffer,
+          globalYLimits.max + globalBuffer,
+        ])
+        .range([height - 50, 20]);
+    }
+
+    return scaleLinear()
+      .domain([bufferedYMin, bufferedYMax])
+      .range([height - 50, 20]);
+  }, [
+    bufferedYMin,
+    bufferedYMax,
+    height,
+    globalYLimits,
+    facetIds,
+  ]) as ScaleLinear<number, number>;
 
   useEffect(() => {
     const canvas = canvasRef.current;

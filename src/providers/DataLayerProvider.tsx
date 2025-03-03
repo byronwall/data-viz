@@ -20,10 +20,11 @@ export type { DatumObject };
 // Props and State interfaces
 interface DataLayerProps<T extends DatumObject> {
   data?: T[];
+  charts?: ChartSettings[];
 }
 
 // Add ID to the data type
-type IdType = number;
+export type IdType = number;
 export type HasId = { __ID: IdType };
 
 interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
@@ -53,7 +54,7 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
 
   crossfilterWrapper: CrossfilterWrapper<T & HasId>;
   nonce: number;
-  getLiveItems: (chart: ChartSettings) => LiveItem;
+  getLiveItems: (chart: ChartSettings) => LiveItem | undefined;
 
   // data and key functions
   getColumnData: (field: string | undefined) => Record<IdType, datum>;
@@ -88,7 +89,8 @@ type DataLayerStore<T extends DatumObject> = ReturnType<
 
 function getDataAndCrossfilterWrapper<T extends DatumObject>(
   data: T[],
-  fieldGetter?: (name: string) => Record<IdType, datum>
+  fieldGetter?: (name: string) => Record<IdType, datum>,
+  charts?: ChartSettings[]
 ): Partial<DataLayerState<T>> {
   const dataWithIds = data.map((row, index) => ({
     ...row,
@@ -103,6 +105,12 @@ function getDataAndCrossfilterWrapper<T extends DatumObject>(
     newCrossFilter.setFieldGetter(fieldGetter);
   }
 
+  if (charts) {
+    charts.forEach((chart) => {
+      newCrossFilter.addChart(chart);
+    });
+  }
+
   return {
     data: dataWithIds,
     emptyColumn: data.reduce((acc, row) => {
@@ -110,7 +118,7 @@ function getDataAndCrossfilterWrapper<T extends DatumObject>(
       return acc;
     }, {} as Record<IdType, datum>),
     crossfilterWrapper: newCrossFilter,
-    charts: [],
+    charts: charts ?? [],
     colorScales: [],
     calculationManager: new CalculationManager<T>(dataWithIds),
     calculations: [],
@@ -125,7 +133,11 @@ const createDataLayerStore = <T extends DatumObject>(
     data: initData,
     crossfilterWrapper,
     calculationManager: ogCalculationManager,
-  } = getDataAndCrossfilterWrapper(initProps?.data ?? []);
+  } = getDataAndCrossfilterWrapper(
+    initProps?.data ?? [],
+    undefined,
+    initProps?.charts ?? []
+  );
 
   if (!crossfilterWrapper || !initData || !ogCalculationManager) {
     throw new Error(
@@ -170,7 +182,7 @@ const createDataLayerStore = <T extends DatumObject>(
     liveItems: {},
 
     // Chart management
-    charts: [],
+    charts: initProps?.charts ?? [],
     addChart: (chartSettings) => {
       const { crossfilterWrapper } = get();
       const newChart = {
@@ -281,7 +293,7 @@ const createDataLayerStore = <T extends DatumObject>(
     getLiveItems: (chart) => {
       const { liveItems } = get();
 
-      const liveItemsForChart = liveItems[chart.id];
+      const liveItemsForChart = liveItems[chart.id] ?? undefined;
 
       return liveItemsForChart;
     },
@@ -334,10 +346,13 @@ const createDataLayerStore = <T extends DatumObject>(
         });
 
         // update the column cache
-        set((state) => {
-          const newCalcColumnCache = { ...state.calcColumnCache };
-          newCalcColumnCache[field] = columnData;
-          return { calcColumnCache: newCalcColumnCache };
+        // doing the RAF since this is called in the render loop
+        requestAnimationFrame(() => {
+          set((state) => {
+            const newCalcColumnCache = { ...state.calcColumnCache };
+            newCalcColumnCache[field] = columnData;
+            return { calcColumnCache: newCalcColumnCache };
+          });
         });
 
         return columnData;
@@ -355,10 +370,13 @@ const createDataLayerStore = <T extends DatumObject>(
         columnData[row.__ID] = row[field];
       });
 
-      set((state) => {
-        const newColumnCache = { ...state.columnCache };
-        newColumnCache[field] = columnData;
-        return { columnCache: newColumnCache };
+      // doing the RAF since this is called in the render loop
+      requestAnimationFrame(() => {
+        set((state) => {
+          const newColumnCache = { ...state.columnCache };
+          newColumnCache[field] = columnData;
+          return { columnCache: newColumnCache };
+        });
       });
 
       return columnData;

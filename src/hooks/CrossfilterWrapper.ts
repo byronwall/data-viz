@@ -5,33 +5,32 @@ import { rowChartPureFilter } from "./rowChartPureFilter";
 import { getFilterObj } from "./getFilterValues";
 import { barChartPureFilter } from "./barChartPureFilter";
 import { scatterChartPureFilter } from "./scatterChartPureFilter";
-
-type IdField = number | string;
+import { IdType } from "@/providers/DataLayerProvider";
 
 interface FilterConfig {
   field: string;
   values: Set<string | number>;
 }
 
-type ChartDimension<TData, TId extends IdField> = {
+type ChartDimension<TData, TId extends IdType> = {
   dimension: crossfilter.Dimension<TData, TId>;
   chart: ChartSettings;
 };
 
 export class CrossfilterWrapper<T> {
   ref: crossfilter.Crossfilter<T>;
-  charts: Map<string, ChartDimension<T, IdField>> = new Map();
-  idFunction: (item: T) => IdField;
+  charts: Map<string, ChartDimension<T, IdType>> = new Map();
+  idFunction: (item: T) => IdType;
 
   // assume this gets set after creation
-  fieldGetter: (name: string) => Record<IdField, datum> = () => ({});
+  fieldGetter: (name: string) => Record<IdType, datum> = () => ({});
 
-  constructor(data: T[], idFunction: (item: T) => IdField) {
+  constructor(data: T[], idFunction: (item: T) => IdType) {
     this.ref = crossfilter(data);
     this.idFunction = idFunction;
   }
 
-  setFieldGetter(fieldGetter: (name: string) => Record<IdField, datum>) {
+  setFieldGetter(fieldGetter: (name: string) => Record<IdType, datum>) {
     this.fieldGetter = fieldGetter;
   }
 
@@ -85,7 +84,7 @@ export class CrossfilterWrapper<T> {
     // need to create a dimension for the chart
     const dimension = this.ref.dimension(this.idFunction);
 
-    const chartDimension: ChartDimension<T, IdField> = {
+    const chartDimension: ChartDimension<T, IdType> = {
       dimension,
       chart,
     };
@@ -116,25 +115,25 @@ export class CrossfilterWrapper<T> {
     this.charts.clear();
   }
 
-  getFilterFunction(chart: ChartSettings): (d: IdField) => boolean {
+  getFilterFunction(chart: ChartSettings): (d: IdType) => boolean {
     switch (chart.type) {
       case "row": {
         const dataHash = this.fieldGetter(chart.field);
         const filters = chart.filterValues?.values;
 
-        return (d: IdField) => rowChartPureFilter(filters, dataHash[d]);
+        return (d: IdType) => rowChartPureFilter(filters, dataHash[d]);
       }
       case "bar": {
         const dataHash = this.fieldGetter(chart.field);
         const filters = getFilterObj(chart);
 
-        return (d: IdField) => barChartPureFilter(filters, dataHash[d]);
+        return (d: IdType) => barChartPureFilter(filters, dataHash[d]);
       }
       case "scatter": {
         const xDataHash = this.fieldGetter(chart.xField);
         const yDataHash = this.fieldGetter(chart.yField);
 
-        return (d: IdField) =>
+        return (d: IdType) =>
           scatterChartPureFilter(
             chart.xFilterRange,
             chart.yFilterRange,
@@ -173,7 +172,7 @@ export class CrossfilterWrapper<T> {
           return this.fieldGetter(f.field);
         });
 
-        return (d: IdField) => {
+        return (d: IdType) => {
           if (noMatchingFilters) {
             return true;
           }
@@ -215,7 +214,7 @@ export class CrossfilterWrapper<T> {
 
     for (const chart of this.charts.values()) {
       data[chart.chart.id] = {
-        items: chart.dimension.group<IdField, number>().all(),
+        items: chart.dimension.group<IdType, number>().all(),
         nonce: commonNonce,
       };
     }
@@ -225,7 +224,7 @@ export class CrossfilterWrapper<T> {
 }
 
 export type LiveItem = {
-  items: readonly crossfilter.Grouping<IdField, number>[];
+  items: readonly crossfilter.Grouping<IdType, number>[];
   nonce: number;
 };
 

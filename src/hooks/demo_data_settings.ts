@@ -1,5 +1,4 @@
-import crossfilter from "crossfilter2";
-import { cloneDeep } from "./cloneDeep";
+import { ChartSettings } from "@/types/ChartTypes";
 
 export const demoData = [
   {
@@ -424,46 +423,155 @@ export const demoData = [
   },
 ];
 
-export function useDemoCrossfilter() {
-  const ref = crossfilter(demoData);
-
-  const dim1 = ref.dimension((d) => d.ID);
-  const dim2 = ref.dimension((d) => d.ID);
-
-  const dataHash = demoData.reduce((acc, d) => {
-    acc[d.ID] = d;
-    return acc;
-  }, {} as Record<number, (typeof demoData)[number]>);
-
-  const group1 = dim1.group().reduceCount();
-  const group2 = dim2.group().reduceCount();
-
-  // get counts as they sit
-  const counts1 = group1.all();
-  const counts2 = group2.all();
-
-  console.log("all categories", cloneDeep(demoData.map((d) => d.Category)));
-
-  console.log("counts1", cloneDeep(counts1));
-  console.log("counts2", cloneDeep(counts2));
-
-  // apply filtering
-  dim1.filterFunction((c) => dataHash[c].Category === "Electronics");
-
-  console.log("counts1After_post_filter", cloneDeep(group1.all()));
-  console.log("counts2After_post_filter", cloneDeep(group2.all()));
-
-  dim2.filterFunction((c) => dataHash[c].Category === "Sports");
-
-  // get counts after filtering
-
-  console.log("counts1After", cloneDeep(group1.all()));
-  console.log("counts2After", cloneDeep(group2.all()));
-
-  return {
-    ref,
-    dim1,
-    dim2,
-    dataHash,
-  };
-}
+export const demoSettings: ChartSettings[] = [
+  {
+    id: "cffc1655-4e70-4564-aec0-91aaa6b247d5",
+    type: "row",
+    title: "Row Chart - Category",
+    field: "Category",
+    layout: {
+      x: 0,
+      y: 0,
+      w: 8,
+      h: 4,
+    },
+    colorScaleId: "c719f887-fbb8-477e-b132-903189fc2cda",
+    minRowHeight: 10,
+    maxRowHeight: 100,
+    filterValues: {
+      values: [],
+    },
+    facet: {
+      enabled: true,
+      type: "wrap",
+      rowVariable: "Size",
+      columnCount: 2,
+    },
+  },
+  {
+    id: "9f11ed89-bd1a-436b-949f-b0f213a95c14",
+    type: "row",
+    title: "Row Chart - Category",
+    field: "Category",
+    layout: {
+      x: 8,
+      y: 0,
+      w: 4,
+      h: 4,
+    },
+    minRowHeight: 10,
+    maxRowHeight: 100,
+    filterValues: {
+      values: [],
+    },
+  },
+  {
+    type: "row",
+    title: "Row Chart - Category",
+    field: "Category",
+    layout: {
+      x: 0,
+      y: 18,
+      w: 12,
+      h: 4,
+    },
+    colorScaleId: "c719f887-fbb8-477e-b132-903189fc2cda",
+    minRowHeight: 10,
+    maxRowHeight: 100,
+    filterValues: {
+      values: [],
+    },
+    facet: {
+      enabled: true,
+      type: "grid",
+      rowVariable: "Size",
+      columnVariable: "In Stock",
+    },
+    id: "a1d00ac6-5255-476b-a0a9-93ed78bd152e",
+  },
+  {
+    id: "0f14fcfa-f7ed-477c-9ed1-f01ad217b2c4",
+    type: "scatter",
+    title: "Scatter Plot - ID vs __ID",
+    field: "ID",
+    xField: "ID",
+    yField: "Rating",
+    layout: {
+      x: 0,
+      y: 8,
+      w: 12,
+      h: 7,
+    },
+    colorScaleId: "55a5565e-292b-4ad3-b24b-12055c13b2c0",
+    xFilterRange: null,
+    yFilterRange: null,
+    facet: {
+      enabled: true,
+      type: "wrap",
+      rowVariable: "Color",
+      columnCount: 4,
+    },
+  },
+  {
+    type: "scatter",
+    title: "Scatter Plot - ID vs __ID",
+    field: "ID",
+    xField: "ID",
+    yField: "Rating",
+    layout: {
+      x: 0,
+      y: 15,
+      w: 8,
+      h: 3,
+    },
+    colorScaleId: "55a5565e-292b-4ad3-b24b-12055c13b2c0",
+    xFilterRange: null,
+    yFilterRange: null,
+    facet: {
+      enabled: false,
+      type: "wrap",
+      rowVariable: "Color",
+      columnCount: 4,
+    },
+    id: "0ef4c4ee-6a4d-48ec-9641-402f94b11e6b",
+  },
+  {
+    id: "c2328c28-8c82-41bc-9174-92525abf77f8",
+    type: "bar",
+    title: "Bar Chart - Rating",
+    field: "Rating",
+    layout: {
+      x: 5,
+      y: 4,
+      w: 7,
+      h: 4,
+    },
+    colorScaleId: "8dff36f8-b964-4ad0-a005-e669c25647e8",
+    filterValues: {
+      values: [],
+    },
+    filterRange: null,
+    facet: {
+      enabled: true,
+      type: "wrap",
+      rowVariable: "In Stock",
+      columnCount: 2,
+    },
+  },
+  {
+    id: "e2b6237d-a558-4faf-8430-774d91744e9f",
+    type: "bar",
+    title: "Bar Chart - Rating",
+    field: "Rating",
+    layout: {
+      x: 0,
+      y: 4,
+      w: 5,
+      h: 4,
+    },
+    filterValues: {
+      values: [],
+    },
+    filterRange: null,
+  },
+];

@@ -23,6 +23,43 @@ function getRandomColor() {
 }
 
 /**
+ * Deep equality check for objects and arrays
+ */
+function isEqual(a: any, b: any): boolean {
+  if (a === b) {
+    return true;
+  }
+
+  if (
+    a === null ||
+    b === null ||
+    typeof a !== "object" ||
+    typeof b !== "object"
+  ) {
+    return false;
+  }
+
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+
+  for (const key of keysA) {
+    if (!keysB.includes(key)) {
+      return false;
+    }
+
+    if (!isEqual(a[key], b[key])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  *
  * Check whether the dependency item is an object. then
  */
@@ -157,19 +194,30 @@ function useWhatChanged(
     let changed = false;
     const whatChanged = dependency
       ? dependency.reduce((acc, dep, index) => {
-          if (dependencyRef.current && dep !== dependencyRef.current[index]) {
-            const oldValue = dependencyRef.current[index];
+          if (!dependencyRef.current) {
+            return acc;
+          }
+
+          const oldValue = dependencyRef.current[index];
+          const strictEqual = dep === oldValue;
+          const deepEqual = isEqual(dep, oldValue);
+
+          if (!strictEqual) {
             dependencyRef.current[index] = dep;
             if (dependencyNames && stringSplitted) {
               changed = true;
               acc[`"✅" ${stringSplitted[index]}`] = {
                 "Old Value": getPrintableInfo(oldValue),
                 "New Value": getPrintableInfo(dep),
+                "=== Equal": strictEqual ? "✓" : "❌",
+                isEqual: deepEqual ? "✓" : "❌",
               };
             } else {
               acc[`"✅" ${index}`] = {
                 "Old Value": getPrintableInfo(oldValue),
                 "New Value": getPrintableInfo(dep),
+                "=== Equal": strictEqual ? "✓" : "❌",
+                isEqual: deepEqual ? "✓" : "❌",
               };
             }
 
@@ -179,11 +227,15 @@ function useWhatChanged(
             acc[`"⏺" ${stringSplitted[index]}`] = {
               "Old Value": getPrintableInfo(dep),
               "New Value": getPrintableInfo(dep),
+              "=== Equal": strictEqual ? "✓" : "❌",
+              isEqual: deepEqual ? "✓" : "❌",
             };
           } else {
             acc[`"⏺" ${index}`] = {
               "Old Value": getPrintableInfo(dep),
               "New Value": getPrintableInfo(dep),
+              "=== Equal": strictEqual ? "✓" : "❌",
+              isEqual: deepEqual ? "✓" : "❌",
             };
           }
 

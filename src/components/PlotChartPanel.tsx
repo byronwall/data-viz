@@ -1,9 +1,9 @@
 import { useDataLayer } from "@/providers/DataLayerProvider";
+import { FacetAxisProvider } from "@/providers/FacetAxisProvider";
 import { ChartSettings } from "@/types/ChartTypes";
 import { Copy, FilterX, GripVertical, Settings2, X } from "lucide-react";
-import { BarChart } from "./charts/BarChart";
-import { RowChart } from "./charts/RowChart";
-import { ScatterPlot } from "./charts/ScatterPlot";
+import { ChartRenderer } from "./charts/ChartRenderer";
+import { FacetContainer } from "./charts/FacetContainer";
 import { ChartSettingsContent } from "./ChartSettingsContent";
 import {
   AlertDialog,
@@ -18,7 +18,6 @@ import {
 } from "./ui/alert-dialog";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { PivotTable } from "./charts/PivotTable/PivotTable";
 
 interface PlotChartPanelProps {
   settings: ChartSettings;
@@ -39,46 +38,9 @@ export function PlotChartPanel({
 }: PlotChartPanelProps) {
   const clearFilter = useDataLayer((state) => state.clearFilter);
 
-  const renderChart = () => {
-    switch (settings.type) {
-      case "row":
-        return (
-          <RowChart
-            settings={settings}
-            width={width - 32}
-            height={height - 32}
-          />
-        );
-      case "bar":
-        return (
-          <BarChart
-            settings={settings}
-            width={width - 32}
-            height={height - 32}
-          />
-        );
-      case "scatter":
-        return (
-          <ScatterPlot
-            settings={settings}
-            width={width - 32}
-            height={height - 32}
-          />
-        );
-      case "pivot":
-        return (
-          <PivotTable
-            settings={settings}
-            width={width - 32}
-            height={height - 32}
-          />
-        );
-    }
-  };
-
   return (
     <div
-      className="bg-card border rounded-lg "
+      className="bg-card border rounded-lg"
       style={{ width: width, height: height }}
     >
       <div
@@ -106,7 +68,7 @@ export function PlotChartPanel({
                 <Settings2 className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80">
+            <PopoverContent className="w-80" side="right">
               <ChartSettingsContent
                 settings={settings}
                 availableFields={availableFields}
@@ -137,7 +99,24 @@ export function PlotChartPanel({
           </AlertDialog>
         </div>
       </div>
-      <div>{renderChart()}</div>
+      <div>
+        <FacetAxisProvider>
+          {settings.facet?.enabled ? (
+            <FacetContainer
+              settings={settings}
+              width={width - 32}
+              height={height - 56}
+            />
+          ) : (
+            <ChartRenderer
+              settings={settings}
+              width={width - 32}
+              height={height - 56}
+              facetIds={undefined}
+            />
+          )}
+        </FacetAxisProvider>
+      </div>
     </div>
   );
 }

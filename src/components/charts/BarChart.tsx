@@ -125,8 +125,6 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
   const globalXLimits = facetIds ? getGlobalAxisLimits("x") : null;
   const globalYLimits = facetIds ? getGlobalAxisLimits("y") : null;
 
-  console.log("globalYLimits", globalYLimits);
-
   // Create scales with synchronized limits if in a facet
   const xScale = useCustomCompareMemo(
     () => {
@@ -166,12 +164,6 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
       globalYLimits?.type === "numerical" ? globalYLimits.max : paddedMax;
 
     const limitToUse = Math.max(globalMax, paddedMax);
-
-    console.log("limitToUse", {
-      globalMax,
-      paddedMax,
-      limitToUse,
-    });
 
     return scaleLinear().domain([0, limitToUse]).range([innerHeight, 0]);
   }, [chartData, innerHeight, globalYLimits]);
@@ -320,13 +312,19 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
                   )
                 : "hsl(217.2 91.2% 59.8%)";
 
+            const barHeight = innerHeight - yScale(d.value);
+
+            if (barWidth < 1 || barHeight < 1) {
+              return null;
+            }
+
             return (
               <rect
                 key={i}
                 x={x}
                 y={yScale(d.value)}
                 width={barWidth}
-                height={innerHeight - yScale(d.value)}
+                height={barHeight}
                 className={isBandScale ? "cursor-pointer" : ""}
                 style={{ fill: color }}
                 onClick={() =>

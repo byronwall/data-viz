@@ -64,6 +64,10 @@ export function BaseChart({
     defaultExtent: extent,
   });
 
+  if (width < 1 || height < 1) {
+    return null;
+  }
+
   return (
     <svg
       ref={svgRef}

@@ -156,13 +156,20 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
                 ? getColorForValue(settings.colorScaleId, String(label))
                 : "hsl(217.2 91.2% 59.8%)";
 
+            const barWidth = xScale(count);
+            const barHeight = yScale.bandwidth();
+
+            if (barWidth < 1 || barHeight < 1) {
+              return null;
+            }
+
             return (
               <rect
                 key={String(label)}
                 x={0}
                 y={yScale(String(label))}
-                width={xScale(count)}
-                height={yScale.bandwidth()}
+                width={barWidth}
+                height={barHeight}
                 className={`${
                   label === "Others"
                     ? "fill-muted/80 hover:fill-muted"

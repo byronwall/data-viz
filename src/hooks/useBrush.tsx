@@ -550,6 +550,11 @@ export function useBrush({
     }
 
     const { x, y, width, height, state } = brushProps;
+
+    if (width < 1 || height < 1) {
+      return null;
+    }
+
     return (
       <>
         <rect
@@ -638,7 +643,7 @@ export function useBrush({
         )}
       </>
     );
-  }, [brushProps, mode]);
+  }, [brushProps, brushState.state, mode]);
 
   return {
     brushState,

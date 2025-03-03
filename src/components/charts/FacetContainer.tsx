@@ -3,7 +3,7 @@ import { ChartSettings } from "@/types/ChartTypes";
 import { useMemo } from "react";
 import { FacetGridLayout } from "./FacetGridLayout";
 import { FacetWrapLayout } from "./FacetWrapLayout";
-import { useGetLiveIds } from "./useGetLiveData";
+import { useGetAllIds, useGetLiveIds } from "./useGetLiveData";
 
 interface FacetContainerProps {
   settings: ChartSettings;
@@ -24,7 +24,7 @@ export function FacetContainer({
   height,
 }: FacetContainerProps) {
   const getColumnData = useDataLayer((state) => state.getColumnData);
-  const liveIds = useGetLiveIds(settings);
+  const allIds = useGetAllIds();
 
   const facetData = useMemo(() => {
     if (!settings.facet?.enabled) {
@@ -45,7 +45,7 @@ export function FacetContainer({
     // Group data by facet variables
     const facets: Record<string, IdType[]> = {};
 
-    liveIds.forEach((id) => {
+    allIds.forEach((id) => {
       const rowValue = rowData[id] ?? "undefined";
       const colValue = columnData
         ? columnData[id as IdType] ?? "undefined"
@@ -79,7 +79,7 @@ export function FacetContainer({
         ids,
       };
     }) as FacetData[];
-  }, [settings.facet, getColumnData, liveIds]);
+  }, [settings.facet, getColumnData, allIds]);
 
   if (!settings.facet?.enabled) {
     return null;

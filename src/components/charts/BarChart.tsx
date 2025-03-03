@@ -12,6 +12,7 @@ import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
 import { useGetColumnDataForIds } from "./useGetColumnData";
 
+const X_SCALE_PADDING = 0.05; // 5% padding on each side
 const Y_SCALE_PADDING = 0.1; // 10% padding for top of bars
 
 type NumericBin = {
@@ -34,9 +35,10 @@ type BarChartProps = BaseChartProps & {
 
 export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
   // Get all data for axis limits calculation (not filtered by current selections)
-  const allColData = useGetColumnDataForIds(settings.field, facetIds);
+  const allColData = useGetColumnDataForIds(settings.field);
   // Get filtered data for rendering
   const liveColData = useGetLiveData(settings, undefined, facetIds);
+
   const updateChart = useDataLayer((s) => s.updateChart);
   const { getColorForValue } = useColorScales();
 
@@ -130,23 +132,30 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
     () => {
       if (min !== undefined && max !== undefined) {
         // Numerical x-axis
-        if (globalXLimits && globalXLimits.type === "numerical") {
-          return scaleLinear()
-            .domain([globalXLimits.min, globalXLimits.max])
-            .range([0, innerWidth]);
-        }
-        return scaleLinear().domain([min, max]).range([0, innerWidth]);
+        const globalMin =
+          globalXLimits?.type === "numerical" ? globalXLimits.min : min;
+        const globalMax =
+          globalXLimits?.type === "numerical" ? globalXLimits.max : max;
+
+        // Only pad if using local limits
+        const range = max - min;
+        const padding = range * X_SCALE_PADDING;
+        const minToUse = globalXLimits ? globalMin : min - padding;
+        const maxToUse = globalXLimits ? globalMax : max + padding;
+
+        return scaleLinear()
+          .domain([minToUse, maxToUse])
+          .range([0, innerWidth]);
       } else {
-        // Categorical x-axis
-        if (globalXLimits && globalXLimits.type === "categorical") {
-          const allCategories = Array.from(globalXLimits.categories);
-          return scaleBand()
-            .domain(allCategories)
-            .range([0, innerWidth])
-            .padding(0.3);
-        }
+        const globalCategories =
+          globalXLimits?.type === "categorical"
+            ? globalXLimits.categories
+            : uniqueValues;
+
+        const allCategories = Array.from(globalCategories);
+
         return scaleBand()
-          .domain(uniqueValues)
+          .domain(allCategories)
           .range([0, innerWidth])
           .padding(0.3);
       }

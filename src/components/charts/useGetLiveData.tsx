@@ -18,8 +18,14 @@ export function useGetLiveData(
       return [];
     }
 
-    const liveIds =
-      facetIds || liveItems.items.filter((c) => c.value > 0).map((d) => d.key);
+    const facetIdSet = new Set(facetIds);
+
+    const liveIds = liveItems.items
+      .filter((c) => c.value > 0)
+      .filter((c) =>
+        facetIds && facetIds.length > 0 ? facetIdSet.has(c.key) : true
+      )
+      .map((d) => d.key);
 
     let _data: Record<string, datum> = {};
 
@@ -60,4 +66,15 @@ export function useGetLiveIds(settings: ChartSettings) {
     // need the nonce to trigger a re-render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nonce, liveItems?.items]);
+}
+
+export function useGetAllIds() {
+  const getColumnData = useDataLayer((s) => s.getColumnData);
+
+  const allIds = useMemo(() => {
+    const data = getColumnData("__ID") as Record<IdType, datum>;
+    return Object.values(data) as IdType[];
+  }, [getColumnData]);
+
+  return allIds;
 }

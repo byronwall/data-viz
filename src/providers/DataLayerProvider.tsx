@@ -27,6 +27,7 @@ export type { DatumObject };
 interface DataLayerProps<T extends DatumObject> {
   data?: T[];
   charts?: ChartSettings[];
+  savedData?: SavedDataStructure;
 }
 
 // Add ID to the data type
@@ -656,6 +657,10 @@ export function DataLayerProvider<T extends DatumObject>({
   const storeRef = useRef<DataLayerStore<T> | null>(null);
   if (!storeRef.current) {
     storeRef.current = createDataLayerStore<T>(props);
+    // Initialize with saved data if provided
+    if (props.savedData) {
+      storeRef.current.getState().restoreFromStructure(props.savedData);
+    }
   }
   return (
     <DataLayerContext.Provider value={storeRef.current}>

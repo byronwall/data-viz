@@ -4,7 +4,7 @@ import { DataLayerProvider } from "./providers/DataLayerProvider";
 
 function App() {
   return (
-    <DataLayerProvider data={demoData} charts={demoSettings}>
+    <DataLayerProvider data={demoData} savedData={demoSettings}>
       <AppContent />
     </DataLayerProvider>
   );

@@ -1,22 +1,27 @@
+import { useColorScales } from "@/hooks/useColorScales";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 import {
   ChartSettings,
-  CHART_TYPES,
-  PivotTableSettings,
   FacetSettings,
   GridFacetSettings,
+  PivotTableSettings,
   WrapFacetSettings,
 } from "@/types/ChartTypes";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
+import { mergeWithDefaultSettings } from "@/utils/defaultSettings";
+import { useEffect, useState } from "react";
 import { ComboBox } from "./ComboBox";
-import { Button } from "./ui/button";
-import { Switch } from "./ui/switch";
-import { useState, useEffect } from "react";
 import { FieldSelector } from "./FieldSelector";
-import { useDataLayer } from "@/providers/DataLayerProvider";
-import { useColorScales } from "@/hooks/useColorScales";
-import { ColorScaleType } from "@/types/ColorScaleTypes";
+import { AdvancedSettingsTab } from "./settings/AdvancedSettingsTab";
+import { AxisSettingsTab } from "./settings/AxisSettingsTab";
+import { FacetSettingsTab } from "./settings/FacetSettingsTab";
+import { LabelsSettingsTab } from "./settings/LabelsSettingsTab";
+import { MainSettingsTab } from "./settings/MainSettingsTab";
+import { TabContainer } from "./settings/TabContainer";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import MultiSelect, { Option } from "./ui/multi-select";
+import { Switch } from "./ui/switch";
 
 interface ChartSettingsContentProps {
   settings: ChartSettings;
@@ -40,19 +45,31 @@ export function ChartSettingsContent({
   availableFields,
 }: ChartSettingsContentProps) {
   // Local state for settings
-  const [localSettings, setLocalSettings] = useState<ChartSettings>(settings);
+  const [localSettings, setLocalSettings] = useState<ChartSettings>(
+    mergeWithDefaultSettings(settings)
+  );
 
   const updateChart = useDataLayer((s) => s.updateChart);
   const { getOrCreateScaleForField, colorScales } = useColorScales();
 
   // Update local settings when prop changes
   useEffect(() => {
-    setLocalSettings(settings);
+    setLocalSettings(mergeWithDefaultSettings(settings));
   }, [settings]);
+
+  const handleSettingChange = (key: string, value: any) => {
+    setLocalSettings((prev) => {
+      const newSettings = {
+        ...prev,
+        [key]: value,
+      };
+      return mergeWithDefaultSettings(newSettings);
+    });
+  };
 
   const handleUpdate = () => {
     // Ensure we have a color scale for the field
-    if (!localSettings.colorScaleId) {
+    if (localSettings.field && !localSettings.colorScaleId) {
       const colorScaleId = getOrCreateScaleForField(localSettings.field);
       localSettings.colorScaleId = colorScaleId;
     }
@@ -134,7 +151,7 @@ export function ChartSettingsContent({
                     valueFields: newValueFields,
                   } as PivotTableSettings);
                 }}
-                optionToLabel={(option) => option.label}
+                optionToString={(option) => option.label}
               />
               <ComboBox<AggregationOption>
                 options={aggregationOptions}
@@ -152,7 +169,7 @@ export function ChartSettingsContent({
                     valueFields: newValueFields,
                   } as PivotTableSettings);
                 }}
-                optionToLabel={(option) => option.label}
+                optionToString={(option) => option.label}
               />
               <Button
                 variant="ghost"
@@ -259,7 +276,7 @@ export function ChartSettingsContent({
                     });
                   }
                 }}
-                optionToLabel={(option) => option.label}
+                optionToString={(option) => option.label}
                 placeholder="Select facet type"
               />
             </div>
@@ -332,167 +349,53 @@ export function ChartSettingsContent({
     );
   };
 
+  const tabs = [
+    { value: "main", label: "Main" },
+    { value: "facet", label: "Facet" },
+    { value: "axis", label: "Axis" },
+    { value: "labels", label: "Labels" },
+    { value: "advanced", label: "Advanced" },
+  ];
+
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="title">Chart Title</Label>
-        <Input
-          id="title"
-          value={localSettings.title || ""}
-          onChange={(e) =>
-            setLocalSettings({ ...localSettings, title: e.target.value })
-          }
-          placeholder="Enter chart title"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="chartType">Chart Type</Label>
-        <ComboBox
-          value={localSettings.type}
-          options={CHART_TYPES.map((type) => type.value)}
-          onChange={(option) =>
-            setLocalSettings({
-              ...localSettings,
-              type: option as ChartSettings["type"] as any,
-            })
-          }
-          placeholder="Select chart type"
-        />
-      </div>
-
-      {hasDataField && (
-        <>
-          <FieldSelector
-            label="Data Field"
-            value={localSettings.field}
-            availableFields={availableFields}
-            onChange={(value) => {
-              setLocalSettings({
-                ...localSettings,
-                field: value,
-              });
-            }}
-          />
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="colorField"
-              checked={localSettings.field === localSettings.colorField}
-              onCheckedChange={(checked) =>
-                setLocalSettings({
-                  ...localSettings,
-                  colorField: checked ? localSettings.field : undefined,
-                  colorScaleId: checked
-                    ? getOrCreateScaleForField(localSettings.field)
-                    : undefined,
-                })
-              }
+    <div className="space-y-4 max-h-[90vh] overflow-y-auto">
+      <TabContainer tabs={tabs}>
+        {{
+          main: (
+            <MainSettingsTab
+              settings={localSettings}
+              availableFields={availableFields}
+              onSettingChange={handleSettingChange}
             />
-            <Label htmlFor="colorField">Use as color field</Label>
-          </div>
-        </>
-      )}
-
-      {localSettings.type === "row" && (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="minRowHeight">Minimum Row Height (px)</Label>
-            <Input
-              id="minRowHeight"
-              type="number"
-              min={20}
-              max={100}
-              value={(localSettings as any).minRowHeight || 30}
-              onChange={(e) =>
-                setLocalSettings({
-                  ...localSettings,
-                  minRowHeight: Math.max(20, parseInt(e.target.value) || 30),
-                })
-              }
+          ),
+          facet: (
+            <FacetSettingsTab
+              settings={localSettings}
+              availableFields={availableFields}
+              onSettingChange={handleSettingChange}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="maxRowHeight">Maximum Row Height (px)</Label>
-            <Input
-              id="maxRowHeight"
-              type="number"
-              min={30}
-              max={200}
-              value={(localSettings as any).maxRowHeight || 50}
-              onChange={(e) =>
-                setLocalSettings({
-                  ...localSettings,
-                  maxRowHeight: Math.max(30, parseInt(e.target.value) || 50),
-                })
-              }
+          ),
+          axis: (
+            <AxisSettingsTab
+              settings={localSettings}
+              onSettingChange={handleSettingChange}
             />
-          </div>
-        </>
-      )}
+          ),
+          labels: (
+            <LabelsSettingsTab
+              settings={localSettings}
+              onSettingChange={handleSettingChange}
+            />
+          ),
 
-      {localSettings.type === "scatter" && (
-        <>
-          <FieldSelector
-            label="X Axis Field"
-            value={localSettings.xField}
-            availableFields={availableFields}
-            onChange={(value) =>
-              setLocalSettings({
-                ...localSettings,
-                xField: value,
-              })
-            }
-          />
-          <FieldSelector
-            label="Y Axis Field"
-            value={localSettings.yField || ""}
-            availableFields={availableFields}
-            onChange={(value) =>
-              setLocalSettings({
-                ...localSettings,
-                yField: value,
-              })
-            }
-          />
-          <FieldSelector
-            label="Color Field"
-            value={localSettings.colorField || ""}
-            availableFields={availableFields}
-            onChange={(value) => {
-              const colorScaleId = value
-                ? getOrCreateScaleForField(value)
-                : undefined;
-              setLocalSettings({
-                ...localSettings,
-                colorField: value,
-                colorScaleId,
-              });
-            }}
-          />
-          {localSettings.colorField && (
-            <div className="space-y-2">
-              <Label htmlFor="colorScale">Color Scale</Label>
-              <ComboBox<ColorScaleType>
-                value={colorScales.find(
-                  (s) => s.id === localSettings.colorScaleId
-                )}
-                options={colorScales}
-                onChange={(scale) =>
-                  setLocalSettings({
-                    ...localSettings,
-                    colorScaleId: scale?.id,
-                  })
-                }
-                optionToLabel={(scale) => scale.name}
-                placeholder="Select color scale"
-              />
-            </div>
-          )}
-        </>
-      )}
-
-      {renderPivotTableSettings()}
-
-      {renderFacetSettings()}
+          advanced: (
+            <AdvancedSettingsTab
+              settings={localSettings}
+              onSettingChange={handleSettingChange}
+            />
+          ),
+        }}
+      </TabContainer>
 
       <Button className="w-full" onClick={handleUpdate}>
         Update Chart

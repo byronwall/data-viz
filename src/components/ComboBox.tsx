@@ -1,7 +1,6 @@
 "use client";
 
-import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
-import * as React from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +9,6 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -18,97 +16,65 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { CommandList } from "cmdk";
 
 interface ComboBoxProps<T> {
-  options: T[];
   value: T | undefined;
+  options: T[];
   onChange: (value: T | undefined) => void;
-  optionToLabel?: (option: T) => string;
-  onCreateNew?: (searchValue: string) => void;
+  optionToString?: (option: T) => string;
+  optionToNode?: (option: T) => React.ReactNode;
   placeholder?: string;
-  searchPlaceholder?: string;
-  emptyText?: string;
-  children?: React.ReactNode;
-  allowClear?: boolean;
-  renderOption?: (option: T) => React.ReactNode;
+  className?: string;
 }
 
 export function ComboBox<T>({
-  options,
   value,
+  options,
   onChange,
-  optionToLabel = String,
-  onCreateNew,
+  optionToString = (option) => String(option),
+  optionToNode,
   placeholder = "Select option...",
-  searchPlaceholder = "Search...",
-  emptyText = "No option found.",
-  children,
-  allowClear = false,
-  renderOption,
+  className,
 }: ComboBoxProps<T>) {
-  const [open, setOpen] = React.useState(false);
-  const [search, setSearch] = React.useState("");
+  const [open, setOpen] = useState(false);
 
-  const filteredOptions = React.useMemo(() => {
-    return options.filter((option) =>
-      optionToLabel(option).toLowerCase().includes(search.toLowerCase())
-    );
-  }, [options, search, optionToLabel]);
-
-  const showCreateNew = onCreateNew;
+  const renderOption = (option: T) => {
+    if (optionToNode) {
+      return optionToNode(option);
+    }
+    return optionToString(option);
+  };
 
   return (
-    <div className="flex items-center gap-1">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          {children ?? (
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-[200px] justify-between"
-            >
-              {value
-                ? renderOption
-                  ? renderOption(value)
-                  : optionToLabel(value)
-                : placeholder}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          )}
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          <Command>
-            <CommandInput
-              placeholder={searchPlaceholder}
-              value={search}
-              onValueChange={setSearch}
-            />
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn("w-full justify-between", className)}
+        >
+          {value ? renderOption(value) : placeholder}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder={placeholder} />
+          <CommandGroup>
             <CommandList>
-              <CommandEmpty>{emptyText}</CommandEmpty>
-              <CommandGroup>
-                {showCreateNew && (
+              <CommandEmpty>No options found.</CommandEmpty>
+              {options.map((option, index) => {
+                return (
                   <CommandItem
-                    value={`Create "${search}"`}
-                    onSelect={() => {
-                      onCreateNew?.(search);
-                      setOpen(false);
-                      setSearch("");
-                    }}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create {search.length > 0 ? `"${search}"` : " new..."}
-                  </CommandItem>
-                )}
-                {filteredOptions.map((option) => (
-                  <CommandItem
-                    key={optionToLabel(option)}
-                    value={optionToLabel(option)}
+                    key={index}
                     onSelect={() => {
                       onChange(option === value ? undefined : option);
                       setOpen(false);
-                      setSearch("");
                     }}
+                    value={optionToString(option)}
                   >
                     <Check
                       className={cn(
@@ -116,27 +82,14 @@ export function ComboBox<T>({
                         value === option ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {renderOption
-                      ? renderOption(option)
-                      : optionToLabel(option)}
+                    {renderOption(option)}
                   </CommandItem>
-                ))}
-              </CommandGroup>
+                );
+              })}
             </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-      {allowClear && (
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-8 w-8 text-gray-500"
-          onClick={() => onChange(undefined)}
-          disabled={!value}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
-    </div>
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

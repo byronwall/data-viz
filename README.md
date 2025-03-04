@@ -86,3 +86,10 @@ Will be updated when done...
 - A `Region` calc that allows building a 2D mapping and creating regions of assignment
 - "Filter to calc" - convert a filter to a calc that segments the data
 - Condition formatting - allow for background regions to appear in charts if some condiiton is met?
+- Integrate the data summary info into the field chooser drop downs - show icon for field (maybe a count, etc)
+- Need to wire up the "details" view for the pivot table
+- Settings that need wired up:
+  - Label title overrides
+  - Grid lines - tick counts
+  - Axis limits
+  - Need to hide certain axis settings that cannot be easily changed

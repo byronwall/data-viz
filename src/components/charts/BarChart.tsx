@@ -312,14 +312,13 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
             const color =
               activeFilters && !isFilterEmpty && !isFiltered
                 ? "rgb(156 163 175)" // gray-400 for filtered out points
-                : settings.colorScaleId
-                ? getColorForValue(
+                : getColorForValue(
                     settings.colorScaleId,
                     isNumeric
                       ? (d as NumericBin).start
-                      : (d as CategoryBin).label
-                  )
-                : "hsl(217.2 91.2% 59.8%)";
+                      : (d as CategoryBin).label,
+                    "hsl(217.2 91.2% 59.8%)"
+                  );
 
             const barHeight = innerHeight - yScale(d.value);
 

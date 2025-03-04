@@ -1,3 +1,4 @@
+import { DEFAULT_ROW_SETTINGS } from "@/utils/defaultSettings";
 import { RowChartSettings, ChartLayout } from "./ChartTypes";
 
 export function createRowChartSettings(
@@ -5,14 +6,10 @@ export function createRowChartSettings(
   layout: ChartLayout
 ): RowChartSettings {
   return {
+    ...DEFAULT_ROW_SETTINGS,
     id: crypto.randomUUID(),
-    type: "row",
-    title: `Row Chart - ${field}`,
     field,
     layout,
-    colorScaleId: undefined,
-    minRowHeight: 10,
-    maxRowHeight: 100,
-    filterValues: { values: [] },
+    title: `Row Chart: ${field}`,
   };
 }

@@ -74,7 +74,15 @@ export function useColorScales(): UseColorScalesReturn {
   }, [colorScales]);
 
   const getColorForValue = useCallback(
-    (scaleId: string, value: string | number): string => {
+    (
+      scaleId: string | undefined,
+      value: string | number,
+      defaultColor: string = "#000000"
+    ): string => {
+      if (!scaleId) {
+        return defaultColor;
+      }
+
       const scale = colorScales.find((s) => s.id === scaleId);
       if (!scale) {
         // console.warn(`Color scale ${scaleId} not found`);

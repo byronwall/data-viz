@@ -1,3 +1,4 @@
+import { DEFAULT_BAR_SETTINGS } from "@/utils/defaultSettings";
 import { BarChartSettings, ChartLayout } from "./ChartTypes";
 
 export function createBarChartSettings(
@@ -5,13 +6,10 @@ export function createBarChartSettings(
   layout: ChartLayout
 ): BarChartSettings {
   return {
+    ...DEFAULT_BAR_SETTINGS,
     id: crypto.randomUUID(),
-    type: "bar",
     title: `Bar Chart - ${field}`,
     field,
     layout,
-    colorScaleId: undefined,
-    filterValues: { values: [] },
-    filterRange: null,
   };
 }

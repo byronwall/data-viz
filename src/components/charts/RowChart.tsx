@@ -139,6 +139,8 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
     return <div style={{ width, height }}>No data to display</div>;
   }
 
+  console.log("row colors", settings.colorScaleId);
+
   return (
     <div style={{ width, height }}>
       <BaseChart
@@ -156,9 +158,11 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
             const color =
               filters.length > 0 && !isFiltered
                 ? "rgb(156 163 175)" // gray-400 for filtered out points
-                : settings.colorScaleId
-                ? getColorForValue(settings.colorScaleId, String(label))
-                : "hsl(217.2 91.2% 59.8%)";
+                : getColorForValue(
+                    settings.colorScaleId,
+                    String(label),
+                    "hsl(217.2 91.2% 59.8%)"
+                  );
 
             const barWidth = xScale(count);
             const barHeight = yScale.bandwidth();

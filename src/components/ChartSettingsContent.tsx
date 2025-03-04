@@ -1,4 +1,3 @@
-import { useColorScales } from "@/hooks/useColorScales";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { ChartSettings } from "@/types/ChartTypes";
 import { mergeWithDefaultSettings } from "@/utils/defaultSettings";
@@ -26,7 +25,6 @@ export function ChartSettingsContent({
   );
 
   const updateChart = useDataLayer((s) => s.updateChart);
-  const { getOrCreateScaleForField } = useColorScales();
 
   // Update local settings when prop changes
   useEffect(() => {
@@ -44,11 +42,6 @@ export function ChartSettingsContent({
   };
 
   const handleUpdate = () => {
-    // Ensure we have a color scale for the field
-    if (localSettings.field && !localSettings.colorScaleId) {
-      const colorScaleId = getOrCreateScaleForField(localSettings.field);
-      localSettings.colorScaleId = colorScaleId;
-    }
     updateChart(settings.id, localSettings);
   };
 

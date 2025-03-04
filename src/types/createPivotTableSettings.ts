@@ -1,3 +1,4 @@
+import { DEFAULT_PIVOT_SETTINGS } from "@/utils/defaultSettings";
 import { PivotTableSettings } from "./ChartTypes";
 import { ChartLayout } from "./ChartTypes";
 
@@ -6,8 +7,8 @@ export function createPivotTableSettings(
   layout: ChartLayout
 ): PivotTableSettings {
   return {
+    ...DEFAULT_PIVOT_SETTINGS,
     id: crypto.randomUUID(),
-    type: "pivot",
     title: "Pivot Table",
     field,
     layout,
@@ -19,10 +20,5 @@ export function createPivotTableSettings(
         aggregation: "count",
       },
     ],
-    showTotals: {
-      row: false,
-      column: false,
-      grand: false,
-    },
   };
 }

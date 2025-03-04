@@ -141,18 +141,31 @@ function getDataAndCrossfilterWrapper<T extends DatumObject>(
 }
 
 // Store creator
-const createDataLayerStore = <T extends DatumObject>(
+const getInitialStoreState = <T extends DatumObject>(
   initProps?: Partial<DataLayerProps<T>>
-) => {
+): Required<
+  Pick<
+    DataLayerState<T>,
+    | "data"
+    | "emptyColumn"
+    | "crossfilterWrapper"
+    | "calculationManager"
+    | "calculations"
+    | "charts"
+    | "colorScales"
+    | "gridSettings"
+    | "columnCache"
+    | "calcColumnCache"
+    | "nonce"
+    | "currentProject"
+    | "fileName"
+  >
+> => {
   const {
     data: initData,
     crossfilterWrapper,
     calculationManager: ogCalculationManager,
-  } = getDataAndCrossfilterWrapper(
-    initProps?.data ?? [],
-    undefined,
-    initProps?.charts ?? []
-  );
+  } = getDataAndCrossfilterWrapper(initProps?.data ?? []);
 
   if (!crossfilterWrapper || !initData || !ogCalculationManager) {
     throw new Error(
@@ -160,16 +173,89 @@ const createDataLayerStore = <T extends DatumObject>(
     );
   }
 
-  const store = createStore<DataLayerState<T>>()((set, get) => ({
+  // Initialize with saved data if provided
+  if (initProps?.savedData) {
+    const savedData = initProps.savedData;
+
+    // Restore calculations
+    const newCalculations: CalculationDefinition[] = [];
+    savedData.calculations.forEach((calc) => {
+      ogCalculationManager.addCalculation(calc);
+      newCalculations.push(calc);
+    });
+
+    // Restore color scales with proper Map objects
+    const restoredColorScales: ColorScaleType[] = savedData.colorScales.map(
+      (scale) => {
+        if (scale.type === "categorical") {
+          return {
+            ...scale,
+            mapping: new Map(scale.mapping),
+          };
+        }
+        return scale;
+      }
+    );
+
+    return {
+      data: initData,
+      emptyColumn: initData.reduce((acc, row) => {
+        acc[row.__ID as IdType] = undefined;
+        return acc;
+      }, {} as Record<IdType, datum>),
+      crossfilterWrapper,
+      calculationManager: ogCalculationManager,
+      calculations: newCalculations,
+      charts: savedData.charts,
+      colorScales: restoredColorScales,
+      gridSettings: savedData.gridSettings,
+      columnCache: {},
+      calcColumnCache: {},
+      nonce: 0,
+      currentProject: null,
+      fileName: undefined,
+    };
+  }
+
+  // Return default state if no saved data
+  return {
     data: initData,
     emptyColumn: initData.reduce((acc, row) => {
       acc[row.__ID as IdType] = undefined;
       return acc;
     }, {} as Record<IdType, datum>),
-    fileName: undefined,
     crossfilterWrapper,
     calculationManager: ogCalculationManager,
     calculations: [],
+    charts: initProps?.charts ?? [],
+    colorScales: [],
+    gridSettings: {
+      columnCount: 12,
+      rowHeight: 30,
+      containerPadding: 10,
+      showBackgroundMarkers: true,
+    },
+    columnCache: {},
+    calcColumnCache: {},
+    nonce: 0,
+    currentProject: null,
+    fileName: undefined,
+  };
+};
+
+const createDataLayerStore = <T extends DatumObject>(
+  initProps?: Partial<DataLayerProps<T>>
+) => {
+  const initialState = getInitialStoreState(initProps);
+  const { crossfilterWrapper } = initialState;
+
+  if (!crossfilterWrapper) {
+    throw new Error("crossfilterWrapper not found in initial state");
+  }
+
+  const store = createStore<DataLayerState<T>>()((set, get) => ({
+    ...initialState,
+    liveItems: {},
     setData: (rawData, fileName) => {
       // Get fresh crossfilter and data with IDs
       const {
@@ -194,10 +280,7 @@ const createDataLayerStore = <T extends DatumObject>(
         currentProject: null,
       });
     },
-    liveItems: {},
 
-    // Chart management
-    charts: initProps?.charts ?? [],
     addChart: (chartSettings) => {
       const { crossfilterWrapper } = get();
       const newChart = {
@@ -211,6 +294,7 @@ const createDataLayerStore = <T extends DatumObject>(
         liveItems: crossfilterWrapper.getAllData(),
       }));
     },
+
     removeChart: (chart) => {
       const { crossfilterWrapper } = get();
       crossfilterWrapper.removeChart(chart);
@@ -218,11 +302,13 @@ const createDataLayerStore = <T extends DatumObject>(
         charts: state.charts.filter((ogChart) => ogChart.id !== chart.id),
       }));
     },
+
     removeAllCharts: () => {
       const { crossfilterWrapper } = get();
       crossfilterWrapper.removeAllCharts();
       set({ charts: [] });
     },
+
     updateChart: (id, settings) => {
       const { crossfilterWrapper } = get();
 
@@ -247,8 +333,6 @@ const createDataLayerStore = <T extends DatumObject>(
       }));
     },
 
-    // Color scale management
-    colorScales: [] as ColorScaleType[],
     addColorScale: (scale: Omit<ColorScaleType, "id">) => {
       const newScale = {
         ...scale,
@@ -261,11 +345,13 @@ const createDataLayerStore = <T extends DatumObject>(
 
       return newScale;
     },
+
     removeColorScale: (id: string) => {
       set((state) => ({
         colorScales: state.colorScales.filter((scale) => scale.id !== id),
       }));
     },
+
     updateColorScale: (id: string, updates: Partial<ColorScaleType>) => {
       set((state) => ({
         colorScales: state.colorScales.map((scale) =>
@@ -296,6 +382,7 @@ const createDataLayerStore = <T extends DatumObject>(
         liveItems: crossfilterWrapper.getAllData(),
       });
     },
+
     clearFilter: (chart) => {
       const { updateChart } = get();
 
@@ -304,7 +391,7 @@ const createDataLayerStore = <T extends DatumObject>(
         updateChart(chart.id, emptyFilter);
       }
     },
-    nonce: 0,
+
     getLiveItems: (chart) => {
       const { liveItems } = get();
 
@@ -397,10 +484,6 @@ const createDataLayerStore = <T extends DatumObject>(
       return columnData;
     },
 
-    columnCache: {},
-
-    // Project and View Management
-    currentProject: null,
     setCurrentProject: (project: SavedProject) => {
       set({ currentProject: project });
       // Only save to storage if the project is marked as saved
@@ -408,6 +491,7 @@ const createDataLayerStore = <T extends DatumObject>(
         saveProject(project);
       }
     },
+
     saveCurrentView: (name: string) => {
       const { charts, currentProject, calculations } = get();
 
@@ -434,6 +518,7 @@ const createDataLayerStore = <T extends DatumObject>(
         saveProject(updatedProject);
       }
     },
+
     loadView: (view: SavedView) => {
       const { crossfilterWrapper, calculationManager } = get();
 
@@ -479,11 +564,7 @@ const createDataLayerStore = <T extends DatumObject>(
     // Calculation management
     addCalculation: async (calculation) => {
       const { calculationManager } = get();
-      console.log("*** DataLayerProvider addCalculation", {
-        calculation,
-        expression: calculation.expression,
-        depends: calculation.expression.dependencies,
-      });
+
       if (!calculationManager) {
         throw new Error("Calculation manager not initialized");
       }
@@ -530,8 +611,6 @@ const createDataLayerStore = <T extends DatumObject>(
       });
     },
 
-    calcColumnCache: {},
-
     updateCalculation: (resultColumnName, newCalculation) => {
       const { addCalculation, removeCalculation } = get();
 
@@ -539,13 +618,6 @@ const createDataLayerStore = <T extends DatumObject>(
       addCalculation(newCalculation);
     },
 
-    // Grid settings with defaults
-    gridSettings: {
-      columnCount: 12,
-      rowHeight: 30,
-      containerPadding: 10,
-      showBackgroundMarkers: true,
-    },
     updateGridSettings: (settings) => {
       set((state) => ({
         gridSettings: {
@@ -592,11 +664,6 @@ const createDataLayerStore = <T extends DatumObject>(
       // Clear existing charts
       crossfilterWrapper.removeAllCharts();
 
-      // Restore grid settings
-      set({ gridSettings: savedData.gridSettings });
-
-      // Restore charts
-      set({ charts: savedData.charts });
       savedData.charts.forEach((chart) => {
         crossfilterWrapper.addChart(chart);
       });
@@ -613,7 +680,6 @@ const createDataLayerStore = <T extends DatumObject>(
           }
         }
       });
-      set({ calculations: newCalculations });
 
       // Restore color scales with proper Map objects
       const restoredColorScales: ColorScaleType[] = savedData.colorScales.map(
@@ -628,16 +694,32 @@ const createDataLayerStore = <T extends DatumObject>(
         }
       );
 
-      set({ colorScales: restoredColorScales });
-
-      // Update live items
-      set({ liveItems: crossfilterWrapper.getAllData() });
+      set((state) => ({
+        gridSettings: savedData.gridSettings,
+        charts: savedData.charts,
+        calculations: newCalculations,
+        colorScales: restoredColorScales,
+        liveItems: crossfilterWrapper.getAllData(),
+        nonce: state.nonce + 1,
+      }));
     },
   }));
+
+  // this stuff is done down here because we need the store methods to exist
+  // before plumbing them into the crossfilter wrapper
+  // not ideal... but it works.
 
   // this madness passes the column getter back into the crossfilter wrapper
   // this ensures that crossfilter has access to calculated fields
   crossfilterWrapper.setFieldGetter(store.getState().getColumnData);
+
+  // add the initial charts to crossfilter
+  store.getState().charts.forEach((chart) => {
+    crossfilterWrapper.addChart(chart);
+  });
+
+  // set the live items
+  store.setState({ liveItems: crossfilterWrapper.getAllData() });
 
   return store;
 };
@@ -658,9 +740,6 @@ export function DataLayerProvider<T extends DatumObject>({
   if (!storeRef.current) {
     storeRef.current = createDataLayerStore<T>(props);
     // Initialize with saved data if provided
-    if (props.savedData) {
-      storeRef.current.getState().restoreFromStructure(props.savedData);
-    }
   }
   return (
     <DataLayerContext.Provider value={storeRef.current}>

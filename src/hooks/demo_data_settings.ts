@@ -450,7 +450,7 @@ export const demoSettings: SavedDataStructure = {
       id: "9f11ed89-bd1a-436b-949f-b0f213a95c14",
       type: "row",
       title: "Row Chart - Category",
-      field: "Category",
+      field: "Test",
       layout: { x: 8, y: 0, w: 4, h: 4 },
       minRowHeight: 10,
       maxRowHeight: 100,
@@ -463,6 +463,8 @@ export const demoSettings: SavedDataStructure = {
       yAxisLabel: "",
       xGridLines: 5,
       yGridLines: 5,
+      colorScaleId: "a7c2c25b-f6c5-4040-8b2c-6db7326e6c05",
+      colorField: "Category",
     },
     {
       type: "row",
@@ -572,7 +574,38 @@ export const demoSettings: SavedDataStructure = {
       filterRange: null,
     },
   ],
-  calculations: [],
+  calculations: [
+    {
+      resultColumnName: "Test",
+      expression: {
+        id: "c6a3c9bf-6204-4051-91ee-7f8a35a26c9d",
+        type: "basic",
+        name: "Rating + ",
+        expression: "+",
+        dependencies: ["Rating"],
+        left: {
+          id: "84a32bfd-19af-4df0-8891-5920af5aaacc",
+          type: "literal",
+          name: "Rating",
+          expression: "Rating",
+          dependencies: ["Rating"],
+          value: "Rating",
+          rawInput: "",
+        },
+        right: {
+          id: "2702e073-fa91-4c08-a6ab-3b52c30a48d3",
+          type: "literal",
+          name: "6",
+          expression: "6",
+          dependencies: [],
+          value: 6,
+          rawInput: "",
+        },
+        operator: "+",
+        rawInput: "Rating + 6",
+      },
+    },
+  ],
   gridSettings: {
     columnCount: 12,
     rowHeight: 100,
@@ -582,8 +615,8 @@ export const demoSettings: SavedDataStructure = {
   metadata: {
     name: "Untitled",
     version: 1,
-    createdAt: "2025-03-04T21:21:10.905Z",
-    modifiedAt: "2025-03-04T21:21:10.905Z",
+    createdAt: "2025-03-04T21:27:24.823Z",
+    modifiedAt: "2025-03-04T21:27:24.823Z",
   },
   colorScales: [
     {

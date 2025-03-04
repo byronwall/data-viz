@@ -139,8 +139,6 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
     return <div style={{ width, height }}>No data to display</div>;
   }
 
-  console.log("row colors", settings.colorScaleId);
-
   return (
     <div style={{ width, height }}>
       <BaseChart

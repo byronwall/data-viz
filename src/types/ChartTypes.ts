@@ -84,8 +84,8 @@ export interface BaseChartSettings {
 
 export interface RowChartSettings extends BaseChartSettings {
   type: "row";
-  minRowHeight?: number;
-  maxRowHeight?: number;
+  minRowHeight: number;
+  maxRowHeight: number;
 
   filterValues: FilterValues;
 }

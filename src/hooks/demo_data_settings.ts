@@ -615,20 +615,20 @@ export const demoSettings: SavedDataStructure = {
   metadata: {
     name: "Untitled",
     version: 1,
-    createdAt: "2025-03-04T21:27:24.823Z",
-    modifiedAt: "2025-03-04T21:27:24.823Z",
+    createdAt: "2025-03-04T23:21:07.775Z",
+    modifiedAt: "2025-03-04T23:21:07.775Z",
   },
   colorScales: [
     {
       name: "Category",
       type: "categorical",
-      palette: ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3"],
+      palette: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"],
       mapping: [
-        ["Sports", "#8dd3c7"],
-        ["Electronics", "#ffffb3"],
-        ["Home", "#bebada"],
-        ["Clothing", "#fb8072"],
-        ["Food", "#80b1d3"],
+        ["Sports", "#1f77b4"],
+        ["Electronics", "#ff7f0e"],
+        ["Home", "#2ca02c"],
+        ["Clothing", "#d62728"],
+        ["Food", "#9467bd"],
       ],
       id: "a7c2c25b-f6c5-4040-8b2c-6db7326e6c05",
     },

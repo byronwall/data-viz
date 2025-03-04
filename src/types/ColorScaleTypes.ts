@@ -27,7 +27,11 @@ export interface UseColorScalesReturn {
   updateColorScale: (id: string, updates: Partial<ColorScaleType>) => void;
 
   // Color Getters
-  getColorForValue: (scaleId: string, value: string | number) => string;
+  getColorForValue: (
+    scaleId: string | undefined,
+    value: string | number,
+    defaultColor?: string
+  ) => string;
   getScaleById: (id: string) => ColorScaleType | undefined;
   // getAvailableScales: () => ColorScaleType[];
 

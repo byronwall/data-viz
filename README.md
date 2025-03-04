@@ -22,6 +22,10 @@ Will be updated when done...
 - Improve handling of times stamps
 - Create a `LineChart` that favors plotting time series data with a line
 - Create a `HeatMap` that shows a matrix of values - default to counts
+- Create a `3D scatter plot` that shows a 3D scatter plot of the data - allow for interactive pan + zoom
+- Need a color legend type that can be rendered
+- Need a Markdown text type that can be rendered
+- Need a data summary type that can be rendered
 
 ### Packaging and usages
 

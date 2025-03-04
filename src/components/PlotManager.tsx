@@ -13,18 +13,39 @@ import { toast } from "sonner";
 import { ChartGridLayout } from "./ChartGridLayout";
 import { PlotChartPanel } from "./PlotChartPanel";
 import { CalculationManager } from "./calculations/CalculationManager";
-
-// Add these constants at the top of the file, after imports
-const GRID_ROW_HEIGHT = 100; // pixels per grid row
-const GRID_COLS = 12; // number of grid columns
-const CONTAINER_PADDING = 16; // padding around the container
+import { GridSettingsPanel } from "./settings/GridSettingsPanel";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Grid } from "lucide-react";
+import { saveToClipboard } from "@/utils/saveDataUtils";
 
 // Add this conversion function
-const gridToPixels = (layout: ChartLayout, containerWidth: number) => {
-  const columnWidth = (containerWidth - CONTAINER_PADDING * 2) / GRID_COLS;
+const gridToPixels = (
+  layout: ChartLayout,
+  containerWidth: number,
+  gridSettings: {
+    columnCount: number;
+    containerPadding: number;
+    rowHeight: number;
+  }
+) => {
+  const columnWidth =
+    (containerWidth - gridSettings.containerPadding * 2) /
+    gridSettings.columnCount;
+
+  // Ensure width doesn't exceed available space
+  const maxColumns = Math.min(layout.w, gridSettings.columnCount);
+  const width = maxColumns * columnWidth;
+
   return {
-    width: layout.w * columnWidth,
-    height: layout.h * GRID_ROW_HEIGHT,
+    width,
+    height: layout.h * gridSettings.rowHeight,
   };
 };
 
@@ -36,6 +57,8 @@ export function PlotManager() {
   const removeChart = useDataLayer((state) => state.removeChart);
   const removeAllCharts = useDataLayer((state) => state.removeAllCharts);
   const clearAllFilters = useDataLayer((state) => state.clearAllFilters);
+  const gridSettings = useDataLayer((state) => state.gridSettings);
+  const saveToStructure = useDataLayer((state) => state.saveToStructure);
 
   const [activeTab, setActiveTab] = useState("charts");
   const [isCopying, setIsCopying] = useState(false);
@@ -80,15 +103,15 @@ export function PlotManager() {
     });
   };
 
-  const copyChartsToClipboard = () => {
+  const copyChartsToClipboard = async () => {
     if (charts.length === 0) {
       toast("No charts to copy");
       return;
     }
 
     try {
-      const chartsJson = JSON.stringify(charts, null, 2);
-      navigator.clipboard.writeText(chartsJson);
+      const savedData = saveToStructure();
+      await saveToClipboard(savedData);
 
       // Set copying state to true to trigger animation
       setIsCopying(true);
@@ -98,10 +121,10 @@ export function PlotManager() {
         setIsCopying(false);
       }, 1500);
 
-      toast("Chart configuration copied to clipboard");
+      toast("Configuration saved to clipboard");
     } catch (error) {
-      console.error("Failed to copy charts to clipboard:", error);
-      toast.error("Failed to copy charts to clipboard");
+      console.error("Failed to copy to clipboard:", error);
+      toast.error("Failed to copy configuration to clipboard");
     }
   };
 
@@ -175,6 +198,23 @@ export function PlotManager() {
             </>
           )}
           <ColorScaleManager />
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Grid className="h-4 w-4 mr-2" />
+                Grid Settings
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Grid Settings</DialogTitle>
+                <DialogDescription>
+                  Configure the grid layout settings for all charts
+                </DialogDescription>
+              </DialogHeader>
+              <GridSettingsPanel />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -189,7 +229,11 @@ export function PlotManager() {
               if (!chart.layout) {
                 return null;
               }
-              const size = gridToPixels(chart.layout, containerWidth);
+              const size = gridToPixels(
+                chart.layout,
+                containerWidth,
+                gridSettings
+              );
               return (
                 <div key={chart.id}>
                   <PlotChartPanel

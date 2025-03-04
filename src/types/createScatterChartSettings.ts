@@ -1,3 +1,4 @@
+import { DEFAULT_SCATTER_SETTINGS } from "@/utils/defaultSettings";
 import { ScatterChartSettings, ChartLayout } from "./ChartTypes";
 
 export function createScatterChartSettings(
@@ -5,15 +6,12 @@ export function createScatterChartSettings(
   layout: ChartLayout
 ): ScatterChartSettings {
   return {
+    ...DEFAULT_SCATTER_SETTINGS,
     id: crypto.randomUUID(),
-    type: "scatter",
     title: `Scatter Plot - ${field} vs __ID`,
     field,
     xField: "__ID",
     yField: field,
     layout,
-    colorScaleId: undefined,
-    xFilterRange: null,
-    yFilterRange: null,
   };
 }

@@ -92,14 +92,12 @@ export function MainSettingsTab({
                       "colorField",
                       checked ? settings.field : undefined
                     );
-                    if (settings.field) {
-                      onSettingChange(
-                        "colorScaleId",
-                        checked
-                          ? getOrCreateScaleForField(settings.field)
-                          : undefined
-                      );
-                    }
+                    onSettingChange(
+                      "colorScaleId",
+                      checked && settings.field
+                        ? getOrCreateScaleForField(settings.field)
+                        : undefined
+                    );
                   }}
                 />
                 <Label htmlFor="colorField">Use as color field</Label>
@@ -129,6 +127,7 @@ export function MainSettingsTab({
               label=""
               value={settings.colorField || ""}
               availableFields={availableFields}
+              allowClear
               onChange={(value) => {
                 const colorScaleId = value
                   ? getOrCreateScaleForField(value)
@@ -137,22 +136,6 @@ export function MainSettingsTab({
                 onSettingChange("colorScaleId", colorScaleId);
               }}
             />
-            {settings.colorField && (
-              <>
-                <Label htmlFor="colorScale">Color Scale</Label>
-                <ComboBox
-                  value={colorScales.find(
-                    (s) => s.id === settings.colorScaleId
-                  )}
-                  options={colorScales}
-                  onChange={(scale) =>
-                    onSettingChange("colorScaleId", scale?.id)
-                  }
-                  optionToString={(scale) => scale.name}
-                  placeholder="Select color scale"
-                />
-              </>
-            )}
           </>
         )}
 

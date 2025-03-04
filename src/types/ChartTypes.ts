@@ -68,24 +68,24 @@ export interface BaseChartSettings {
   type: ChartType;
   field: string;
   layout: ChartLayout;
-  colorScaleId?: string;
-  colorField?: string;
-  facet?: FacetSettings;
-  xAxis?: AxisSettings;
-  yAxis?: AxisSettings;
-  margin?: MarginSettings;
+  colorScaleId: string | undefined;
+  colorField: string | undefined;
+  facet: FacetSettings;
+  xAxis: AxisSettings;
+  yAxis: AxisSettings;
+  margin: MarginSettings;
 
   // Label settings
-  xAxisLabel?: string;
-  yAxisLabel?: string;
-  xGridLines?: number;
-  yGridLines?: number;
+  xAxisLabel: string;
+  yAxisLabel: string;
+  xGridLines: number;
+  yGridLines: number;
 }
 
 export interface RowChartSettings extends BaseChartSettings {
   type: "row";
-  minRowHeight?: number;
-  maxRowHeight?: number;
+  minRowHeight: number;
+  maxRowHeight: number;
 
   filterValues: FilterValues;
 }

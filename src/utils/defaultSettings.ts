@@ -7,6 +7,7 @@ import {
   BarChartSettings,
   ScatterChartSettings,
   MarginSettings,
+  BaseChartSettings,
 } from "@/types/ChartTypes";
 
 export const DEFAULT_AXIS_SETTINGS: AxisSettings = {
@@ -30,7 +31,7 @@ export const DEFAULT_FACET_SETTINGS: WrapFacetSettings = {
   columnCount: 2,
 };
 
-export const DEFAULT_CHART_SETTINGS: Partial<ChartSettings> = {
+export const DEFAULT_CHART_SETTINGS: Omit<BaseChartSettings, "id"> = {
   title: "",
   type: "row",
   field: "",
@@ -39,39 +40,52 @@ export const DEFAULT_CHART_SETTINGS: Partial<ChartSettings> = {
   yAxis: DEFAULT_AXIS_SETTINGS,
   margin: DEFAULT_MARGIN_SETTINGS,
   facet: DEFAULT_FACET_SETTINGS,
+  colorScaleId: undefined,
+  colorField: undefined,
+  xAxisLabel: "",
+  yAxisLabel: "",
+  xGridLines: 5,
+  yGridLines: 5,
 };
 
-export const DEFAULT_PIVOT_SETTINGS: Partial<PivotTableSettings> = {
+export const DEFAULT_PIVOT_SETTINGS: Omit<PivotTableSettings, "id"> = {
   ...DEFAULT_CHART_SETTINGS,
   type: "pivot",
   rowFields: [],
   columnFields: [],
   valueFields: [],
+  showTotals: { row: false, column: false, grand: false },
 };
 
-export const DEFAULT_ROW_SETTINGS: Partial<RowChartSettings> = {
+export const DEFAULT_ROW_SETTINGS: Omit<RowChartSettings, "id"> = {
   ...DEFAULT_CHART_SETTINGS,
   type: "row",
   minRowHeight: 30,
   maxRowHeight: 50,
+  filterValues: { values: [] },
 };
 
-export const DEFAULT_BAR_SETTINGS: Partial<BarChartSettings> = {
+export const DEFAULT_BAR_SETTINGS: Omit<BarChartSettings, "id"> = {
   ...DEFAULT_CHART_SETTINGS,
   type: "bar",
+  binCount: 10,
+  forceString: false,
+  filterValues: { values: [] },
+  filterRange: null,
 };
 
-export const DEFAULT_SCATTER_SETTINGS: Partial<ScatterChartSettings> = {
+export const DEFAULT_SCATTER_SETTINGS: Omit<ScatterChartSettings, "id"> = {
   ...DEFAULT_CHART_SETTINGS,
   type: "scatter",
   xField: "",
   yField: "",
-  colorField: "",
+  xFilterRange: null,
+  yFilterRange: null,
 };
 
 export function getDefaultSettingsForType(
   type: ChartSettings["type"]
-): Partial<ChartSettings> {
+): Omit<ChartSettings, "id"> {
   switch (type) {
     case "pivot":
       return DEFAULT_PIVOT_SETTINGS;

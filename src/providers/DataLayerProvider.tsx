@@ -10,6 +10,12 @@ import {
 } from "@/lib/calculations/CalculationState";
 import { ChartSettings, datum } from "@/types/ChartTypes";
 import { ColorScaleType } from "@/types/ColorScaleTypes";
+import {
+  GridSettings,
+  SavedDataStructure,
+  ViewMetadata,
+  SerializedColorScale,
+} from "@/types/SavedDataTypes";
 import { saveProject } from "@/utils/localStorage";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
@@ -80,6 +86,14 @@ interface DataLayerState<T extends DatumObject> extends DataLayerProps<T> {
   ) => void;
 
   calcColumnCache: Record<string, Record<IdType, datum> | undefined>;
+
+  // Grid settings
+  gridSettings: GridSettings;
+  updateGridSettings: (settings: Partial<GridSettings>) => void;
+
+  // Save/Restore functionality
+  saveToStructure: () => SavedDataStructure;
+  restoreFromStructure: (savedData: SavedDataStructure) => void;
 }
 
 // Store type
@@ -522,6 +536,101 @@ const createDataLayerStore = <T extends DatumObject>(
 
       removeCalculation(resultColumnName);
       addCalculation(newCalculation);
+    },
+
+    // Grid settings with defaults
+    gridSettings: {
+      columnCount: 12,
+      rowHeight: 30,
+      containerPadding: 10,
+      showBackgroundMarkers: true,
+    },
+    updateGridSettings: (settings) => {
+      set((state) => ({
+        gridSettings: {
+          ...state.gridSettings,
+          ...settings,
+        },
+      }));
+    },
+
+    // Save/Restore functionality
+    saveToStructure: () => {
+      const state = get();
+      const metadata: ViewMetadata = {
+        name: state.currentProject?.name ?? "Untitled",
+        version: 1,
+        createdAt: new Date().toISOString(),
+        modifiedAt: new Date().toISOString(),
+      };
+
+      // Convert Map objects in colorScales to arrays for serialization
+      const serializedColorScales: SerializedColorScale[] =
+        state.colorScales.map((scale) => {
+          if (scale.type === "categorical") {
+            return {
+              ...scale,
+              mapping: Array.from(scale.mapping.entries()),
+            };
+          }
+          return scale;
+        });
+
+      return {
+        charts: state.charts,
+        calculations: state.calculations,
+        gridSettings: state.gridSettings,
+        metadata,
+        colorScales: serializedColorScales,
+      };
+    },
+
+    restoreFromStructure: (savedData: SavedDataStructure) => {
+      const { crossfilterWrapper, calculationManager } = get();
+
+      // Clear existing charts
+      crossfilterWrapper.removeAllCharts();
+
+      // Restore grid settings
+      set({ gridSettings: savedData.gridSettings });
+
+      // Restore charts
+      set({ charts: savedData.charts });
+      savedData.charts.forEach((chart) => {
+        crossfilterWrapper.addChart(chart);
+      });
+
+      // Restore calculations
+      const newCalculations: CalculationDefinition[] = [];
+      savedData.calculations.forEach(async (calc) => {
+        if (calculationManager) {
+          try {
+            await calculationManager.addCalculation(calc);
+            newCalculations.push(calc);
+          } catch (error) {
+            console.error("Error restoring calculation:", error);
+          }
+        }
+      });
+      set({ calculations: newCalculations });
+
+      // Restore color scales with proper Map objects
+      const restoredColorScales: ColorScaleType[] = savedData.colorScales.map(
+        (scale) => {
+          if (scale.type === "categorical") {
+            return {
+              ...scale,
+              mapping: new Map(scale.mapping),
+            };
+          }
+          return scale;
+        }
+      );
+
+      set({ colorScales: restoredColorScales });
+
+      // Update live items
+      set({ liveItems: crossfilterWrapper.getAllData() });
     },
   }));
 

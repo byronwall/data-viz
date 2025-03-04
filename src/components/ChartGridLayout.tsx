@@ -4,6 +4,8 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import type { Layout } from "react-grid-layout";
 import type { ChartSettings } from "@/types/ChartTypes";
+import { useDataLayer } from "@/providers/DataLayerProvider";
+import { GridBackground } from "./GridBackground";
 
 interface ChartGridLayoutProps {
   children: ReactNode;
@@ -18,25 +20,43 @@ export function ChartGridLayout({
   onLayoutChange,
   containerWidth,
 }: ChartGridLayoutProps) {
-  const layout = charts.map((chart) => ({
+  const gridSettings = useDataLayer((s) => s.gridSettings);
+
+  // Calculate the total height based on the layout
+  const totalHeight = Math.max(
+    ...charts.map(
+      (chart) => (chart.layout.y + chart.layout.h) * gridSettings.rowHeight
+    ),
+    400 // minimum height
+  );
+
+  const layout: Layout[] = charts.map((chart) => ({
+    ...chart.layout,
     i: chart.id,
-    x: chart.layout?.x || 0,
-    y: chart.layout?.y || 0,
-    w: chart.layout?.w || 6,
-    h: chart.layout?.h || 4,
   }));
 
   return (
-    <GridLayout
-      className="layout"
-      layout={layout}
-      cols={12}
-      rowHeight={100}
-      width={containerWidth}
-      onLayoutChange={onLayoutChange}
-      draggableHandle=".drag-handle"
-    >
-      {children}
-    </GridLayout>
+    <div className="relative w-full">
+      <GridBackground
+        settings={gridSettings}
+        width={containerWidth}
+        height={totalHeight}
+      />
+      <GridLayout
+        className="layout"
+        layout={layout}
+        cols={gridSettings.columnCount}
+        rowHeight={gridSettings.rowHeight}
+        width={containerWidth}
+        containerPadding={[
+          gridSettings.containerPadding,
+          gridSettings.containerPadding,
+        ]}
+        onLayoutChange={onLayoutChange}
+        draggableHandle=".drag-handle"
+      >
+        {children}
+      </GridLayout>
+    </div>
   );
 }

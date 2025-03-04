@@ -68,7 +68,7 @@ export function PlotChartPanel({
                 <Settings2 className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80" side="right">
+            <PopoverContent className="min-w-120" side="left" align="start">
               <ChartSettingsContent
                 settings={settings}
                 availableFields={availableFields}

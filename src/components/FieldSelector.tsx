@@ -30,7 +30,7 @@ export function FieldSelector({
         value={selectedOption}
         options={fieldOptions}
         onChange={(option) => onChange(option?.value || value)}
-        optionToLabel={(option) => option.label}
+        optionToString={(option) => option.label}
         placeholder={placeholder}
       />
     </div>

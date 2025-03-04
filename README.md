@@ -25,6 +25,8 @@ Will be updated when done...
 - Wire up "load examples" buttons for main data sets - get rid of current default state
 - Improve handling of times stamps
 - Need a `SavedChartSettings` that contain chart defs, color scales, calcs, etc.
+- Create a `LineChart` that favors plotting time series data with a line
+- Create a `HeatMap` that shows a matrix of values - default to counts
 
 ### Packaging and usages
 
@@ -74,11 +76,20 @@ Will be updated when done...
 - Scatter points need to render on top of gridlines
 - Add small grid marks to the background of the chart containing interface so that it’s clear where the size break points are
 - Calculation def should describe the available fields created by the calc - default is just producing the calc name - regression would generate estimate, residual, etc. need to declare in advance so drop down menus show what is possible
-- bar chart - figure out why barChartPureFilter is not being used
-- Do not attempt to render 0 width and 0 height bars + rows
 - Do not attempt to render points and bars that are not visible due to axis limits
 - Pivot table - implement filtering and sorting
 - Should not be creating colorScaleId all the time
 - The colorScaleId should not be saved - or need to save the scales too
 - Decide if it is worth allowing the y categories to be globally shared in Row charts w/ facets
 - Need to implement the full suite of control for axis limits - scatter defaults to all available global data
+- Summary table causes a render with each column? Do them all in one shot if possible - check time and then RAF to continue
+- A `Region` calc that allows building a 2D mapping and creating regions of assignment
+- "Filter to calc" - convert a filter to a calc that segments the data
+- Condition formatting - allow for background regions to appear in charts if some condiiton is met?
+- Integrate the data summary info into the field chooser drop downs - show icon for field (maybe a count, etc)
+- Need to wire up the "details" view for the pivot table
+- Settings that need wired up:
+  - Label title overrides
+  - Grid lines - tick counts
+  - Axis limits
+  - Need to hide certain axis settings that cannot be easily changed

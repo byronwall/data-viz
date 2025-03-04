@@ -1,13 +1,21 @@
 import { IdType } from "@/providers/DataLayerProvider";
 
+import { BarChart, BarChartBig, ScatterChart, Table } from "lucide-react";
+
 export const CHART_TYPES = [
-  { value: "row", label: "Row Chart" },
-  { value: "bar", label: "Bar Chart" },
-  { value: "scatter", label: "Scatter Plot" },
-  { value: "pivot", label: "Pivot Table" },
+  { value: "row", label: "Row Chart", icon: BarChartBig },
+  { value: "bar", label: "Bar Chart", icon: BarChart },
+  { value: "scatter", label: "Scatter Plot", icon: ScatterChart },
+  { value: "pivot", label: "Pivot Table", icon: Table },
 ] as const;
 
 export type ChartType = (typeof CHART_TYPES)[number]["value"];
+
+export interface ChartTypeOption {
+  value: ChartType;
+  label: string;
+  icon: React.ElementType;
+}
 
 export interface ChartLayout {
   x: number;
@@ -39,21 +47,45 @@ export interface WrapFacetSettings extends BaseFacetSettings {
 // Discriminated union for facet settings
 export type FacetSettings = GridFacetSettings | WrapFacetSettings;
 
+export interface AxisSettings {
+  title?: string;
+  scaleType?: "linear" | "log" | "time" | "band";
+  grid?: boolean;
+  min?: number;
+  max?: number;
+}
+
+export interface MarginSettings {
+  top?: number;
+  right?: number;
+  bottom?: number;
+  left?: number;
+}
+
 export interface BaseChartSettings {
   id: string;
   title: string;
+  type: ChartType;
   field: string;
   layout: ChartLayout;
   colorScaleId?: string;
   colorField?: string;
   facet?: FacetSettings;
+  xAxis?: AxisSettings;
+  yAxis?: AxisSettings;
+  margin?: MarginSettings;
+
+  // Label settings
+  xAxisLabel?: string;
+  yAxisLabel?: string;
+  xGridLines?: number;
+  yGridLines?: number;
 }
 
 export interface RowChartSettings extends BaseChartSettings {
   type: "row";
-  sortBy?: "count" | "label";
-  minRowHeight: number; // Minimum height of each row in pixels
-  maxRowHeight: number; // Maximum height of each row in pixels
+  minRowHeight?: number;
+  maxRowHeight?: number;
 
   filterValues: FilterValues;
 }

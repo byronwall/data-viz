@@ -1,16 +1,8 @@
 import { useColorScales } from "@/hooks/useColorScales";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import {
-  ChartSettings,
-  FacetSettings,
-  GridFacetSettings,
-  PivotTableSettings,
-  WrapFacetSettings,
-} from "@/types/ChartTypes";
+import { ChartSettings } from "@/types/ChartTypes";
 import { mergeWithDefaultSettings } from "@/utils/defaultSettings";
 import { useEffect, useState } from "react";
-import { ComboBox } from "./ComboBox";
-import { FieldSelector } from "./FieldSelector";
 import { AdvancedSettingsTab } from "./settings/AdvancedSettingsTab";
 import { AxisSettingsTab } from "./settings/AxisSettingsTab";
 import { FacetSettingsTab } from "./settings/FacetSettingsTab";
@@ -18,26 +10,10 @@ import { LabelsSettingsTab } from "./settings/LabelsSettingsTab";
 import { MainSettingsTab } from "./settings/MainSettingsTab";
 import { TabContainer } from "./settings/TabContainer";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import MultiSelect, { Option } from "./ui/multi-select";
-import { Switch } from "./ui/switch";
 
 interface ChartSettingsContentProps {
   settings: ChartSettings;
   availableFields: string[];
-}
-
-type AggregationType = PivotTableSettings["valueFields"][0]["aggregation"];
-
-interface AggregationOption {
-  label: string;
-  value: AggregationType;
-}
-
-interface FacetTypeOption {
-  label: string;
-  value: FacetSettings["type"];
 }
 
 export function ChartSettingsContent({

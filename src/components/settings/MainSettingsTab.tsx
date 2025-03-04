@@ -136,22 +136,6 @@ export function MainSettingsTab({
                 onSettingChange("colorScaleId", colorScaleId);
               }}
             />
-            {settings.colorField && (
-              <>
-                <Label htmlFor="colorScale">Color Scale</Label>
-                <ComboBox
-                  value={colorScales.find(
-                    (s) => s.id === settings.colorScaleId
-                  )}
-                  options={colorScales}
-                  onChange={(scale) =>
-                    onSettingChange("colorScaleId", scale?.id)
-                  }
-                  optionToString={(scale) => scale.name}
-                  placeholder="Select color scale"
-                />
-              </>
-            )}
           </>
         )}
 

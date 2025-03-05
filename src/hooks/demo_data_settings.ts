@@ -7936,7 +7936,7 @@ export const demoData = [
 export const demoSettings: SavedDataStructure = {
   charts: [
     {
-      title: "Scatter Plot - Run ID vs __ID",
+      title: "2D View",
       type: "scatter",
       field: "Run ID",
       layout: { x: 0, y: 0, w: 3, h: 3 },
@@ -7957,7 +7957,7 @@ export const demoSettings: SavedDataStructure = {
       id: "5cc180fb-d35e-4249-a46c-cba04f13b6a8",
     },
     {
-      title: "Scatter Plot - Run ID vs __ID",
+      title: "Facet by run so each is its own chart",
       type: "3d-scatter",
       field: "Run ID",
       layout: { x: 3, y: 0, w: 9, h: 7 },
@@ -7983,9 +7983,9 @@ export const demoSettings: SavedDataStructure = {
       id: "be9caf07-92eb-43ad-b3d5-4d3853c259c9",
       zField: "Z",
       cameraPosition: {
-        x: -12.277698934277005,
-        y: 17.83642880610303,
-        z: -19.33156504009856,
+        x: -14.515992036435497,
+        y: 8.177430839946194,
+        z: -22.25426260052346,
       },
       cameraTarget: { x: 0, y: 0, z: 0 },
       pointSize: 1,
@@ -8001,7 +8001,7 @@ export const demoSettings: SavedDataStructure = {
       },
     },
     {
-      title: "Scatter Plot - Run ID vs __ID",
+      title: "All Runs together, use color",
       type: "3d-scatter",
       field: "Run ID",
       layout: { x: 0, y: 3, w: 3, h: 4 },
@@ -8055,8 +8055,8 @@ export const demoSettings: SavedDataStructure = {
   metadata: {
     name: "Untitled",
     version: 1,
-    createdAt: "2025-03-05T03:06:54.251Z",
-    modifiedAt: "2025-03-05T03:06:54.251Z",
+    createdAt: "2025-03-05T03:10:51.207Z",
+    modifiedAt: "2025-03-05T03:10:51.207Z",
   },
   colorScales: [
     {

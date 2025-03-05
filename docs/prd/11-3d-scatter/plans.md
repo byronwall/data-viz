@@ -195,12 +195,6 @@ interface ThreeDScatterControlsProps {
   - [x] Pan controls
   - [x] View reset
 
-- [ ] Point Interactions
-  - [ ] Hover handling
-  - [ ] Selection system
-  - [ ] Tooltip display
-  - [ ] Highlight system
-
 ### Phase 4: Advanced Features
 
 - [ ] Variable Mapping

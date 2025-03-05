@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 export function useGetLiveData(
   settings: ChartSettings,
-  field?: "xField" | "yField",
+  field?: "xField" | "yField" | "colorField",
   facetIds?: IdType[]
 ) {
   const getLiveItems = useDataLayer((s) => s.getLiveItems);
@@ -37,6 +37,8 @@ export function useGetLiveData(
         _data = getColumnData(scatterSettings.xField);
       } else if (field === "yField") {
         _data = getColumnData(scatterSettings.yField);
+      } else if (field === "colorField") {
+        _data = getColumnData(scatterSettings.colorField);
       }
     }
 

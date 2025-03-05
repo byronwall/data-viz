@@ -139,6 +139,100 @@ export function MainSettingsTab({
           </>
         )}
 
+        {settings.type === "3d-scatter" && (
+          <>
+            <Label>X Axis Field</Label>
+            <FieldSelector
+              label=""
+              value={settings.xField}
+              availableFields={availableFields}
+              onChange={(value) => onSettingChange("xField", value)}
+            />
+            <Label>Y Axis Field</Label>
+            <FieldSelector
+              label=""
+              value={settings.yField || ""}
+              availableFields={availableFields}
+              onChange={(value) => onSettingChange("yField", value)}
+            />
+            <Label>Z Axis Field</Label>
+            <FieldSelector
+              label=""
+              value={settings.zField || ""}
+              availableFields={availableFields}
+              onChange={(value) => onSettingChange("zField", value)}
+            />
+            <Label>Color Field</Label>
+            <FieldSelector
+              label=""
+              value={settings.colorField || ""}
+              availableFields={availableFields}
+              allowClear
+              onChange={(value) => {
+                const colorScaleId = value
+                  ? getOrCreateScaleForField(value)
+                  : undefined;
+                onSettingChange("colorField", value);
+                onSettingChange("colorScaleId", colorScaleId);
+              }}
+            />
+            <Label>Size Field</Label>
+            <FieldSelector
+              label=""
+              value={settings.sizeField || ""}
+              availableFields={availableFields}
+              allowClear
+              onChange={(value) => onSettingChange("sizeField", value)}
+            />
+            <div className="col-start-2">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="showGrid"
+                  checked={settings.showGrid}
+                  onCheckedChange={(checked) =>
+                    onSettingChange("showGrid", checked)
+                  }
+                />
+                <Label htmlFor="showGrid">Show Grid</Label>
+              </div>
+            </div>
+            <div className="col-start-2">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="showAxes"
+                  checked={settings.showAxes}
+                  onCheckedChange={(checked) =>
+                    onSettingChange("showAxes", checked)
+                  }
+                />
+                <Label htmlFor="showAxes">Show Axes</Label>
+              </div>
+            </div>
+            <Label htmlFor="pointSize">Point Size</Label>
+            <NumericInputEnter
+              value={settings.pointSize || 0.1}
+              onChange={(value) => onSettingChange("pointSize", value)}
+              min={0.01}
+              max={1}
+              stepSmall={0.01}
+              stepMedium={0.05}
+              stepLarge={0.1}
+              placeholder="Enter point size"
+            />
+            <Label htmlFor="pointOpacity">Point Opacity</Label>
+            <NumericInputEnter
+              value={settings.pointOpacity || 0.8}
+              onChange={(value) => onSettingChange("pointOpacity", value)}
+              min={0}
+              max={1}
+              stepSmall={0.1}
+              stepMedium={0.2}
+              stepLarge={0.3}
+              placeholder="Enter point opacity"
+            />
+          </>
+        )}
+
         {isRowChart && (
           <>
             <Label htmlFor="minRowHeight">Min Row Height</Label>

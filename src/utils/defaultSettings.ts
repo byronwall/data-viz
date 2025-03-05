@@ -9,6 +9,8 @@ import {
   MarginSettings,
   BaseChartSettings,
 } from "@/types/ChartTypes";
+import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
+import { Vector3 } from "three";
 
 export const DEFAULT_AXIS_SETTINGS: AxisSettings = {
   scaleType: "linear",
@@ -83,6 +85,25 @@ export const DEFAULT_SCATTER_SETTINGS: Omit<ScatterChartSettings, "id"> = {
   yFilterRange: null,
 };
 
+export const DEFAULT_3D_SCATTER_SETTINGS: Omit<ThreeDScatterSettings, "id"> = {
+  ...DEFAULT_CHART_SETTINGS,
+  type: "3d-scatter",
+  xField: "",
+  yField: "",
+  zField: "",
+  colorField: undefined,
+  sizeField: undefined,
+  cameraPosition: new Vector3(5, 5, 5),
+  cameraTarget: new Vector3(0, 0, 0),
+  pointSize: 0.1,
+  pointOpacity: 0.8,
+  showGrid: true,
+  showAxes: true,
+  xAxis: { ...DEFAULT_AXIS_SETTINGS, zoomLevel: 1 },
+  yAxis: { ...DEFAULT_AXIS_SETTINGS, zoomLevel: 1 },
+  zAxis: { ...DEFAULT_AXIS_SETTINGS, zoomLevel: 1 },
+};
+
 export function getDefaultSettingsForType(
   type: ChartSettings["type"]
 ): Omit<ChartSettings, "id"> {
@@ -95,6 +116,8 @@ export function getDefaultSettingsForType(
       return DEFAULT_BAR_SETTINGS;
     case "scatter":
       return DEFAULT_SCATTER_SETTINGS;
+    case "3d-scatter":
+      return DEFAULT_3D_SCATTER_SETTINGS;
     default:
       return DEFAULT_CHART_SETTINGS;
   }

@@ -201,6 +201,9 @@ export class CrossfilterWrapper<T> {
           return matchesRowFilters && matchesColumnFilters;
         };
       }
+      case "3d-scatter": {
+        return (d: IdType) => true;
+      }
     }
   }
 

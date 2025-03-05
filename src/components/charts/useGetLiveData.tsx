@@ -1,10 +1,11 @@
 import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
 import { ChartSettings, ScatterChartSettings, datum } from "@/types/ChartTypes";
 import { useMemo } from "react";
+import { ThreeDScatterSettings } from "./ThreeDScatter/types";
 
 export function useGetLiveData(
   settings: ChartSettings,
-  field?: "xField" | "yField" | "colorField",
+  field?: "xField" | "yField" | "colorField" | "sizeField" | "zField",
   facetIds?: IdType[]
 ) {
   const getLiveItems = useDataLayer((s) => s.getLiveItems);
@@ -31,7 +32,7 @@ export function useGetLiveData(
 
     if (settings.type === "row" || settings.type === "bar") {
       _data = getColumnData(settings.field);
-    } else if (settings.type === "scatter") {
+    } else if (settings.type === "scatter" || settings.type === "3d-scatter") {
       const scatterSettings = settings as ScatterChartSettings;
       if (field === "xField") {
         _data = getColumnData(scatterSettings.xField);
@@ -39,6 +40,13 @@ export function useGetLiveData(
         _data = getColumnData(scatterSettings.yField);
       } else if (field === "colorField") {
         _data = getColumnData(scatterSettings.colorField);
+      } else if (settings.type === "3d-scatter") {
+        const threeDSettings = settings as ThreeDScatterSettings;
+        if (field === "sizeField") {
+          _data = getColumnData(threeDSettings.sizeField);
+        } else if (field === "zField") {
+          _data = getColumnData(threeDSettings.zField);
+        }
       }
     }
 

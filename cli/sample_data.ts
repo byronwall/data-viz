@@ -326,6 +326,62 @@ const generators = {
 
     return { headers, data };
   },
+
+  lorenz_3d: (rows: number) => {
+    const headers = [
+      { id: "run_id", title: "Run ID" },
+      { id: "time", title: "Time" },
+      { id: "x", title: "X" },
+      { id: "y", title: "Y" },
+      { id: "z", title: "Z" },
+    ];
+
+    // Lorenz system parameters
+    const sigma = 10;
+    const rho = 28;
+    const beta = 8 / 3;
+    const dt = 0.01; // Time step for integration
+
+    // Function to compute one step of Lorenz system
+    const lorenzStep = (x: number, y: number, z: number) => {
+      const dx = sigma * (y - x) * dt;
+      const dy = (x * (rho - z) - y) * dt;
+      const dz = (x * y - beta * z) * dt;
+      return { dx, dy, dz };
+    };
+
+    // Generate 5 runs with slightly different initial conditions
+    const data: any[] = [];
+    const runsPerPoint = Math.ceil(rows / 5); // Divide points among 5 runs
+
+    for (let run = 0; run < 5; run++) {
+      // Slightly different starting positions for each run
+      let x = 1 + Math.random() * 0.4;
+      let y = 1 + Math.random() * 0.4;
+      let z = 1 + Math.random() * 0.4;
+
+      for (let i = 0; i < runsPerPoint; i++) {
+        const time = i * dt;
+
+        // Record current position
+        data.push({
+          run_id: run + 1,
+          time: time.toFixed(3),
+          x: x.toFixed(3),
+          y: y.toFixed(3),
+          z: z.toFixed(3),
+        });
+
+        // Compute next position
+        const { dx, dy, dz } = lorenzStep(x, y, z);
+        x += dx;
+        y += dy;
+        z += dz;
+      }
+    }
+
+    return { headers, data };
+  },
 };
 
 // Size presets

@@ -76,3 +76,13 @@ export function migrateDataVersion(
   // This function will be expanded when we add new versions
   return data;
 }
+
+export async function saveRawDataToClipboard(data: unknown): Promise<void> {
+  try {
+    const jsonString = JSON.stringify(data);
+    await navigator.clipboard.writeText(jsonString);
+  } catch (error) {
+    console.error("Error saving raw data to clipboard:", error);
+    throw new Error("Failed to save raw data to clipboard");
+  }
+}

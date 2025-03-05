@@ -81,6 +81,9 @@ Will be updated when done...
 - `Remove all charts` needs a warning
 - Default chart width needs to allow 4-5 charts in grid (12 and 2?)
 - Add small grid marks to the background of the chart containing interface so that it's clear where the size break points are
+- Create a landing page that allows quickly loading some sample data
+- Remove the CSV header at the top - too big
+- Integrate the summary table into the main chart area - takes up too much space?
 
 ### Summary and Pivot Table
 

@@ -3,7 +3,9 @@ import { BarChart } from "./BarChart";
 import { RowChart } from "./RowChart";
 import { ScatterPlot } from "./ScatterPlot";
 import { PivotTable } from "./PivotTable/PivotTable";
-import { IdType } from "@/providers/DataLayerProvider";
+import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
+import { ThreeDScatterChart } from "./ThreeDScatter/ThreeDScatterChart";
+import { useThreeDScatterData } from "./ThreeDScatter/useThreeDScatterData";
 
 interface ChartRendererProps {
   settings: ChartSettings;
@@ -55,7 +57,16 @@ export function ChartRenderer({
           facetIds={facetIds}
         />
       );
+    case "3d-scatter":
+      return (
+        <ThreeDScatterChart
+          settings={settings}
+          width={width}
+          height={height}
+          facetIds={facetIds}
+        />
+      );
     default:
-      return <div>Unknown chart type</div>;
+      return null;
   }
 }

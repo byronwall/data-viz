@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { Grid } from "lucide-react";
-import { saveToClipboard } from "@/utils/saveDataUtils";
+import { saveToClipboard, saveRawDataToClipboard } from "@/utils/saveDataUtils";
 
 // Add this conversion function
 const gridToPixels = (
@@ -59,9 +59,11 @@ export function PlotManager() {
   const clearAllFilters = useDataLayer((state) => state.clearAllFilters);
   const gridSettings = useDataLayer((state) => state.gridSettings);
   const saveToStructure = useDataLayer((state) => state.saveToStructure);
+  const data = useDataLayer((state) => state.data);
 
   const [activeTab, setActiveTab] = useState("charts");
   const [isCopying, setIsCopying] = useState(false);
+  const [isCopyingData, setIsCopyingData] = useState(false);
 
   // Get column names
   const columns = getColumnNames();
@@ -128,6 +130,30 @@ export function PlotManager() {
     }
   };
 
+  const copyDataToClipboard = async () => {
+    if (!data || data.length === 0) {
+      toast("No data to copy");
+      return;
+    }
+
+    try {
+      await saveRawDataToClipboard(data);
+
+      // Set copying state to true to trigger animation
+      setIsCopyingData(true);
+
+      // Reset after animation duration
+      setTimeout(() => {
+        setIsCopyingData(false);
+      }, 1500);
+
+      toast("Data saved to clipboard");
+    } catch (error) {
+      console.error("Failed to copy data to clipboard:", error);
+      toast.error("Failed to copy data to clipboard");
+    }
+  };
+
   const mainContent = (
     <div className="w-full pb-40" ref={containerRef}>
       <div className="flex justify-between items-center mb-4">
@@ -174,6 +200,29 @@ export function PlotManager() {
                   <>
                     <Copy className="h-4 w-4" />
                     Copy Charts
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyDataToClipboard}
+                className={`flex items-center gap-2 transition-all duration-300 ${
+                  isCopyingData
+                    ? "bg-green-100 text-green-700 border-green-300"
+                    : ""
+                }`}
+                disabled={isCopyingData}
+              >
+                {isCopyingData ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4" />
+                    Copy Data
                   </>
                 )}
               </Button>

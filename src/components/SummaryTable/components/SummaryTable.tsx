@@ -1,16 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { ArrowUpDown, Download, Loader2 } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { detectColumnType } from "../utils/dataTypeDetection";
 import {
@@ -18,11 +10,10 @@ import {
   sampleData,
 } from "../utils/samplingStrategy";
 import { calculateColumnStatistics } from "../utils/statisticsCalculator";
-import { ChartActions } from "./ChartActions";
 
+import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { DataType } from "../utils/dataTypeDetection";
-import { Slider } from "@/components/ui/slider";
 import { CompactSummaryTable } from "./CompactSummaryTable";
 
 interface ColumnSummary {

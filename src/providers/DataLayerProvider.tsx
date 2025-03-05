@@ -19,6 +19,7 @@ import {
 import { saveProject } from "@/utils/localStorage";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
+import { createSummaryChartSettings } from "@/types/createSummaryChartSettings";
 
 type DatumObject = { [key: string]: datum };
 export type { DatumObject };
@@ -264,6 +265,14 @@ const createDataLayerStore = <T extends DatumObject>(
         calculationManager: newCalculationManager,
       } = getDataAndCrossfilterWrapper(rawData, get().getColumnData);
 
+      // Create default summary chart
+      const summaryChart = createSummaryChartSettings({
+        x: 0,
+        y: 0,
+        w: 3,
+        h: 4,
+      });
+
       // Reset everything to initial state
       set({
         data: newData,
@@ -271,7 +280,7 @@ const createDataLayerStore = <T extends DatumObject>(
         crossfilterWrapper: newCrossfilter,
         calculationManager: newCalculationManager,
         calculations: [],
-        charts: [],
+        charts: [summaryChart],
         colorScales: [],
         liveItems: {},
         columnCache: {},

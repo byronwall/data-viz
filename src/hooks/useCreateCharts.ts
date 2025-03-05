@@ -3,8 +3,9 @@ import { createBarChartSettings } from "@/types/createBarChartSettings";
 import { createPivotTableSettings } from "@/types/createPivotTableSettings";
 import { createRowChartSettings } from "@/types/createRowChartSettings";
 import { createScatterChartSettings } from "@/types/createScatterChartSettings";
+import { createSummaryChartSettings } from "@/types/createSummaryChartSettings";
 
-type ChartType = "row" | "bar" | "scatter" | "pivot";
+type ChartType = "row" | "bar" | "scatter" | "pivot" | "summary";
 
 export function useCreateCharts() {
   const addChart = useDataLayer((s) => s.addChart);
@@ -30,6 +31,9 @@ export function useCreateCharts() {
         break;
       case "pivot":
         settings = createPivotTableSettings(field, layout);
+        break;
+      case "summary":
+        settings = createSummaryChartSettings(layout);
         break;
     }
 

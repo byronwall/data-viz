@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { ColorScaleManager } from "./ColorScaleManager";
-import { MainLayout } from "./layout/MainLayout";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { ChartLayout } from "@/types/ChartTypes";
-import { Calculator, Copy, FilterX, X, Check } from "lucide-react";
+import { saveRawDataToClipboard, saveToClipboard } from "@/utils/saveDataUtils";
+import { Calculator, Check, Copy, FilterX, Grid, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Layout } from "react-grid-layout";
 import { toast } from "sonner";
@@ -22,8 +22,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { Grid } from "lucide-react";
-import { saveToClipboard, saveRawDataToClipboard } from "@/utils/saveDataUtils";
 
 // Add this conversion function
 const gridToPixels = (
@@ -154,7 +152,7 @@ export function PlotManager() {
     }
   };
 
-  const mainContent = (
+  return (
     <div className="w-full pb-40" ref={containerRef}>
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
@@ -311,6 +309,4 @@ export function PlotManager() {
       </Tabs>
     </div>
   );
-
-  return <MainLayout>{mainContent}</MainLayout>;
 }

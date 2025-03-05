@@ -6,6 +6,8 @@ import { PivotTable } from "./PivotTable/PivotTable";
 import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
 import { ThreeDScatterChart } from "./ThreeDScatter/ThreeDScatterChart";
 import { useThreeDScatterData } from "./ThreeDScatter/useThreeDScatterData";
+import { SummaryChart } from "./SummaryChart";
+import { SummaryTable } from "../SummaryTable/components/SummaryTable";
 
 interface ChartRendererProps {
   settings: ChartSettings;
@@ -66,6 +68,8 @@ export function ChartRenderer({
           facetIds={facetIds}
         />
       );
+    case "summary":
+      return <SummaryTable />;
     default:
       return null;
   }

@@ -204,6 +204,15 @@ export class CrossfilterWrapper<T> {
       case "3d-scatter": {
         return (d: IdType) => true;
       }
+      case "summary": {
+        return (d: IdType) => true;
+      }
+      default: {
+        console.error("getFilterFunction: unknown chart type", {
+          chart,
+        });
+        return (d: IdType) => true;
+      }
     }
   }
 

@@ -2,6 +2,7 @@ import { demoSettings } from "@/hooks/demo_data_settings";
 import { SavedDataStructure } from "@/types/SavedDataTypes";
 import { BarChart3, LucideIcon } from "lucide-react";
 import { categoricalChartSettings } from "./categoricalChartSettings";
+import { basicNumbersSettings } from "./basicNumbersSettings";
 
 export interface ExampleData {
   id: string;
@@ -28,5 +29,13 @@ export const examples: ExampleData[] = [
     icon: BarChart3,
     data: "/data-viz/categorical_medium.csv",
     savedData: categoricalChartSettings,
+  },
+  {
+    id: "basic-numbers",
+    title: "Basic Numbers",
+    description: "Basic numbers",
+    icon: BarChart3,
+    data: "/data-viz/basic_numbers_medium.csv",
+    savedData: basicNumbersSettings,
   },
 ];

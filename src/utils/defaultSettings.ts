@@ -8,6 +8,7 @@ import {
   ScatterChartSettings,
   MarginSettings,
   BaseChartSettings,
+  SummaryChartSettings,
 } from "@/types/ChartTypes";
 import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
 import { Vector3 } from "three";
@@ -104,6 +105,13 @@ export const DEFAULT_3D_SCATTER_SETTINGS: Omit<ThreeDScatterSettings, "id"> = {
   zAxis: { ...DEFAULT_AXIS_SETTINGS, zoomLevel: 1 },
 };
 
+export const DEFAULT_SUMMARY_SETTINGS: Omit<SummaryChartSettings, "id"> = {
+  ...DEFAULT_CHART_SETTINGS,
+  type: "summary",
+  title: "Data Summary",
+  layout: { x: 0, y: 0, w: 12, h: 8 },
+};
+
 export function getDefaultSettingsForType(
   type: ChartSettings["type"]
 ): Omit<ChartSettings, "id"> {
@@ -118,6 +126,8 @@ export function getDefaultSettingsForType(
       return DEFAULT_SCATTER_SETTINGS;
     case "3d-scatter":
       return DEFAULT_3D_SCATTER_SETTINGS;
+    case "summary":
+      return DEFAULT_SUMMARY_SETTINGS;
     default:
       return DEFAULT_CHART_SETTINGS;
   }

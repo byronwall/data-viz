@@ -1,6 +1,13 @@
 import { IdType } from "@/providers/DataLayerProvider";
 
-import { BarChart, BarChartBig, ScatterChart, Table, Box } from "lucide-react";
+import {
+  BarChart,
+  BarChartBig,
+  ScatterChart,
+  Table,
+  Box,
+  Info,
+} from "lucide-react";
 import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
 
 export const CHART_TYPES = [
@@ -9,6 +16,7 @@ export const CHART_TYPES = [
   { value: "scatter", label: "Scatter Plot", icon: ScatterChart },
   { value: "pivot", label: "Pivot Table", icon: Table },
   { value: "3d-scatter", label: "3D Scatter", icon: Box },
+  { value: "summary", label: "Summary", icon: Info },
 ] as const;
 
 export type ChartType = (typeof CHART_TYPES)[number]["value"];
@@ -145,12 +153,19 @@ export interface PivotTableSettings extends BaseChartSettings {
   columnFilterValues?: Record<string, Array<string | number>>;
 }
 
+export interface SummaryChartSettings extends BaseChartSettings {
+  type: "summary";
+  // Inherits all base settings
+  // No additional settings needed as this is a simple display
+}
+
 export type ChartSettings =
   | RowChartSettings
   | BarChartSettings
   | ScatterChartSettings
   | PivotTableSettings
-  | ThreeDScatterSettings;
+  | ThreeDScatterSettings
+  | SummaryChartSettings;
 
 export interface BaseChartProps {
   settings: ChartSettings;

@@ -295,7 +295,7 @@ export function SummaryTable({ height }: BaseChartProps) {
   };
 
   return (
-    <div className="space-y-4 overflow-auto" style={{ maxHeight: height }}>
+    <div className="space-y-4 overflow-auto" style={{ height }}>
       <div className="space-y-4">
         <div className="flex flex-col">
           <div className="flex items-center gap-4">

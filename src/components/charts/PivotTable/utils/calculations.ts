@@ -211,7 +211,6 @@ export function calculatePivotData(
   data: any[],
   settings: PivotTableSettings
 ): PivotTableData {
-  console.log("data", data);
   const headers = generateHeaders(data, settings.columnFields);
   const rows = generateRows(
     data,
@@ -220,8 +219,6 @@ export function calculatePivotData(
     settings.valueFields,
     settings.showTotals
   );
-
-  console.log("rows", rows);
 
   return {
     headers,

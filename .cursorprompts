@@ -6,7 +6,7 @@ Take this transcript and split it into a new PRD document. Meticulously grab all
 
 ## Build a plan
 
-Update the prd_plan to include an actual implementation plan. Where it makes sense, add interface details and comp outlines (file structure + main props and actions).
+Create a `plans.md` file to include an actual implementation plan. Where it makes sense, add interface details and comp outlines (file structure + main props and actions).
 
 Add a STATUS section at bottom that will collect the progress. Fill with an initial status reflecting all work that needs to be done. Mirror the structure shown below (do not use this content).
 

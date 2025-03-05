@@ -1,43 +1,29 @@
 import { Button } from "@/components/ui/button";
-import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { DatumObject } from "@/providers/DataLayerProvider";
+import { parseCsvData } from "@/utils/csvParser";
 import { Plus, Upload } from "lucide-react";
-import Papa from "papaparse";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import type { SavedProject } from "@/providers/DataLayerProvider";
+import { toast } from "sonner";
 
 interface CsvUploadProps {
   compact?: boolean;
+  onImport?: (data: DatumObject[], fileName: string) => void;
 }
 
-export function CsvUpload({ compact = false }: CsvUploadProps) {
-  const setData = useDataLayer((state) => state.setData);
-  const setCurrentProject = useDataLayer((state) => state.setCurrentProject);
-
+export function CsvUpload({ compact = false, onImport }: CsvUploadProps) {
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
+    async (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
-
-      Papa.parse(file, {
-        complete: (results) => {
-          setData(results.data as DatumObject[], file.name);
-
-          // Create a new project with a random name when data is loaded
-          const newProject: SavedProject = {
-            version: 1,
-            name: `Project ${Math.random().toString(36).substring(2, 7)}`,
-            sourceDataPath: file.name,
-            views: [],
-            isSaved: false, // Add this flag to track if it's been explicitly saved
-          };
-          setCurrentProject(newProject);
-        },
-        header: true,
-        skipEmptyLines: true,
-      });
+      try {
+        const data = await parseCsvData(file);
+        onImport?.(data, file.name);
+      } catch (error) {
+        console.error("Error parsing CSV:", error);
+        toast.error("Failed to parse CSV file");
+      }
     },
-    [setData, setCurrentProject]
+    [onImport]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -48,24 +34,13 @@ export function CsvUpload({ compact = false }: CsvUploadProps) {
     multiple: false,
   });
 
-  const handleClear = () => {
-    setData([], undefined);
-    setCurrentProject({
-      version: 1,
-      name: "",
-      sourceDataPath: "",
-      views: [],
-      isSaved: false,
-    });
-  };
-
   if (compact) {
     return (
       <div className="flex gap-2">
         <Button
           variant="outline"
           size="sm"
-          onClick={handleClear}
+          onClick={() => onImport?.([], "")}
           className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />

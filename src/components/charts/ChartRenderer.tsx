@@ -67,7 +67,14 @@ export function ChartRenderer({
         />
       );
     case "summary":
-      return <SummaryTable />;
+      return (
+        <SummaryTable
+          settings={settings}
+          width={width}
+          height={height}
+          facetIds={facetIds}
+        />
+      );
     default:
       return null;
   }

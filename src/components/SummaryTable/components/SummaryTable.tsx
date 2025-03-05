@@ -15,6 +15,7 @@ import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { DataType } from "../utils/dataTypeDetection";
 import { CompactSummaryTable } from "./CompactSummaryTable";
+import { BaseChartProps } from "@/types/ChartTypes";
 
 interface ColumnSummary {
   name: string;
@@ -103,7 +104,7 @@ const exportToCSV = (summaries: ColumnSummary[]) => {
   toast.success("Summary table exported to CSV");
 };
 
-export function SummaryTable() {
+export function SummaryTable({ height }: BaseChartProps) {
   const getColumnData = useDataLayer((state) => state.getColumnData);
   const getColumnNames = useDataLayer((state) => state.getColumnNames);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -294,34 +295,37 @@ export function SummaryTable() {
   };
 
   return (
-    <div className="space-y-4 pb-20">
+    <div className="space-y-4 overflow-auto" style={{ maxHeight: height }}>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col">
           <div className="flex items-center gap-4">
-            {samplingAvailable && (
-              <Badge variant={useSampling ? "default" : "outline"}>
-                {useSampling ? "Sampling Enabled" : "Full Dataset"}
-              </Badge>
-            )}
-            {!samplingAvailable && (
-              <Badge variant="secondary">
-                Using Full Dataset ({totalRowCount()} rows)
-              </Badge>
-            )}
-            {samplingAvailable && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setUseSampling(!useSampling);
-                  setProcessedColumns(new Set());
-                  setProcessingQueue(getColumnNames());
-                  setProcessingProgress(0);
-                }}
-              >
-                Toggle Sampling
-              </Button>
-            )}
+            <div>
+              {samplingAvailable && (
+                <Badge variant={useSampling ? "default" : "outline"}>
+                  {useSampling ? "Sampling Enabled" : "Full Dataset"}
+                </Badge>
+              )}
+              {!samplingAvailable && (
+                <Badge variant="secondary">
+                  Using Full Dataset ({totalRowCount()} rows)
+                </Badge>
+              )}
+
+              {samplingAvailable && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setUseSampling(!useSampling);
+                    setProcessedColumns(new Set());
+                    setProcessingQueue(getColumnNames());
+                    setProcessingProgress(0);
+                  }}
+                >
+                  Toggle Sampling
+                </Button>
+              )}
+            </div>
 
             {useSampling && (
               <div className="space-y-2">
@@ -372,7 +376,11 @@ export function SummaryTable() {
         )}
       </div>
 
-      <CompactSummaryTable data={sortedSummaries} onSort={handleSort} />
+      <CompactSummaryTable
+        data={sortedSummaries}
+        onSort={handleSort}
+        totalRows={totalRowCount()}
+      />
     </div>
   );
 }

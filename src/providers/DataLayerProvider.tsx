@@ -269,8 +269,8 @@ const createDataLayerStore = <T extends DatumObject>(
       const summaryChart = createSummaryChartSettings({
         x: 0,
         y: 0,
-        w: 3,
-        h: 4,
+        w: 4,
+        h: 6,
       });
 
       // Reset everything to initial state

@@ -13,7 +13,7 @@ export function useCreateCharts() {
 
   const createChart = (type: ChartType, field: string) => {
     const layout = {
-      x: 0,
+      x: 5,
       y: 0,
       w: 6,
       h: 4,

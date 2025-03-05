@@ -1,6 +1,7 @@
 import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
 import { ChartSettings, ScatterChartSettings, datum } from "@/types/ChartTypes";
 import { useMemo } from "react";
+import { ThreeDScatterSettings } from "./ThreeDScatter/types";
 
 export function useGetLiveData(
   settings: ChartSettings,
@@ -39,10 +40,13 @@ export function useGetLiveData(
         _data = getColumnData(scatterSettings.yField);
       } else if (field === "colorField") {
         _data = getColumnData(scatterSettings.colorField);
-      } else if (field === "sizeField") {
-        _data = getColumnData(scatterSettings.sizeField);
-      } else if (field === "zField") {
-        _data = getColumnData(scatterSettings.zField);
+      } else if (settings.type === "3d-scatter") {
+        const threeDSettings = settings as ThreeDScatterSettings;
+        if (field === "sizeField") {
+          _data = getColumnData(threeDSettings.sizeField);
+        } else if (field === "zField") {
+          _data = getColumnData(threeDSettings.zField);
+        }
       }
     }
 

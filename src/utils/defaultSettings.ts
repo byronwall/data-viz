@@ -93,7 +93,7 @@ export const DEFAULT_3D_SCATTER_SETTINGS: Omit<ThreeDScatterSettings, "id"> = {
   zField: "",
   colorField: undefined,
   sizeField: undefined,
-  cameraPosition: new Vector3(5, 5, 5),
+  cameraPosition: new Vector3(10, 10, 10),
   cameraTarget: new Vector3(0, 0, 0),
   pointSize: 0.1,
   pointOpacity: 0.8,

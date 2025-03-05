@@ -1,9 +1,7 @@
+import { useColorScales } from "@/hooks/useColorScales";
 import { IdType } from "@/providers/DataLayerProvider";
 import { ChartSettings } from "@/types/ChartTypes";
-import { ThreeDScatterSettings } from "./types";
-import { useGetColumnDataForIds } from "../useGetColumnData";
 import { useMemo } from "react";
-import { useColorScales } from "@/hooks/useColorScales";
 import { useGetLiveData } from "../useGetLiveData";
 
 export function useThreeDScatterData(
@@ -26,13 +24,17 @@ export function useThreeDScatterData(
       return [];
     }
 
-    return xData.map((_, i) => ({
-      x: xData[i],
-      y: yData[i],
-      z: zData[i],
-      color: getColorForValue(colorScaleId, colorData[i]),
-      size: sizeData[i],
-    }));
+    const result = [];
+    for (let i = 0; i < xData.length; i++) {
+      result.push({
+        x: xData[i],
+        y: yData[i],
+        z: zData[i],
+        color: getColorForValue(colorScaleId, colorData[i]),
+        size: sizeData[i],
+      });
+    }
+    return result;
   }, [
     is3DScatter,
     xData,

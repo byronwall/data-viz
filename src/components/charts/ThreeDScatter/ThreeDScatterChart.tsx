@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { ThreeDScatterChartProps } from "./types";
 
@@ -7,6 +7,11 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { ThreeDScatterAxes } from "./ThreeDScatterAxes";
 import { ThreeDScatterPoints } from "./ThreeDScatterPoints";
 import { useThreeDScatterData } from "./useThreeDScatterData";
+
+interface CameraState {
+  position: THREE.Vector3;
+  target: THREE.Vector3;
+}
 
 export function ThreeDScatterChart({
   settings,
@@ -20,15 +25,16 @@ export function ThreeDScatterChart({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const animationFrameRef = useRef<number>(null);
+  const cameraStateRef = useRef<CameraState>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const updateChart = useDataLayer((state) => state.updateChart);
   const data = useThreeDScatterData(settings, facetIds);
-
-  console.log("3d scatter data", data);
+  const [nonce, setNonce] = useState(0);
 
   // Initialize Three.js scene
   useEffect(() => {
-    if (!containerRef.current) {
+    if (!containerRef.current || width <= 0 || height <= 0) {
       return;
     }
 
@@ -49,24 +55,38 @@ export function ThreeDScatterChart({
       powerPreference: "high-performance",
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
     // Add orbit controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.target.copy(settings.cameraTarget);
-    controls.addEventListener("change", () => {
-      // console.log("change");
-      // if (camera.position && controls.target) {
-      //   updateChart(settings.id, {
-      //     cameraPosition: camera.position.clone(),
-      //     cameraTarget: controls.target.clone(),
-      //   });
-      // }
-    });
     controlsRef.current = controls;
+    controls.addEventListener("change", () => {
+      if (!controls.object || !controls.target) {
+        return;
+      }
+      cameraStateRef.current = {
+        position: controls.object.position.clone(),
+        target: controls.target.clone(),
+      };
+
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      // Set new timeout
+      timeoutRef.current = setTimeout(() => {
+        if (cameraStateRef.current) {
+          updateChart(settings.id, {
+            cameraPosition: cameraStateRef.current.position,
+            cameraTarget: cameraStateRef.current.target,
+          });
+        }
+      }, 1000);
+    });
 
     // Add ambient light
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -77,6 +97,9 @@ export function ThreeDScatterChart({
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
+    // Force initial render
+    renderer.render(scene, camera);
+
     // Animation loop
     const animate = () => {
       animationFrameRef.current = requestAnimationFrame(animate);
@@ -84,6 +107,8 @@ export function ThreeDScatterChart({
       renderer.render(scene, camera);
     };
     animate();
+
+    setNonce((state) => state + 1);
 
     // Cleanup
     return () => {
@@ -114,29 +139,58 @@ export function ThreeDScatterChart({
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      if (!rendererRef.current || !cameraRef.current) {
+      if (
+        !rendererRef.current ||
+        !cameraRef.current ||
+        !sceneRef.current ||
+        width <= 0 ||
+        height <= 0
+      ) {
         return;
       }
 
       cameraRef.current.aspect = width / height;
       cameraRef.current.updateProjectionMatrix();
       rendererRef.current.setSize(width, height);
+      // Force render on resize
+      rendererRef.current.render(sceneRef.current, cameraRef.current);
     };
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [width, height]);
 
+  // Render points and axes immediately when scene is ready
+  useEffect(() => {
+    // Force a render after adding points and axes
+    if (
+      !sceneRef.current ||
+      !rendererRef.current ||
+      !cameraRef.current ||
+      width <= 0 ||
+      height <= 0
+    ) {
+      return;
+    }
+
+    rendererRef.current.render(sceneRef.current, cameraRef.current);
+  }, [data, width, height]);
+
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} style={{ width, height }}>
       {sceneRef.current && (
         <>
           <ThreeDScatterPoints
             scene={sceneRef.current}
             data={data}
             settings={settings}
+            key={"points-" + nonce}
           />
-          <ThreeDScatterAxes scene={sceneRef.current} settings={settings} />
+          <ThreeDScatterAxes
+            scene={sceneRef.current}
+            settings={settings}
+            key={"axes-" + nonce}
+          />
         </>
       )}
     </div>

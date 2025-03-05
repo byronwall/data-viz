@@ -125,4 +125,24 @@ const defaultSummarySettings: SummaryChartSettings = {
 4. ~~Integrate with ChartRenderer~~
 5. ~~Test and verify functionality~~
 
+### UI Improvements
+
+1. Add "Create Blank Chart" buttons to plot manager header
+
+   - Add buttons for each chart type
+   - Implement click handlers to create new charts
+   - Style consistently with existing UI
+
+2. Group action buttons into dropdown menu
+
+   - Create new dropdown component in plot manager header
+   - Move existing action buttons into dropdown
+   - Maintain all current functionality
+   - Style using shadcn/ui components
+
+3. Improve table display
+   - Add overflow handling with scrollbar for tall tables
+   - Display total row count in table header or footer
+   - Ensure responsive behavior is maintained
+
 The implementation is now complete and ready for use.

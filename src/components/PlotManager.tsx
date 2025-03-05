@@ -1,12 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { ColorScaleManager } from "./ColorScaleManager";
+import { ChartCreationButtons } from "./plot/ChartCreationButtons";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import type { ChartLayout } from "@/types/ChartTypes";
 import { saveRawDataToClipboard, saveToClipboard } from "@/utils/saveDataUtils";
-import { Calculator, Check, Copy, FilterX, Grid, X } from "lucide-react";
+import {
+  Calculator,
+  Copy,
+  FilterX,
+  Grid,
+  MoreHorizontal,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Layout } from "react-grid-layout";
 import { toast } from "sonner";
@@ -22,6 +30,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 // Add this conversion function
 const gridToPixels = (
@@ -174,74 +188,48 @@ export function PlotManager() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
+          <ChartCreationButtons />
         </div>
         <div className="flex items-center gap-2">
           {charts.length > 0 && activeTab === "charts" && (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={copyChartsToClipboard}
-                className={`flex items-center gap-2 transition-all duration-300 ${
-                  isCopying
-                    ? "bg-green-100 text-green-700 border-green-300"
-                    : ""
-                }`}
-                disabled={isCopying}
-              >
-                {isCopying ? (
-                  <>
-                    <Check className="h-4 w-4" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    onClick={copyChartsToClipboard}
+                    className="flex items-center gap-2"
+                  >
                     <Copy className="h-4 w-4" />
                     Copy Charts
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={copyDataToClipboard}
-                className={`flex items-center gap-2 transition-all duration-300 ${
-                  isCopyingData
-                    ? "bg-green-100 text-green-700 border-green-300"
-                    : ""
-                }`}
-                disabled={isCopyingData}
-              >
-                {isCopyingData ? (
-                  <>
-                    <Check className="h-4 w-4" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={copyDataToClipboard}
+                    className="flex items-center gap-2"
+                  >
                     <Copy className="h-4 w-4" />
                     Copy Data
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAllFilters}
-                className="flex items-center gap-2"
-              >
-                <FilterX className="h-4 w-4" />
-                Clear All Filters
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={removeAllCharts}
-                className="flex items-center gap-2"
-              >
-                <X className="h-4 w-4" />
-                Remove All Charts
-              </Button>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={clearAllFilters}
+                    className="flex items-center gap-2"
+                  >
+                    <FilterX className="h-4 w-4" />
+                    Clear All Filters
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={removeAllCharts}
+                    className="flex items-center gap-2 text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                    Remove All Charts
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
           <ColorScaleManager />

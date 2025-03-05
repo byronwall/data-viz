@@ -232,7 +232,7 @@ const getInitialStoreState = <T extends DatumObject>(
     colorScales: [],
     gridSettings: {
       columnCount: 12,
-      rowHeight: 30,
+      rowHeight: 100,
       containerPadding: 10,
       showBackgroundMarkers: true,
     },

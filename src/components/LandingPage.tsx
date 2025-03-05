@@ -1,49 +1,106 @@
 import { ExampleData, examples } from "@/demos/examples";
 import { DataLayerProvider } from "@/providers/DataLayerProvider";
+import type { DatumObject } from "@/providers/DataLayerProvider";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ExampleSelector } from "./ExampleSelector";
 import { PlotManager } from "./PlotManager";
+import { CsvUpload } from "./CsvUpload";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
+import { parseCsvData } from "@/utils/csvParser";
 
 export function LandingPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-
   const [isLoading, setIsLoading] = useState(false);
+  const [csvData, setCsvData] = useState<DatumObject[]>([]);
+  const [csvFileName, setCsvFileName] = useState<string>("");
+  const [exampleData, setExampleData] = useState<DatumObject[]>([]);
 
-  // Handle example selection from URL
   const exampleId = searchParams.get("example");
-  const selectedExample = exampleId
-    ? examples.find((ex) => ex.id === exampleId)
-    : null;
 
   const [example, setExample] = useState<ExampleData | null>(null);
+  const [isCsvMode, setIsCsvMode] = useState(false);
 
-  const hasData = selectedExample !== null;
+  const hasData = example !== null || isCsvMode;
 
-  const handleExampleSelect = async (exampleId: string) => {
-    setIsLoading(true);
-    setSearchParams({ example: exampleId });
-    const example = examples.find((ex) => ex.id === exampleId);
-    if (example) {
-      setExample(example);
-    } else {
-      toast.error("Example not found");
+  const fetchExampleData = async (url: string) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data: ${response.statusText}`);
+      }
+      const text = await response.text();
+      return await parseCsvData(text);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      throw error;
     }
-    setIsLoading(false);
   };
 
-  // Handle invalid example IDs in URL
+  const handleClearData = () => {
+    setSearchParams({});
+    setExample(null);
+    setIsCsvMode(false);
+    setCsvData([]);
+    setCsvFileName("");
+  };
+
+  const handleExampleSelect = useCallback(
+    async (exampleId: string) => {
+      setIsLoading(true);
+      try {
+        setSearchParams({ example: exampleId });
+        const example = examples.find((ex) => ex.id === exampleId);
+        if (example) {
+          const data = await fetchExampleData(example.data);
+          setExampleData(data);
+          setExample(example);
+          setIsCsvMode(false);
+          setCsvData([]);
+          setCsvFileName("");
+        } else {
+          toast.error("Example not found");
+        }
+      } catch (error) {
+        toast.error("Failed to load example data");
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [setSearchParams]
+  );
+
   useEffect(() => {
-    if (exampleId && !selectedExample) {
-      toast.error("Invalid example ID");
-      setSearchParams({});
+    if (exampleId) {
+      handleExampleSelect(exampleId);
     }
-  }, [exampleId, selectedExample, setSearchParams]);
+  }, [exampleId, handleExampleSelect]);
+
+  const handleCsvImport = (data: DatumObject[], fileName: string) => {
+    setIsCsvMode(true);
+    setSearchParams({});
+    setExample(null);
+    setCsvData(data);
+    setCsvFileName(fileName);
+  };
 
   return (
     <div className="flex flex-col items-center p-8 gap-8">
+      {hasData && (
+        <Button
+          variant="ghost"
+          className="absolute top-4 left-[50%] self-start"
+          style={{ transform: "translateX(-50%)" }}
+          onClick={handleClearData}
+        >
+          <X className="h-4 w-4" />
+          Return to Examples
+        </Button>
+      )}
       <AnimatePresence mode="wait">
         {!hasData ? (
           <motion.div
@@ -56,7 +113,16 @@ export function LandingPage() {
             <h1 className="text-3xl font-bold mb-8 text-center">
               Data Visualization Examples
             </h1>
-            <ExampleSelector onSelect={handleExampleSelect} />
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Import CSV Data</h2>
+                <CsvUpload onImport={handleCsvImport} />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Try Example Data</h2>
+                <ExampleSelector onSelect={handleExampleSelect} />
+              </div>
+            </div>
           </motion.div>
         ) : (
           <motion.div
@@ -67,8 +133,8 @@ export function LandingPage() {
             className="w-full"
           >
             <DataLayerProvider
-              data={example?.data}
-              savedData={example?.savedData}
+              data={isCsvMode ? csvData : exampleData}
+              savedData={isCsvMode ? undefined : example?.savedData}
             >
               <PlotManager />
             </DataLayerProvider>

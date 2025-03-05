@@ -1,13 +1,14 @@
-import { demoData, demoSettings } from "@/hooks/demo_data_settings";
+import { demoSettings } from "@/hooks/demo_data_settings";
 import { SavedDataStructure } from "@/types/SavedDataTypes";
 import { BarChart3, LucideIcon } from "lucide-react";
+import { categoricalChartSettings } from "./categoricalChartSettings";
 
 export interface ExampleData {
   id: string;
   title: string;
   description: string;
   icon: LucideIcon;
-  data: any; // Chart data
+  data: string; // path to the data file
   savedData: SavedDataStructure;
 }
 
@@ -17,16 +18,15 @@ export const examples: ExampleData[] = [
     title: "Lorenz w/ 3D",
     description: "Lorenz attractor in 3D",
     icon: BarChart3,
-    data: demoData,
+    data: "/data-viz/lorenz_3d_small.csv",
     savedData: demoSettings,
   },
   {
-    id: "lorenz-3d-copy",
-    title: "Lorenz w/ 3D Copy",
-    description: "Lorenz attractor in 3D",
+    id: "categorical-charts",
+    title: "Pivot + Categorical Charts",
+    description: "Pivot + Categorical charts",
     icon: BarChart3,
-    data: demoData,
-    savedData: demoSettings,
+    data: "/data-viz/categorical_medium.csv",
+    savedData: categoricalChartSettings,
   },
-  // will add more later
 ];

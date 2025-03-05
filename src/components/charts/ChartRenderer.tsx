@@ -1,13 +1,11 @@
+import { IdType } from "@/providers/DataLayerProvider";
 import { ChartSettings } from "@/types/ChartTypes";
+import { SummaryTable } from "../SummaryTable/components/SummaryTable";
 import { BarChart } from "./BarChart";
+import { PivotTable } from "./PivotTable/PivotTable";
 import { RowChart } from "./RowChart";
 import { ScatterPlot } from "./ScatterPlot";
-import { PivotTable } from "./PivotTable/PivotTable";
-import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
 import { ThreeDScatterChart } from "./ThreeDScatter/ThreeDScatterChart";
-import { useThreeDScatterData } from "./ThreeDScatter/useThreeDScatterData";
-import { SummaryChart } from "./SummaryChart";
-import { SummaryTable } from "../SummaryTable/components/SummaryTable";
 
 interface ChartRendererProps {
   settings: ChartSettings;

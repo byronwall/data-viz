@@ -35,6 +35,7 @@ export function ScatterPlot({
   // Get filtered data for rendering
   const xData = useGetLiveData(settings, "xField", facetIds);
   const yData = useGetLiveData(settings, "yField", facetIds);
+  const colorData = useGetLiveData(settings, "colorField", facetIds);
 
   // Convert object to array and map to numbers
   const xValues = xData.map(Number);
@@ -185,8 +186,7 @@ export function ScatterPlot({
           ? "rgb(156 163 175)" // gray-400 for filtered out points
           : getColorForValue(
               settings.colorScaleId,
-              xValues[i],
-              "hsl(217.2 91.2% 59.8%)"
+              colorData[i] ?? "hsl(217.2 91.2% 59.8%)"
             );
 
       ctx.beginPath();
@@ -206,6 +206,7 @@ export function ScatterPlot({
     xScale,
     yScale,
     getColorForValue,
+    colorData,
   ]);
 
   const handleBrushChange = useCallback(

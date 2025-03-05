@@ -1,4 +1,5 @@
 import { ScaleSequential, ScaleOrdinal } from "d3-scale";
+import { datum } from "./ChartTypes";
 
 export interface BaseColorScale {
   id: string;
@@ -29,7 +30,7 @@ export interface UseColorScalesReturn {
   // Color Getters
   getColorForValue: (
     scaleId: string | undefined,
-    value: string | number,
+    value: datum,
     defaultColor?: string
   ) => string;
   getScaleById: (id: string) => ColorScaleType | undefined;

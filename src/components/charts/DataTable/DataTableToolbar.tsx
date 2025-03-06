@@ -2,12 +2,23 @@ import { DataTableSettings } from "@/types/ChartTypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download, Search } from "lucide-react";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 
 interface DataTableToolbarProps {
   settings: DataTableSettings;
 }
 
 export function DataTableToolbar({ settings }: DataTableToolbarProps) {
+  const updateChart = useDataLayer((state) => state.updateChart);
+
+  const handleSearch = (value: string) => {
+    updateChart(settings.id, {
+      ...settings,
+      globalSearch: value,
+      currentPage: 1, // Reset to first page when searching
+    });
+  };
+
   return (
     <div className="flex items-center justify-between p-4">
       <div className="flex items-center gap-2">
@@ -16,9 +27,8 @@ export function DataTableToolbar({ settings }: DataTableToolbarProps) {
           <Input
             placeholder="Search..."
             className="pl-8"
-            onChange={(e) => {
-              // TODO: Implement global search
-            }}
+            value={settings.globalSearch}
+            onChange={(e) => handleSearch(e.target.value)}
           />
         </div>
       </div>

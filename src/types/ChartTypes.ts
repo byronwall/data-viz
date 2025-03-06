@@ -179,6 +179,7 @@ export interface DataTableSettings extends BaseChartSettings {
       operator: "contains" | "equals" | "startsWith" | "endsWith";
     }
   >;
+  globalSearch: string;
 }
 
 export type ChartSettings =

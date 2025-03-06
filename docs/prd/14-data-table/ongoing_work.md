@@ -20,22 +20,24 @@
 
 ### Row Selection Implementation
 
-- [ ] Remove row selection from the data table
+- [x] Remove row selection from the data table
 
 ## Phase 3: Data Processing and Search
 
 ### Sorting Improvements
 
-- [ ] Implement numeric sorting
-  - [ ] Add natural sort for numeric columns
-  - [ ] Update column sorting logic
-  - [ ] Add tests for numeric sorting
+- [x] Implement numeric sorting
+  - [x] Add natural sort for numeric columns
+  - [x] Update column sorting logic
+  - [x] Add tests for numeric sorting
 
 ### Search Functionality
 
-- [ ] Fix global search
-  - [ ] Review and fix search implementation
-  - [ ] Add tests for search functionality
+- [x] Fix global search
+  - [x] Review and fix search implementation
+  - [x] Add global search to settings
+  - [x] Implement search in toolbar
+  - [x] Add search filtering to table body
 
 ## Phase 4: UI and Layout
 
@@ -45,7 +47,7 @@
   - [ ] Add fixed height container
   - [ ] Implement proper scrolling behavior
 - [ ] Allow column resizing with a simple handler - store column widths in settings
-- [ ] Add a proper column header to the table - or use the existing column header
+- [x] Add a proper column header to the table - or use the existing column header
 
 ### Settings Integration
 
@@ -70,14 +72,15 @@
 - Initial implementation complete
 - Issues identified during testing
 - Plan created to address all identified issues
+- Numeric sorting implementation completed
+- Global search implementation completed
+- Moving on to layout improvements
 
 ### Next Steps
 
-1. Begin work on pagination
-2. Implement proper row selection
-3. Fix search functionality
-4. Address remaining UI and layout issues
-5. Update testing infrastructure
+1. Implement proper height and overflow handling
+2. Add column resizing functionality
+3. Update testing infrastructure
 
 ### Outstanding Questions
 

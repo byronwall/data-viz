@@ -164,13 +164,8 @@ export interface DataTableSettings extends BaseChartSettings {
   type: "data-table";
   columns: Array<{
     id: string;
-    label: string;
     field: string;
-    type: "string" | "number" | "date" | "boolean";
     visible: boolean;
-    width: number;
-    sortable?: boolean;
-    filterable?: boolean;
   }>;
   visibleColumns: string[];
   pageSize: number;

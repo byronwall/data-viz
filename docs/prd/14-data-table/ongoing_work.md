@@ -52,13 +52,14 @@
   - [ ] Add fixed height container
   - [ ] Implement proper scrolling behavior
 - [ ] Allow column resizing with a simple handler - store column widths in settings
+- [ ] Add a proper column header to the table - or use the existing column header
 
 ### Settings Integration
 
-- [ ] Move settings into main tab
-  - [ ] Integrate settings UI into main view
-  - [ ] Update settings state management
-  - [ ] Remove settings related to specific columns
+- [x] Move settings into main tab
+  - [x] Integrate settings UI into main view
+  - [x] Remove settings related to specific columns: `type`, `label`, `width`, `sortable`, `filterable`
+  - [x] Do not expose an input for column width - controlled by the UI
 
 ## Phase 5: Code Organization and Testing
 

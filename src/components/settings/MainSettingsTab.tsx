@@ -35,6 +35,13 @@ const AGGREGATION_OPTIONS: { label: string; value: AggregationType }[] = [
   { label: "Single Value", value: "singleValue" },
 ];
 
+const PAGE_SIZE_OPTIONS = [
+  { label: "10 rows", value: 10 },
+  { label: "25 rows", value: 25 },
+  { label: "50 rows", value: 50 },
+  { label: "100 rows", value: 100 },
+];
+
 export function MainSettingsTab({
   settings,
   availableFields,
@@ -393,7 +400,7 @@ export function MainSettingsTab({
                   value={(settings as DataTableSettings).columns
                     .filter((col) => col.visible)
                     .map((col) => ({
-                      label: col.label || col.field,
+                      label: col.field,
                       value: col.field,
                     }))}
                   onChange={(values: Option[]) => {
@@ -412,15 +419,59 @@ export function MainSettingsTab({
                         newColumns.push({
                           id: value.value,
                           field: value.value,
-                          label: value.label,
-                          type: "string",
                           visible: true,
-                          width: 150,
-                          sortable: true,
-                          filterable: true,
                         });
                       }
                     });
+                    onSettingChange("columns", newColumns);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Pagination */}
+            <div className="space-y-2">
+              <Label>Page Size</Label>
+              <div className="max-w-[400px]">
+                <ComboBox
+                  value={PAGE_SIZE_OPTIONS.find(
+                    (o) => o.value === (settings as DataTableSettings).pageSize
+                  )}
+                  options={PAGE_SIZE_OPTIONS}
+                  onChange={(option) =>
+                    onSettingChange("pageSize", option?.value || 10)
+                  }
+                  optionToString={(option) => option.label}
+                />
+              </div>
+            </div>
+
+            {/* Selection */}
+            <div className="space-y-2">
+              <Label>Enable Selection</Label>
+              <div className="max-w-[400px]">
+                <Switch
+                  checked={(settings as DataTableSettings).columns.some(
+                    (col) => col.id === "selection"
+                  )}
+                  onCheckedChange={(checked) => {
+                    const newColumns = [
+                      ...(settings as DataTableSettings).columns,
+                    ];
+                    if (checked) {
+                      newColumns.unshift({
+                        id: "selection",
+                        field: "selection",
+                        visible: true,
+                      });
+                    } else {
+                      const index = newColumns.findIndex(
+                        (col) => col.id === "selection"
+                      );
+                      if (index !== -1) {
+                        newColumns.splice(index, 1);
+                      }
+                    }
                     onSettingChange("columns", newColumns);
                   }}
                 />

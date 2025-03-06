@@ -52,9 +52,6 @@ export function ChartSettingsContent({
     { value: "axis", label: "Axis" },
     { value: "labels", label: "Labels" },
     { value: "advanced", label: "Advanced" },
-    ...(settings.type === "data-table"
-      ? [{ value: "data-table", label: "Data Table" }]
-      : []),
   ];
 
   return (
@@ -93,17 +90,6 @@ export function ChartSettingsContent({
               onSettingChange={handleSettingChange}
             />
           ),
-          ...(settings.type === "data-table"
-            ? {
-                "data-table": (
-                  <DataTableSettingsTab
-                    settings={localSettings as any}
-                    availableFields={availableFields}
-                    onSettingChange={handleSettingChange}
-                  />
-                ),
-              }
-            : {}),
         }}
       </TabContainer>
 

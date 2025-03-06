@@ -397,32 +397,16 @@ export function MainSettingsTab({
               <div className="max-w-[400px]">
                 <MultiSelect
                   options={fieldOptions}
-                  value={(settings as DataTableSettings).columns
-                    .filter((col) => col.visible)
-                    .map((col) => ({
-                      label: col.field,
-                      value: col.field,
-                    }))}
+                  value={(settings as DataTableSettings).columns.map((col) => ({
+                    label: col.field,
+                    value: col.field,
+                  }))}
                   onChange={(values: Option[]) => {
-                    const newColumns = [
-                      ...(settings as DataTableSettings).columns,
-                    ];
-                    // Update visibility of existing columns
-                    newColumns.forEach((col) => {
-                      col.visible = values.some((v) => v.value === col.field);
-                    });
-                    // Add new columns
-                    values.forEach((value) => {
-                      if (
-                        !newColumns.some((col) => col.field === value.value)
-                      ) {
-                        newColumns.push({
-                          id: value.value,
-                          field: value.value,
-                          visible: true,
-                        });
-                      }
-                    });
+                    const newColumns = values.map((value) => ({
+                      id: value.value,
+                      field: value.value,
+                    }));
+
                     onSettingChange("columns", newColumns);
                   }}
                 />
@@ -442,38 +426,6 @@ export function MainSettingsTab({
                     onSettingChange("pageSize", option?.value || 10)
                   }
                   optionToString={(option) => option.label}
-                />
-              </div>
-            </div>
-
-            {/* Selection */}
-            <div className="space-y-2">
-              <Label>Enable Selection</Label>
-              <div className="max-w-[400px]">
-                <Switch
-                  checked={(settings as DataTableSettings).columns.some(
-                    (col) => col.id === "selection"
-                  )}
-                  onCheckedChange={(checked) => {
-                    const newColumns = [
-                      ...(settings as DataTableSettings).columns,
-                    ];
-                    if (checked) {
-                      newColumns.unshift({
-                        id: "selection",
-                        field: "selection",
-                        visible: true,
-                      });
-                    } else {
-                      const index = newColumns.findIndex(
-                        (col) => col.id === "selection"
-                      );
-                      if (index !== -1) {
-                        newColumns.splice(index, 1);
-                      }
-                    }
-                    onSettingChange("columns", newColumns);
-                  }}
                 />
               </div>
             </div>

@@ -20,11 +20,13 @@ export function DataTableHeader({ settings }: DataTableHeaderProps) {
   );
   const [startX, setStartX] = React.useState(0);
   const [startWidth, setStartWidth] = React.useState(0);
+  const [tempWidths, setTempWidths] = React.useState<Record<string, number>>(
+    {}
+  );
 
   // Get filtered data from liveItems
 
   const handleResizeStart = (e: React.MouseEvent, columnId: string) => {
-    console.log("Resize start:", { columnId, clientX: e.clientX });
     setResizingColumn(columnId);
     setStartX(e.clientX);
     const column = settings.columns.find((col) => col.id === columnId);
@@ -38,31 +40,34 @@ export function DataTableHeader({ settings }: DataTableHeaderProps) {
       }
 
       const diff = e.clientX - startX;
-      const newWidth = Math.max(10, startWidth + diff); // Minimum width of 50px
+      const newWidth = Math.max(10, startWidth + diff);
 
-      console.log("Resize move:", {
-        columnId: resizingColumn,
-        clientX: e.clientX,
-        startX,
-        diff,
-        newWidth,
-        startWidth,
-      });
-
-      updateChart(settings.id, {
-        ...settings,
-        columns: settings.columns.map((col) =>
-          col.id === resizingColumn ? { ...col, width: newWidth } : col
-        ),
-      });
+      setTempWidths((prev) => ({
+        ...prev,
+        [resizingColumn]: newWidth,
+      }));
     },
-    [resizingColumn, startX, startWidth, settings, updateChart]
+    [resizingColumn, startX, startWidth]
   );
 
   const handleResizeEnd = React.useCallback(() => {
-    console.log("Resize end:", { columnId: resizingColumn });
+    if (!resizingColumn) {
+      return;
+    }
+
+    const finalWidth = tempWidths[resizingColumn];
+    if (finalWidth) {
+      updateChart(settings.id, {
+        ...settings,
+        columns: settings.columns.map((col) =>
+          col.id === resizingColumn ? { ...col, width: finalWidth } : col
+        ),
+      });
+    }
+
     setResizingColumn(null);
-  }, [resizingColumn]);
+    setTempWidths({});
+  }, [resizingColumn, tempWidths, settings, updateChart]);
 
   React.useEffect(() => {
     if (resizingColumn) {
@@ -114,7 +119,12 @@ export function DataTableHeader({ settings }: DataTableHeaderProps) {
           <TableHead
             key={column.id}
             className="relative select-none"
-            style={{ width: column.width }}
+            style={{
+              width:
+                resizingColumn === column.id
+                  ? tempWidths[column.id] || column.width
+                  : column.width,
+            }}
           >
             <div
               className="flex items-center gap-2 cursor-pointer"

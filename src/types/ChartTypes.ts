@@ -165,10 +165,8 @@ export interface DataTableSettings extends BaseChartSettings {
   columns: Array<{
     id: string;
     field: string;
-    visible: boolean;
     width?: number;
   }>;
-  visibleColumns: string[];
   pageSize: number;
   currentPage: number;
   sortBy?: string;

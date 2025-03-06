@@ -22,7 +22,6 @@ const PAGE_SIZE_OPTIONS = [
 ];
 
 export function DataTablePagination({ settings }: DataTablePaginationProps) {
-  console.log("DataTablePagination", settings);
   const { pageSize, currentPage } = settings;
   const data = useDataLayer((state) => state.data);
   const liveItems = useDataLayer((state) => state.getLiveItems(settings));

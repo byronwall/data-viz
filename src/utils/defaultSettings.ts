@@ -117,11 +117,12 @@ export const DEFAULT_DATA_TABLE_SETTINGS: Omit<DataTableSettings, "id"> = {
   ...DEFAULT_CHART_SETTINGS,
   type: "data-table",
   columns: [],
-  visibleColumns: [],
   pageSize: 10,
   currentPage: 1,
   sortDirection: "asc",
   filters: {},
+  globalSearch: "",
+  tableHeight: 600,
 };
 
 export function getDefaultSettingsForType(

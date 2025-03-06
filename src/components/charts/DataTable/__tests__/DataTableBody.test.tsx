@@ -20,10 +20,9 @@ const mockSettings: DataTableSettings = {
   xGridLines: 0,
   yGridLines: 0,
   columns: [
-    { id: "name", field: "name", visible: true, width: 200 },
-    { id: "age", field: "age", visible: true, width: 100 },
+    { id: "name", field: "name", width: 200 },
+    { id: "age", field: "age", width: 100 },
   ],
-  visibleColumns: ["name", "age"],
   pageSize: 10,
   currentPage: 1,
   sortDirection: "asc",

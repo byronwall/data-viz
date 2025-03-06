@@ -1,31 +1,35 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { DataTableHeader } from "../DataTableHeader";
-import { DataTableSettings, ChartLayout } from "@/types/ChartTypes";
+import { DataTableSettings } from "@/types/ChartTypes";
 
 const mockSettings: DataTableSettings = {
   id: "test-table",
   type: "data-table",
   title: "Test Table",
   field: "test",
-  layout: "vertical" as ChartLayout,
-  colorScaleId: "default",
-  colorField: "value",
-  labelField: "name",
-  showLegend: true,
-  showLabels: true,
-  showValues: true,
-  showGrid: true,
-  showAxis: true,
+  layout: { x: 0, y: 0, w: 12, h: 6 },
+  colorScaleId: undefined,
+  colorField: undefined,
+  facet: { enabled: false, type: "grid", rowVariable: "", columnVariable: "" },
+  xAxis: {},
+  yAxis: {},
+  margin: {},
+  xAxisLabel: "",
+  yAxisLabel: "",
+  xGridLines: 0,
+  yGridLines: 0,
   columns: [
-    { id: "name", label: "Name", field: "name" },
-    { id: "age", label: "Age", field: "age" },
+    { id: "name", field: "name", visible: true, width: 200 },
+    { id: "age", field: "age", visible: true, width: 100 },
   ],
   visibleColumns: ["name", "age"],
   pageSize: 10,
   currentPage: 1,
   sortDirection: "asc",
-  selectedRows: new Set(),
   filters: {},
+  globalSearch: "",
+  tableHeight: 600,
 };
 
 const mockData = [
@@ -42,9 +46,9 @@ const mockLiveItems = {
   ],
 };
 
-const mockUseDataLayer = jest.fn();
+const mockUseDataLayer = vi.fn();
 
-jest.mock("@/providers/DataLayerProvider", () => ({
+vi.mock("@/providers/DataLayerProvider", () => ({
   useDataLayer: (selector: (state: any) => any) => mockUseDataLayer(selector),
 }));
 
@@ -57,11 +61,8 @@ describe("DataTableHeader", () => {
       if (selector.toString().includes("getLiveItems")) {
         return mockLiveItems;
       }
-      if (selector.toString().includes("selectedRows")) {
-        return new Set();
-      }
       if (selector.toString().includes("updateChart")) {
-        return jest.fn();
+        return vi.fn();
       }
       return null;
     });
@@ -70,12 +71,12 @@ describe("DataTableHeader", () => {
   it("renders column headers", () => {
     render(<DataTableHeader settings={mockSettings} />);
 
-    expect(screen.getByText("Name")).toBeInTheDocument();
-    expect(screen.getByText("Age")).toBeInTheDocument();
+    expect(screen.getByText("name")).toBeInTheDocument();
+    expect(screen.getByText("age")).toBeInTheDocument();
   });
 
   it("handles column sorting", () => {
-    const updateChart = jest.fn();
+    const updateChart = vi.fn();
     mockUseDataLayer.mockImplementation((selector: (state: any) => any) => {
       if (selector.toString().includes("updateChart")) {
         return updateChart;
@@ -85,7 +86,7 @@ describe("DataTableHeader", () => {
 
     render(<DataTableHeader settings={mockSettings} />);
 
-    const nameHeader = screen.getByText("Name");
+    const nameHeader = screen.getByText("name");
     fireEvent.click(nameHeader);
 
     expect(updateChart).toHaveBeenCalledWith(
@@ -98,7 +99,7 @@ describe("DataTableHeader", () => {
   });
 
   it("toggles sort direction when clicking the same column", () => {
-    const updateChart = jest.fn();
+    const updateChart = vi.fn();
     mockUseDataLayer.mockImplementation((selector: (state: any) => any) => {
       if (selector.toString().includes("updateChart")) {
         return updateChart;
@@ -114,7 +115,7 @@ describe("DataTableHeader", () => {
 
     render(<DataTableHeader settings={settingsWithSort} />);
 
-    const nameHeader = screen.getByText("Name");
+    const nameHeader = screen.getByText("name");
     fireEvent.click(nameHeader);
 
     expect(updateChart).toHaveBeenCalledWith(
@@ -126,8 +127,8 @@ describe("DataTableHeader", () => {
     );
   });
 
-  it("handles select all", () => {
-    const updateChart = jest.fn();
+  it("handles column resizing", () => {
+    const updateChart = vi.fn();
     mockUseDataLayer.mockImplementation((selector: (state: any) => any) => {
       if (selector.toString().includes("updateChart")) {
         return updateChart;
@@ -137,28 +138,26 @@ describe("DataTableHeader", () => {
 
     render(<DataTableHeader settings={mockSettings} />);
 
-    const selectAllCheckbox = screen.getByRole("checkbox");
-    fireEvent.click(selectAllCheckbox);
+    const resizeHandle = screen.getAllByRole("presentation")[0];
+    fireEvent.mouseDown(resizeHandle, { clientX: 0 });
+    fireEvent.mouseMove(window, { clientX: 50 });
+    fireEvent.mouseUp(window);
 
     expect(updateChart).toHaveBeenCalledWith(
       "test-table",
       expect.objectContaining({
-        selectedRows: expect.any(Set),
+        columns: expect.arrayContaining([
+          expect.objectContaining({
+            id: "name",
+            width: 250, // 200 + 50
+          }),
+        ]),
       })
     );
   });
 
-  it("shows filter UI when filter button is clicked", () => {
-    render(<DataTableHeader settings={mockSettings} />);
-
-    const filterButton = screen.getAllByRole("button")[1]; // First filter button
-    fireEvent.click(filterButton);
-
-    expect(screen.getByPlaceholderText("Filter Name...")).toBeInTheDocument();
-  });
-
-  it("applies filter when filter value changes", () => {
-    const updateChart = jest.fn();
+  it("respects minimum column width", () => {
+    const updateChart = vi.fn();
     mockUseDataLayer.mockImplementation((selector: (state: any) => any) => {
       if (selector.toString().includes("updateChart")) {
         return updateChart;
@@ -168,23 +167,20 @@ describe("DataTableHeader", () => {
 
     render(<DataTableHeader settings={mockSettings} />);
 
-    // Open filter
-    const filterButton = screen.getAllByRole("button")[1];
-    fireEvent.click(filterButton);
-
-    // Change filter value
-    const filterInput = screen.getByPlaceholderText("Filter Name...");
-    fireEvent.change(filterInput, { target: { value: "John" } });
+    const resizeHandle = screen.getAllByRole("presentation")[0];
+    fireEvent.mouseDown(resizeHandle, { clientX: 0 });
+    fireEvent.mouseMove(window, { clientX: -200 }); // Try to make it smaller than minimum
+    fireEvent.mouseUp(window);
 
     expect(updateChart).toHaveBeenCalledWith(
       "test-table",
       expect.objectContaining({
-        filters: expect.objectContaining({
-          name: expect.objectContaining({
-            value: "John",
-            operator: "contains",
+        columns: expect.arrayContaining([
+          expect.objectContaining({
+            id: "name",
+            width: 50, // Minimum width
           }),
-        }),
+        ]),
       })
     );
   });

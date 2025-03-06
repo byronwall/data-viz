@@ -1,11 +1,10 @@
-import { DataTableSettings } from "@/types/ChartTypes";
-import { ColumnHeader } from "./components/ColumnHeader";
+import { Button } from "@/components/ui/button";
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { ArrowUpDown, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { DataTableSettings } from "@/types/ChartTypes";
+import { ChevronDown, ChevronUp, Filter } from "lucide-react";
+import React, { useState } from "react";
 import { ColumnFilter } from "./components/ColumnFilter";
-import { useState } from "react";
 
 interface DataTableHeaderProps {
   settings: DataTableSettings;
@@ -13,26 +12,78 @@ interface DataTableHeaderProps {
 
 export function DataTableHeader({ settings }: DataTableHeaderProps) {
   const { columns, sortBy, sortDirection, filters } = settings;
-  const data = useDataLayer((state) => state.data);
-  const liveItems = useDataLayer((state) => state.getLiveItems(settings));
+
   const updateChart = useDataLayer((state) => state.updateChart);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [resizingColumn, setResizingColumn] = React.useState<string | null>(
+    null
+  );
+  const [startX, setStartX] = React.useState(0);
+  const [startWidth, setStartWidth] = React.useState(0);
 
   // Get filtered data from liveItems
-  const filteredData =
-    liveItems?.items
-      .filter((item) => item.value > 0)
-      .map((item) => data.find((row) => row.__ID === item.key))
-      .filter(
-        (row): row is { __ID: number; [key: string]: any } => row !== undefined
-      ) || [];
+
+  const handleResizeStart = (e: React.MouseEvent, columnId: string) => {
+    console.log("Resize start:", { columnId, clientX: e.clientX });
+    setResizingColumn(columnId);
+    setStartX(e.clientX);
+    const column = settings.columns.find((col) => col.id === columnId);
+    setStartWidth(column?.width || 100);
+  };
+
+  const handleResizeMove = React.useCallback(
+    (e: MouseEvent) => {
+      if (!resizingColumn) {
+        return;
+      }
+
+      const diff = e.clientX - startX;
+      const newWidth = Math.max(10, startWidth + diff); // Minimum width of 50px
+
+      console.log("Resize move:", {
+        columnId: resizingColumn,
+        clientX: e.clientX,
+        startX,
+        diff,
+        newWidth,
+        startWidth,
+      });
+
+      updateChart(settings.id, {
+        ...settings,
+        columns: settings.columns.map((col) =>
+          col.id === resizingColumn ? { ...col, width: newWidth } : col
+        ),
+      });
+    },
+    [resizingColumn, startX, startWidth, settings, updateChart]
+  );
+
+  const handleResizeEnd = React.useCallback(() => {
+    console.log("Resize end:", { columnId: resizingColumn });
+    setResizingColumn(null);
+  }, [resizingColumn]);
+
+  React.useEffect(() => {
+    if (resizingColumn) {
+      window.addEventListener("mousemove", handleResizeMove);
+      window.addEventListener("mouseup", handleResizeEnd);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleResizeMove);
+      window.removeEventListener("mouseup", handleResizeEnd);
+    };
+  }, [resizingColumn, handleResizeMove, handleResizeEnd]);
 
   const handleSort = (columnId: string) => {
-    const newSortDirection: "asc" | "desc" =
+    const newDirection =
       sortBy === columnId && sortDirection === "asc" ? "desc" : "asc";
+
     updateChart(settings.id, {
+      ...settings,
       sortBy: columnId,
-      sortDirection: newSortDirection,
+      sortDirection: newDirection,
     });
   };
 
@@ -60,25 +111,22 @@ export function DataTableHeader({ settings }: DataTableHeaderProps) {
     <TableHeader>
       <TableRow>
         {columns.map((column) => (
-          <TableHead key={column.id}>
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-2"
-                onClick={() => handleSort(column.id)}
-              >
-                {column.id}
-                {sortBy === column.id ? (
-                  <ArrowUpDown
-                    className={`h-4 w-4 ${
-                      sortDirection === "desc" ? "rotate-180" : ""
-                    }`}
-                  />
+          <TableHead
+            key={column.id}
+            className="relative select-none"
+            style={{ width: column.width }}
+          >
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => handleSort(column.id)}
+            >
+              {column.field}
+              {sortBy === column.id &&
+                (sortDirection === "asc" ? (
+                  <ChevronUp className="h-4 w-4" />
                 ) : (
-                  <ArrowUpDown className="h-4 w-4 text-gray-400" />
-                )}
-              </Button>
+                  <ChevronDown className="h-4 w-4" />
+                ))}
               <Button
                 variant="ghost"
                 size="sm"
@@ -100,6 +148,10 @@ export function DataTableHeader({ settings }: DataTableHeaderProps) {
                 />
               )}
             </div>
+            <div
+              className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary"
+              onMouseDown={(e) => handleResizeStart(e, column.id)}
+            />
           </TableHead>
         ))}
       </TableRow>

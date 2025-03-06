@@ -166,6 +166,7 @@ export interface DataTableSettings extends BaseChartSettings {
     id: string;
     field: string;
     visible: boolean;
+    width?: number;
   }>;
   visibleColumns: string[];
   pageSize: number;
@@ -180,6 +181,7 @@ export interface DataTableSettings extends BaseChartSettings {
     }
   >;
   globalSearch: string;
+  tableHeight: number;
 }
 
 export type ChartSettings =

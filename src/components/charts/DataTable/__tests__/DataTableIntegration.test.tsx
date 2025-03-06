@@ -1,6 +1,7 @@
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { DataTable } from "../DataTable";
-import { DataTableSettings, ChartLayout } from "@/types/ChartTypes";
+import { DataTableSettings } from "@/types/ChartTypes";
 import { DataLayerProvider } from "@/providers/DataLayerProvider";
 
 const mockSettings: DataTableSettings = {
@@ -8,25 +9,28 @@ const mockSettings: DataTableSettings = {
   type: "data-table",
   title: "Test Table",
   field: "test",
-  layout: "vertical" as ChartLayout,
-  colorScaleId: "default",
-  colorField: "value",
-  labelField: "name",
-  showLegend: true,
-  showLabels: true,
-  showValues: true,
-  showGrid: true,
-  showAxis: true,
+  layout: { x: 0, y: 0, w: 12, h: 6 },
+  colorScaleId: undefined,
+  colorField: undefined,
+  facet: { enabled: false, type: "grid", rowVariable: "", columnVariable: "" },
+  xAxis: {},
+  yAxis: {},
+  margin: {},
+  xAxisLabel: "",
+  yAxisLabel: "",
+  xGridLines: 0,
+  yGridLines: 0,
   columns: [
-    { id: "name", label: "Name", field: "name" },
-    { id: "age", label: "Age", field: "age" },
+    { id: "name", field: "name", visible: true, width: 200 },
+    { id: "age", field: "age", visible: true, width: 100 },
   ],
   visibleColumns: ["name", "age"],
   pageSize: 10,
   currentPage: 1,
   sortDirection: "asc",
-  selectedRows: new Set(),
   filters: {},
+  globalSearch: "",
+  tableHeight: 600,
 };
 
 const mockData = [
@@ -46,14 +50,8 @@ const mockLiveItems = {
 describe("DataTable Integration", () => {
   it("renders data table with data from data layer", () => {
     render(
-      <DataLayerProvider
-        initialState={{
-          data: mockData,
-          liveItems: mockLiveItems,
-          selectedRows: new Set(),
-        }}
-      >
-        <DataTable settings={mockSettings} />
+      <DataLayerProvider data={mockData}>
+        <DataTable settings={mockSettings} width={800} height={600} />
       </DataLayerProvider>
     );
 
@@ -63,21 +61,14 @@ describe("DataTable Integration", () => {
   });
 
   it("updates data layer when sorting changes", () => {
-    const updateChart = jest.fn();
+    const updateChart = vi.fn();
     render(
-      <DataLayerProvider
-        initialState={{
-          data: mockData,
-          liveItems: mockLiveItems,
-          selectedRows: new Set(),
-          updateChart,
-        }}
-      >
-        <DataTable settings={mockSettings} />
+      <DataLayerProvider data={mockData}>
+        <DataTable settings={mockSettings} width={800} height={600} />
       </DataLayerProvider>
     );
 
-    const nameHeader = screen.getByText("Name");
+    const nameHeader = screen.getByText("name");
     fireEvent.click(nameHeader);
 
     expect(updateChart).toHaveBeenCalledWith(
@@ -89,64 +80,22 @@ describe("DataTable Integration", () => {
     );
   });
 
-  it("updates data layer when filtering changes", () => {
-    const updateChart = jest.fn();
+  it("updates data layer when global search changes", () => {
+    const updateChart = vi.fn();
     render(
-      <DataLayerProvider
-        initialState={{
-          data: mockData,
-          liveItems: mockLiveItems,
-          selectedRows: new Set(),
-          updateChart,
-        }}
-      >
-        <DataTable settings={mockSettings} />
+      <DataLayerProvider data={mockData}>
+        <DataTable settings={mockSettings} width={800} height={600} />
       </DataLayerProvider>
     );
 
-    // Open filter
-    const filterButton = screen.getAllByRole("button")[1];
-    fireEvent.click(filterButton);
-
-    // Change filter value
-    const filterInput = screen.getByPlaceholderText("Filter Name...");
-    fireEvent.change(filterInput, { target: { value: "John" } });
+    const searchInput = screen.getByPlaceholderText("Search...");
+    fireEvent.change(searchInput, { target: { value: "John" } });
 
     expect(updateChart).toHaveBeenCalledWith(
       "test-table",
       expect.objectContaining({
-        filters: expect.objectContaining({
-          name: expect.objectContaining({
-            value: "John",
-            operator: "contains",
-          }),
-        }),
-      })
-    );
-  });
-
-  it("updates data layer when row selection changes", () => {
-    const updateChart = jest.fn();
-    render(
-      <DataLayerProvider
-        initialState={{
-          data: mockData,
-          liveItems: mockLiveItems,
-          selectedRows: new Set(),
-          updateChart,
-        }}
-      >
-        <DataTable settings={mockSettings} />
-      </DataLayerProvider>
-    );
-
-    const checkbox = screen.getAllByRole("checkbox")[0];
-    fireEvent.click(checkbox);
-
-    expect(updateChart).toHaveBeenCalledWith(
-      "test-table",
-      expect.objectContaining({
-        selectedRows: expect.any(Set),
+        globalSearch: "John",
+        currentPage: 1,
       })
     );
   });
@@ -158,21 +107,11 @@ describe("DataTable Integration", () => {
       age: Math.floor(Math.random() * 50) + 20,
     }));
 
-    const largeLiveItems = {
-      items: largeData.map((item) => ({ key: item.__ID, value: 1 })),
-    };
-
     const startTime = performance.now();
 
     render(
-      <DataLayerProvider
-        initialState={{
-          data: largeData,
-          liveItems: largeLiveItems,
-          selectedRows: new Set(),
-        }}
-      >
-        <DataTable settings={mockSettings} />
+      <DataLayerProvider data={largeData}>
+        <DataTable settings={mockSettings} width={800} height={600} />
       </DataLayerProvider>
     );
 

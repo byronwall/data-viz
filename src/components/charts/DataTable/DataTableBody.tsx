@@ -135,7 +135,9 @@ export function DataTableBody({ settings }: DataTableBodyProps) {
       {paginatedData.map((row) => (
         <TableRow key={String(row.__ID)}>
           {settings.columns.map((column) => (
-            <TableCell key={column.id}>{row[column.id]}</TableCell>
+            <TableCell key={column.id} style={{ width: column.width }}>
+              {row[column.id]}
+            </TableCell>
           ))}
         </TableRow>
       ))}

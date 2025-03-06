@@ -13,6 +13,11 @@
 - If no groupBy, do not group into an `undefined` group
 - Need to use the height and force an overflow
 - Had to disable row selection since it triggered infinite re-render
+- Multiselect does not reorder when dragging
+- Likely need to add a NatSort or sort as numbers when numeric
+- DataTableSettings lists all the column fields - not needed, doesn't work
+- Global search does not seem to be working
+- Filter button should be a popover so there's no layout shift
 
 ## Test related
 

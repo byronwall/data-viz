@@ -1,6 +1,5 @@
 import { DataTableSettings } from "@/types/ChartTypes";
 import { TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { GroupRow } from "./components/GroupRow";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { IdType } from "@/providers/DataLayerProvider";
@@ -8,15 +7,6 @@ import { IdType } from "@/providers/DataLayerProvider";
 interface DataTableBodyProps {
   settings: DataTableSettings;
 }
-
-type GroupData = {
-  key: string;
-  count: number;
-  rows: Array<{
-    __ID: IdType;
-    [key: string]: any;
-  }>;
-};
 
 type DataRow = {
   __ID: IdType;
@@ -82,32 +72,12 @@ export function DataTableBody({ settings }: DataTableBodyProps) {
       })
     : filteredByColumns;
 
-  // Group data if groupBy is set
-  const groupedData = settings.groupBy
-    ? sortedData.reduce<GroupData[]>((acc, row) => {
-        const groupKey = row[settings.groupBy!] as string;
-        const existingGroup = acc.find((g) => g.key === groupKey);
-        if (existingGroup) {
-          existingGroup.count++;
-          existingGroup.rows.push(row);
-        } else {
-          acc.push({ key: groupKey, count: 1, rows: [row] });
-        }
-        return acc;
-      }, [])
-    : [];
-
-  // Sort groups by count
-  groupedData.sort((a, b) => b.count - a.count);
-
   // Calculate pagination
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
 
   // Get paginated data
-  const paginatedData = settings.groupBy
-    ? groupedData.slice(startIndex, endIndex)
-    : sortedData.slice(startIndex, endIndex);
+  const paginatedData = sortedData.slice(startIndex, endIndex);
 
   const handleRowSelection = (id: string) => {
     // const newSelectedRows = new Set(selectedRows);
@@ -123,30 +93,19 @@ export function DataTableBody({ settings }: DataTableBodyProps) {
 
   return (
     <TableBody>
-      {settings.groupBy
-        ? (paginatedData as GroupData[]).map((group) => (
-            <GroupRow
-              key={group.key}
-              groupKey={group.key}
-              groupCount={group.count}
-              rows={group.rows}
-              settings={settings}
-              onRowSelect={handleRowSelection}
+      {paginatedData.map((row) => (
+        <TableRow key={String(row.__ID)}>
+          <TableCell className="w-12">
+            <Checkbox
+              checked={selectedRows.has(String(row.__ID))}
+              onCheckedChange={() => handleRowSelection(String(row.__ID))}
             />
-          ))
-        : (paginatedData as DataRow[]).map((row) => (
-            <TableRow key={String(row.__ID)}>
-              <TableCell className="w-12">
-                <Checkbox
-                  checked={selectedRows.has(String(row.__ID))}
-                  onCheckedChange={() => handleRowSelection(String(row.__ID))}
-                />
-              </TableCell>
-              {settings.columns.map((column) => (
-                <TableCell key={column.id}>{row[column.id]}</TableCell>
-              ))}
-            </TableRow>
+          </TableCell>
+          {settings.columns.map((column) => (
+            <TableCell key={column.id}>{row[column.id]}</TableCell>
           ))}
+        </TableRow>
+      ))}
     </TableBody>
   );
 }

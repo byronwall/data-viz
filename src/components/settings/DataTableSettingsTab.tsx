@@ -118,24 +118,6 @@ export function DataTableSettingsTab({
         </div>
       </div>
 
-      {/* Grouping */}
-      <div className="space-y-4">
-        <h3 className="font-medium text-sm">Grouping</h3>
-        <div className="space-y-2">
-          <Label>Group By Fields</Label>
-          <MultiSelect
-            options={fieldOptions}
-            value={settings.groupBy.map((f) => ({ label: f, value: f }))}
-            onChange={(values: Option[]) =>
-              onSettingChange(
-                "groupBy",
-                values.map((v: Option) => v.value)
-              )
-            }
-          />
-        </div>
-      </div>
-
       {/* Selection */}
       <div className="space-y-4">
         <h3 className="font-medium text-sm">Selection</h3>

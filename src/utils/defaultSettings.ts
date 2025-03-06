@@ -118,13 +118,10 @@ export const DEFAULT_DATA_TABLE_SETTINGS: Omit<DataTableSettings, "id"> = {
   type: "data-table",
   columns: [],
   visibleColumns: [],
-  columnWidths: {},
   pageSize: 10,
   currentPage: 1,
-  sortConfig: [],
+  sortDirection: "asc",
   filters: {},
-  groupBy: [],
-  expandedGroups: new Set(),
   selectedRows: new Set(),
 };
 

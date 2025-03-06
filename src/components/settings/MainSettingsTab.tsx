@@ -47,7 +47,7 @@ export function MainSettingsTab({
   availableFields,
   onSettingChange,
 }: MainSettingsTabProps) {
-  const { getOrCreateScaleForField, colorScales } = useColorScales();
+  const { getOrCreateScaleForField } = useColorScales();
   const hasDataField = settings.type === "row" || settings.type === "bar";
   const isRowChart = settings.type === "row";
   const isPivotChart = settings.type === "pivot";

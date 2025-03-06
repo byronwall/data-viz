@@ -172,7 +172,6 @@ export interface DataTableSettings extends BaseChartSettings {
   currentPage: number;
   sortBy?: string;
   sortDirection: "asc" | "desc";
-  selectedRows: Set<string>;
   filters: Record<
     string,
     {

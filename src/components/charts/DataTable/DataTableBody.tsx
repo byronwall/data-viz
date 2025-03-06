@@ -1,6 +1,5 @@
 import { DataTableSettings } from "@/types/ChartTypes";
 import { TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { IdType } from "@/providers/DataLayerProvider";
 
@@ -8,17 +7,10 @@ interface DataTableBodyProps {
   settings: DataTableSettings;
 }
 
-type DataRow = {
-  __ID: IdType;
-  [key: string]: any;
-};
-
 export function DataTableBody({ settings }: DataTableBodyProps) {
   const { pageSize, currentPage, sortBy, sortDirection, filters } = settings;
   const data = useDataLayer((state) => state.data);
   const liveItems = useDataLayer((state) => state.getLiveItems(settings));
-  const selectedRows = new Set<string>();
-  const updateChart = useDataLayer((state) => state.updateChart);
 
   // Get filtered data from liveItems
   const filteredData =
@@ -79,28 +71,10 @@ export function DataTableBody({ settings }: DataTableBodyProps) {
   // Get paginated data
   const paginatedData = sortedData.slice(startIndex, endIndex);
 
-  const handleRowSelection = (id: string) => {
-    // const newSelectedRows = new Set(selectedRows);
-    // if (newSelectedRows.has(id)) {
-    //   newSelectedRows.delete(id);
-    // } else {
-    //   newSelectedRows.add(id);
-    // }
-    // updateChart(settings.id, { selectedRows: newSelectedRows });
-  };
-
-  console.log("DataTableBody", paginatedData);
-
   return (
     <TableBody>
       {paginatedData.map((row) => (
         <TableRow key={String(row.__ID)}>
-          <TableCell className="w-12">
-            <Checkbox
-              checked={selectedRows.has(String(row.__ID))}
-              onCheckedChange={() => handleRowSelection(String(row.__ID))}
-            />
-          </TableCell>
           {settings.columns.map((column) => (
             <TableCell key={column.id}>{row[column.id]}</TableCell>
           ))}

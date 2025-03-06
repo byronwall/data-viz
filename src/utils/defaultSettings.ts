@@ -122,7 +122,6 @@ export const DEFAULT_DATA_TABLE_SETTINGS: Omit<DataTableSettings, "id"> = {
   currentPage: 1,
   sortDirection: "asc",
   filters: {},
-  selectedRows: new Set(),
 };
 
 export function getDefaultSettingsForType(

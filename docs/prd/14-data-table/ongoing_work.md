@@ -20,14 +20,7 @@
 
 ### Row Selection Implementation
 
-- [ ] Fix infinite re-render issue with row selection
-  - [ ] Review and fix state management for selected rows
-  - [ ] Implement proper memoization
-  - [ ] Add tests for row selection
-- [ ] Implement multi-select drag reordering
-  - [ ] Add drag-and-drop functionality for selected rows
-  - [ ] Update selection state during reordering
-  - [ ] Add tests for drag reordering
+- [ ] Remove row selection from the data table
 
 ## Phase 3: Data Processing and Search
 

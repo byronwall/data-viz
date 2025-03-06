@@ -6,6 +6,7 @@ import { PivotTable } from "./PivotTable/PivotTable";
 import { RowChart } from "./RowChart";
 import { ScatterPlot } from "./ScatterPlot";
 import { ThreeDScatterChart } from "./ThreeDScatter/ThreeDScatterChart";
+import { DataTable } from "./DataTable/DataTable";
 
 interface ChartRendererProps {
   settings: ChartSettings;
@@ -75,6 +76,8 @@ export function ChartRenderer({
           facetIds={facetIds}
         />
       );
+    case "data-table":
+      return <DataTable settings={settings} width={width} height={height} />;
     default:
       return null;
   }

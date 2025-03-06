@@ -9,6 +9,7 @@ import {
   MarginSettings,
   BaseChartSettings,
   SummaryChartSettings,
+  DataTableSettings,
 } from "@/types/ChartTypes";
 import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
 import { Vector3 } from "three";
@@ -112,6 +113,18 @@ export const DEFAULT_SUMMARY_SETTINGS: Omit<SummaryChartSettings, "id"> = {
   layout: { x: 0, y: 0, w: 12, h: 8 },
 };
 
+export const DEFAULT_DATA_TABLE_SETTINGS: Omit<DataTableSettings, "id"> = {
+  ...DEFAULT_CHART_SETTINGS,
+  type: "data-table",
+  columns: [],
+  pageSize: 10,
+  currentPage: 1,
+  sortDirection: "asc",
+  filters: {},
+  globalSearch: "",
+  tableHeight: 600,
+};
+
 export function getDefaultSettingsForType(
   type: ChartSettings["type"]
 ): Omit<ChartSettings, "id"> {
@@ -128,6 +141,8 @@ export function getDefaultSettingsForType(
       return DEFAULT_3D_SCATTER_SETTINGS;
     case "summary":
       return DEFAULT_SUMMARY_SETTINGS;
+    case "data-table":
+      return DEFAULT_DATA_TABLE_SETTINGS;
     default:
       return DEFAULT_CHART_SETTINGS;
   }

@@ -64,6 +64,7 @@ Will be updated when done...
 - Scatter points need to render on top of gridlines
 - Do not attempt to render points and bars that are not visible due to axis limits
 - Decide if it is worth allowing the y categories to be globally shared in Row charts w/ facets
+- Row chart should give a warning about missing field instead of rendering undefined - maybe give a drop down immediately
 
 ### Data Display and Formatting
 

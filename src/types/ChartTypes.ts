@@ -17,6 +17,7 @@ export const CHART_TYPES = [
   { value: "pivot", label: "Pivot Table", icon: Table },
   { value: "3d-scatter", label: "3D Scatter", icon: Box },
   { value: "summary", label: "Summary", icon: Info },
+  { value: "data-table", label: "Data Table", icon: Table },
 ] as const;
 
 export type ChartType = (typeof CHART_TYPES)[number]["value"];
@@ -159,13 +160,36 @@ export interface SummaryChartSettings extends BaseChartSettings {
   // No additional settings needed as this is a simple display
 }
 
+export interface DataTableSettings extends BaseChartSettings {
+  type: "data-table";
+  columns: Array<{
+    id: string;
+    field: string;
+    width?: number;
+  }>;
+  pageSize: number;
+  currentPage: number;
+  sortBy?: string;
+  sortDirection: "asc" | "desc";
+  filters: Record<
+    string,
+    {
+      value: string;
+      operator: "contains" | "equals" | "startsWith" | "endsWith";
+    }
+  >;
+  globalSearch: string;
+  tableHeight: number;
+}
+
 export type ChartSettings =
   | RowChartSettings
   | BarChartSettings
   | ScatterChartSettings
   | PivotTableSettings
   | ThreeDScatterSettings
-  | SummaryChartSettings;
+  | SummaryChartSettings
+  | DataTableSettings;
 
 export interface BaseChartProps {
   settings: ChartSettings;

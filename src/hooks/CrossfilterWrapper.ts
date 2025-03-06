@@ -1,4 +1,9 @@
-import { ChartSettings, datum, PivotTableSettings } from "@/types/ChartTypes";
+import {
+  ChartSettings,
+  datum,
+  PivotTableSettings,
+  DataTableSettings,
+} from "@/types/ChartTypes";
 import crossfilter from "crossfilter2";
 import isEqual from "react-fast-compare";
 import { rowChartPureFilter } from "./rowChartPureFilter";
@@ -200,6 +205,105 @@ export class CrossfilterWrapper<T> {
 
           return matchesRowFilters && matchesColumnFilters;
         };
+      }
+      case "data-table": {
+        const dataTableSettings = chart as DataTableSettings;
+        const filters = dataTableSettings.filters;
+
+        // If no filters are active, return true
+        if (Object.keys(filters).length === 0) {
+          return (d: IdType) => true;
+        }
+
+        // Create filter functions for each active filter
+        const filterFunctions = Object.entries(filters).map(
+          ([columnId, filter]) => {
+            const column = dataTableSettings.columns.find(
+              (col) => col.id === columnId
+            );
+            if (!column) {
+              return () => true;
+            }
+
+            const dataHash = this.fieldGetter(column.field);
+
+            return (d: IdType) => {
+              const value = dataHash[d];
+              if (value === undefined) {
+                return false;
+              }
+
+              let numValue: number;
+              let dateValue: Date;
+              let filterDate: Date;
+
+              switch (filter.type) {
+                case "text":
+                  return filter.operator === "contains"
+                    ? String(value)
+                        .toLowerCase()
+                        .includes(String(filter.value).toLowerCase())
+                    : String(value) === String(filter.value);
+
+                case "number":
+                  numValue = Number(value);
+                  switch (filter.operator) {
+                    case "equals":
+                      return numValue === filter.value;
+                    case "greaterThan":
+                      return numValue > filter.value;
+                    case "lessThan":
+                      return numValue < filter.value;
+                    case "between":
+                      return (
+                        numValue >= filter.value[0] &&
+                        numValue <= filter.value[1]
+                      );
+                    case "in":
+                      return filter.value.includes(numValue);
+                    default:
+                      return true;
+                  }
+
+                case "date":
+                  dateValue = new Date(value as string | number | Date);
+                  filterDate = new Date(filter.value);
+                  switch (filter.operator) {
+                    case "equals":
+                      return dateValue.getTime() === filterDate.getTime();
+                    case "greaterThan":
+                      return dateValue > filterDate;
+                    case "lessThan":
+                      return dateValue < filterDate;
+                    case "between":
+                      return (
+                        dateValue >= new Date(filter.value[0]) &&
+                        dateValue <= new Date(filter.value[1])
+                      );
+                    case "in":
+                      return filter.value.some(
+                        (d: string | number | Date) =>
+                          new Date(d).getTime() === dateValue.getTime()
+                      );
+                    default:
+                      return true;
+                  }
+
+                case "select":
+                  return filter.value.includes(value);
+
+                case "boolean":
+                  return value === filter.value;
+
+                default:
+                  return true;
+              }
+            };
+          }
+        );
+
+        // Combine all filter functions with AND logic
+        return (d: IdType) => filterFunctions.every((fn) => fn(d));
       }
       case "3d-scatter": {
         return (d: IdType) => true;

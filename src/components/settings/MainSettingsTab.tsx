@@ -4,6 +4,7 @@ import {
   ChartSettings,
   ChartTypeOption,
   PivotTableSettings,
+  DataTableSettings,
 } from "@/types/ChartTypes";
 import { ComboBox } from "../ComboBox";
 import { FieldSelector } from "../FieldSelector";
@@ -34,15 +35,23 @@ const AGGREGATION_OPTIONS: { label: string; value: AggregationType }[] = [
   { label: "Single Value", value: "singleValue" },
 ];
 
+const PAGE_SIZE_OPTIONS = [
+  { label: "10 rows", value: 10 },
+  { label: "25 rows", value: 25 },
+  { label: "50 rows", value: 50 },
+  { label: "100 rows", value: 100 },
+];
+
 export function MainSettingsTab({
   settings,
   availableFields,
   onSettingChange,
 }: MainSettingsTabProps) {
-  const { getOrCreateScaleForField, colorScales } = useColorScales();
+  const { getOrCreateScaleForField } = useColorScales();
   const hasDataField = settings.type === "row" || settings.type === "bar";
   const isRowChart = settings.type === "row";
   const isPivotChart = settings.type === "pivot";
+  const isDataTable = settings.type === "data-table";
 
   const fieldOptions = availableFields.map((f) => ({ label: f, value: f }));
 
@@ -376,6 +385,48 @@ export function MainSettingsTab({
                 >
                   + Add Value Field
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isDataTable && (
+          <div className="col-span-2 space-y-4">
+            <div className="space-y-2">
+              <Label>Columns</Label>
+              <div className="max-w-[400px]">
+                <MultiSelect
+                  options={fieldOptions}
+                  value={(settings as DataTableSettings).columns.map((col) => ({
+                    label: col.field,
+                    value: col.field,
+                  }))}
+                  onChange={(values: Option[]) => {
+                    const newColumns = values.map((value) => ({
+                      id: value.value,
+                      field: value.value,
+                    }));
+
+                    onSettingChange("columns", newColumns);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Pagination */}
+            <div className="space-y-2">
+              <Label>Page Size</Label>
+              <div className="max-w-[400px]">
+                <ComboBox
+                  value={PAGE_SIZE_OPTIONS.find(
+                    (o) => o.value === (settings as DataTableSettings).pageSize
+                  )}
+                  options={PAGE_SIZE_OPTIONS}
+                  onChange={(option) =>
+                    onSettingChange("pageSize", option?.value || 10)
+                  }
+                  optionToString={(option) => option.label}
+                />
               </div>
             </div>
           </div>

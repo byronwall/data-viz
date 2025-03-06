@@ -7,6 +7,7 @@ import { AxisSettingsTab } from "./settings/AxisSettingsTab";
 import { FacetSettingsTab } from "./settings/FacetSettingsTab";
 import { LabelsSettingsTab } from "./settings/LabelsSettingsTab";
 import { MainSettingsTab } from "./settings/MainSettingsTab";
+import { DataTableSettingsTab } from "./settings/DataTableSettingsTab";
 import { TabContainer } from "./settings/TabContainer";
 import { Button } from "./ui/button";
 
@@ -83,7 +84,6 @@ export function ChartSettingsContent({
               onSettingChange={handleSettingChange}
             />
           ),
-
           advanced: (
             <AdvancedSettingsTab
               settings={localSettings}

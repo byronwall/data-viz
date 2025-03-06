@@ -4,6 +4,7 @@ import {
   ChartSettings,
   ChartTypeOption,
   PivotTableSettings,
+  DataTableSettings,
 } from "@/types/ChartTypes";
 import { ComboBox } from "../ComboBox";
 import { FieldSelector } from "../FieldSelector";
@@ -43,6 +44,7 @@ export function MainSettingsTab({
   const hasDataField = settings.type === "row" || settings.type === "bar";
   const isRowChart = settings.type === "row";
   const isPivotChart = settings.type === "pivot";
+  const isDataTable = settings.type === "data-table";
 
   const fieldOptions = availableFields.map((f) => ({ label: f, value: f }));
 
@@ -376,6 +378,52 @@ export function MainSettingsTab({
                 >
                   + Add Value Field
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isDataTable && (
+          <div className="col-span-2 space-y-4">
+            <div className="space-y-2">
+              <Label>Columns</Label>
+              <div className="max-w-[400px]">
+                <MultiSelect
+                  options={fieldOptions}
+                  value={(settings as DataTableSettings).columns
+                    .filter((col) => col.visible)
+                    .map((col) => ({
+                      label: col.label || col.field,
+                      value: col.field,
+                    }))}
+                  onChange={(values: Option[]) => {
+                    const newColumns = [
+                      ...(settings as DataTableSettings).columns,
+                    ];
+                    // Update visibility of existing columns
+                    newColumns.forEach((col) => {
+                      col.visible = values.some((v) => v.value === col.field);
+                    });
+                    // Add new columns
+                    values.forEach((value) => {
+                      if (
+                        !newColumns.some((col) => col.field === value.value)
+                      ) {
+                        newColumns.push({
+                          id: value.value,
+                          field: value.value,
+                          label: value.label,
+                          type: "string",
+                          visible: true,
+                          width: 150,
+                          sortable: true,
+                          filterable: true,
+                        });
+                      }
+                    });
+                    onSettingChange("columns", newColumns);
+                  }}
+                />
               </div>
             </div>
           </div>

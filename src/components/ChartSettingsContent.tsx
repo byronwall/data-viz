@@ -7,6 +7,7 @@ import { AxisSettingsTab } from "./settings/AxisSettingsTab";
 import { FacetSettingsTab } from "./settings/FacetSettingsTab";
 import { LabelsSettingsTab } from "./settings/LabelsSettingsTab";
 import { MainSettingsTab } from "./settings/MainSettingsTab";
+import { DataTableSettingsTab } from "./settings/DataTableSettingsTab";
 import { TabContainer } from "./settings/TabContainer";
 import { Button } from "./ui/button";
 
@@ -51,6 +52,9 @@ export function ChartSettingsContent({
     { value: "axis", label: "Axis" },
     { value: "labels", label: "Labels" },
     { value: "advanced", label: "Advanced" },
+    ...(settings.type === "data-table"
+      ? [{ value: "data-table", label: "Data Table" }]
+      : []),
   ];
 
   return (
@@ -83,13 +87,23 @@ export function ChartSettingsContent({
               onSettingChange={handleSettingChange}
             />
           ),
-
           advanced: (
             <AdvancedSettingsTab
               settings={localSettings}
               onSettingChange={handleSettingChange}
             />
           ),
+          ...(settings.type === "data-table"
+            ? {
+                "data-table": (
+                  <DataTableSettingsTab
+                    settings={localSettings as any}
+                    availableFields={availableFields}
+                    onSettingChange={handleSettingChange}
+                  />
+                ),
+              }
+            : {}),
         }}
       </TabContainer>
 

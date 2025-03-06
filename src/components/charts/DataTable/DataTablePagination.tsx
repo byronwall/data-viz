@@ -8,67 +8,93 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 
 interface DataTablePaginationProps {
   settings: DataTableSettings;
 }
 
-export function DataTablePagination({ settings }: DataTablePaginationProps) {
-  const { pageSize, currentPage } = settings;
+const PAGE_SIZE_OPTIONS = [
+  { label: "10 rows", value: 10 },
+  { label: "25 rows", value: 25 },
+  { label: "50 rows", value: 50 },
+  { label: "100 rows", value: 100 },
+];
 
-  // TODO: Implement total count and page count
-  const totalCount = 0;
-  const pageCount = Math.ceil(totalCount / pageSize);
+export function DataTablePagination({ settings }: DataTablePaginationProps) {
+  console.log("DataTablePagination", settings);
+  const { pageSize, currentPage } = settings;
+  const data = useDataLayer((state) => state.data);
+  const liveItems = useDataLayer((state) => state.getLiveItems(settings));
+  const updateChart = useDataLayer((state) => state.updateChart);
+
+  // Get filtered data from liveItems
+  const filteredData =
+    liveItems?.items
+      .filter((item) => item.value > 0)
+      .map((item) => data.find((row) => row.__ID === item.key))
+      .filter(
+        (row): row is { __ID: number; [key: string]: any } => row !== undefined
+      ) || [];
+
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+
+  const handlePageSizeChange = (value: string) => {
+    const newPageSize = parseInt(value, 10);
+    const newCurrentPage = Math.min(
+      Math.ceil((currentPage * pageSize) / newPageSize),
+      Math.ceil(filteredData.length / newPageSize)
+    );
+    updateChart(settings.id, {
+      pageSize: newPageSize,
+      currentPage: newCurrentPage,
+    });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      updateChart(settings.id, { currentPage: newPage });
+    }
+  };
 
   return (
     <div className="flex items-center justify-between px-2 py-4">
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Rows per page</span>
+      <div className="flex items-center space-x-2">
+        <p className="text-sm text-gray-700">{filteredData.length} rows</p>
+      </div>
+      <div className="flex items-center space-x-2">
         <Select
           value={pageSize.toString()}
-          onValueChange={(value) => {
-            // TODO: Implement page size change
-          }}
+          onValueChange={handlePageSizeChange}
         >
-          <SelectTrigger className="h-8 w-[70px]">
+          <SelectTrigger className="h-8 w-[100px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {[10, 20, 30, 40, 50].map((size) => (
-              <SelectItem key={size} value={size.toString()}>
-                {size}
+            {PAGE_SIZE_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value.toString()}>
+                {option.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">
-          {totalCount > 0
-            ? `${(currentPage - 1) * pageSize + 1}-${Math.min(
-                currentPage * pageSize,
-                totalCount
-              )} of ${totalCount}`
-            : "0-0 of 0"}
-        </span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            size="icon"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            onClick={() => {
-              // TODO: Implement previous page
-            }}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
+          <p className="text-sm text-gray-700">
+            Page {currentPage} of {totalPages}
+          </p>
           <Button
             variant="outline"
-            size="icon"
-            disabled={currentPage === pageCount}
-            onClick={() => {
-              // TODO: Implement next page
-            }}
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

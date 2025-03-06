@@ -11,6 +11,8 @@ interface DataTableProps extends BaseChartProps {
 }
 
 export function DataTable({ settings, width, height }: DataTableProps) {
+  console.log("DataTable", settings);
+
   return (
     <div className="flex flex-col h-full w-full">
       <DataTableToolbar settings={settings} />

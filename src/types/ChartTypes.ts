@@ -162,53 +162,25 @@ export interface SummaryChartSettings extends BaseChartSettings {
 
 export interface DataTableSettings extends BaseChartSettings {
   type: "data-table";
-
-  // Column configuration
   columns: Array<{
     id: string;
-    field: string;
     label: string;
-    type: "string" | "number" | "date" | "boolean";
-    visible: boolean;
-    width: number;
-    sortable: boolean;
-    filterable: boolean;
+    field: string;
   }>;
   visibleColumns: string[];
-  columnWidths: Record<string, number>;
-
-  // Pagination
+  groupBy?: string;
   pageSize: number;
   currentPage: number;
-
-  // Sorting
-  sortConfig: {
-    key: string;
-    direction: "asc" | "desc";
-  }[];
-
-  // Filtering
+  sortBy?: string;
+  sortDirection: "asc" | "desc";
+  selectedRows: Set<string>;
   filters: Record<
     string,
     {
-      type: "text" | "number" | "date" | "select" | "boolean";
-      value: any;
-      operator:
-        | "equals"
-        | "contains"
-        | "greaterThan"
-        | "lessThan"
-        | "between"
-        | "in";
+      value: string;
+      operator: "contains" | "equals" | "startsWith" | "endsWith";
     }
   >;
-
-  // Grouping
-  groupBy: string[];
-  expandedGroups: Set<string>;
-
-  // Selection
-  selectedRows: Set<string>;
 }
 
 export type ChartSettings =

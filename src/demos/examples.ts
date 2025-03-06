@@ -40,9 +40,9 @@ export const examples: ExampleData[] = [
     savedData: basicNumbersSettings,
   },
   {
-    id: "categorical-small",
-    title: "Categorical Small",
-    description: "Categorical small",
+    id: "tables",
+    title: "Summary Table + Data Table",
+    description: "Summary Table + Data Table",
     icon: BarChart3,
     data: "/data-viz/categorical_small.csv",
     savedData: categoricalSmallSettings,

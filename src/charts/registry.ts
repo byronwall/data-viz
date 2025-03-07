@@ -1,30 +1,43 @@
 import { barChartDefinition } from "@/components/charts/BarChart/definition";
 import { scatterPlotDefinition } from "@/components/charts/ScatterPlot/definition";
-import { ChartDefinition, ChartType } from "@/types/ChartTypes";
+import { threeDScatterDefinition } from "@/components/charts/ThreeDScatter/definition";
+import {
+  BaseChartSettings,
+  ChartDefinition,
+  ChartType,
+  ChartSettings,
+} from "@/types/ChartTypes";
 import { rowChartDefinition } from "./row";
 
 export interface ChartRegistry {
-  register(definition: ChartDefinition): void;
-  get(type: ChartType): ChartDefinition | undefined;
-  getAll(): ChartDefinition[];
+  register<TSettings extends BaseChartSettings>(
+    definition: ChartDefinition<TSettings>
+  ): void;
+  get(type: ChartType): ChartDefinition<ChartSettings> | undefined;
+  getAll(): ChartDefinition<ChartSettings>[];
   has(type: ChartType): boolean;
 }
 
 export class ChartRegistryImpl implements ChartRegistry {
-  private definitions = new Map<ChartType, ChartDefinition>();
+  private definitions = new Map<ChartType, ChartDefinition<ChartSettings>>();
 
-  register(definition: ChartDefinition): void {
+  register<TSettings extends BaseChartSettings>(
+    definition: ChartDefinition<TSettings>
+  ): void {
     if (this.definitions.has(definition.type)) {
       throw new Error(`Chart type ${definition.type} is already registered`);
     }
-    this.definitions.set(definition.type, definition);
+    this.definitions.set(
+      definition.type,
+      definition as unknown as ChartDefinition<ChartSettings>
+    );
   }
 
-  get(type: ChartType): ChartDefinition | undefined {
+  get(type: ChartType): ChartDefinition<ChartSettings> | undefined {
     return this.definitions.get(type);
   }
 
-  getAll(): ChartDefinition[] {
+  getAll(): ChartDefinition<ChartSettings>[] {
     return Array.from(this.definitions.values());
   }
 
@@ -37,11 +50,15 @@ export class ChartRegistryImpl implements ChartRegistry {
 export const chartRegistry = new ChartRegistryImpl();
 
 // Helper functions
-export function registerChart(definition: ChartDefinition): void {
+export function registerChart<TSettings extends BaseChartSettings>(
+  definition: ChartDefinition<TSettings>
+): void {
   chartRegistry.register(definition);
 }
 
-export function getChartDefinition(type: ChartType): ChartDefinition {
+export function getChartDefinition(
+  type: ChartType
+): ChartDefinition<ChartSettings> {
   const def = chartRegistry.get(type);
   if (!def) {
     throw new Error(`Chart type ${type} not registered`);
@@ -63,4 +80,5 @@ export function registerAllCharts() {
   chartRegistry.register(rowChartDefinition);
   chartRegistry.register(barChartDefinition);
   chartRegistry.register(scatterPlotDefinition);
+  chartRegistry.register(threeDScatterDefinition);
 }

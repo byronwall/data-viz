@@ -98,7 +98,7 @@ interface ChartDefinition<TSettings extends BaseChartSettings = ChartSettings> {
 
 - [x ] Bar Chart Implementation
 - [x ] Row Chart Implementation
-- [ ] Scatter Plot Implementation
+- [x ] Scatter Plot Implementation
 - [ ] 3D Scatter Plot Implementation
 - [ ] Pivot Table Implementation
 - [ ] Summary Table Implementation

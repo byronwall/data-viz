@@ -5,7 +5,7 @@ import {
   RowChartSettings,
   ChartLayout,
 } from "@/types/ChartTypes";
-import { Filter } from "@/types/DataFilterTypes";
+import { Filter } from "@/types/ChartTypes";
 import { RowChart } from "@/components/charts/RowChart";
 import { RowChartSettingsPanel } from "./RowChartSettingsPanel";
 import { DEFAULT_ROW_SETTINGS } from "@/utils/defaultSettings";

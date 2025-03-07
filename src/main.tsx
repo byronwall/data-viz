@@ -5,7 +5,7 @@ import { LandingPage } from "./components/LandingPage.tsx";
 import { Toaster } from "./components/ui/sonner.tsx";
 import "./index.css";
 import { GlobalAlertDialog } from "./components/GlobalAlertDialog.tsx";
-import { registerAllCharts } from "./charts/register";
+import { registerAllCharts } from "./charts/registry.ts";
 
 // Register all chart definitions
 registerAllCharts();

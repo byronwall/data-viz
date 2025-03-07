@@ -5,9 +5,9 @@ import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
 import { ScaleLinear, scaleLinear } from "d3-scale";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { BaseChart } from "./BaseChart";
-import { useGetLiveData } from "./useGetLiveData";
-import { useGetColumnDataForIds } from "./useGetColumnData";
+import { BaseChart } from "../BaseChart";
+import { useGetLiveData } from "../useGetLiveData";
+import { useGetColumnDataForIds } from "../useGetColumnData";
 
 // Configurable constant for axis buffer (10%)
 const AXIS_BUFFER_PERCENTAGE = 0.1;

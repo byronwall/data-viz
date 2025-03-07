@@ -1,4 +1,7 @@
+import { barChartDefinition } from "@/components/charts/BarChart/definition";
+import { scatterPlotDefinition } from "@/components/charts/ScatterPlot/definition";
 import { ChartDefinition, ChartType } from "@/types/ChartTypes";
+import { rowChartDefinition } from "./row";
 
 export interface ChartRegistry {
   register(definition: ChartDefinition): void;
@@ -54,4 +57,10 @@ export function useChartDefinition(type: ChartType) {
   }
 
   return definition;
+}
+
+export function registerAllCharts() {
+  chartRegistry.register(rowChartDefinition);
+  chartRegistry.register(barChartDefinition);
+  chartRegistry.register(scatterPlotDefinition);
 }

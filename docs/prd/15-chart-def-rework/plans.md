@@ -24,69 +24,6 @@ interface ChartDefinition<TSettings extends BaseChartSettings = ChartSettings> {
 }
 ```
 
-## Registry Implementation
-
-```typescript
-// src/charts/registry.ts
-export class ChartRegistryImpl implements ChartRegistry {
-  private definitions = new Map<ChartType, ChartDefinition>();
-
-  register(definition: ChartDefinition): void {
-    if (this.definitions.has(definition.type)) {
-      throw new Error(`Chart type ${definition.type} is already registered`);
-    }
-    this.definitions.set(definition.type, definition);
-  }
-
-  get(type: ChartType): ChartDefinition | undefined {
-    return this.definitions.get(type);
-  }
-
-  getAll(): ChartDefinition[] {
-    return Array.from(this.definitions.values());
-  }
-
-  has(type: ChartType): boolean {
-    return this.definitions.has(type);
-  }
-}
-
-// Singleton instance
-export const chartRegistry = new ChartRegistryImpl();
-
-// Helper functions
-export function registerChart(definition: ChartDefinition): void {
-  chartRegistry.register(definition);
-}
-
-export function getChartDefinition(type: ChartType): ChartDefinition {
-  const def = chartRegistry.get(type);
-  if (!def) {
-    throw new Error(`Chart type ${type} not registered`);
-  }
-  return def;
-}
-
-// React context for registry access
-export const ChartRegistryContext =
-  React.createContext<ChartRegistry>(chartRegistry);
-
-export function useChartRegistry() {
-  return useContext(ChartRegistryContext);
-}
-
-export function useChartDefinition(type: ChartType) {
-  const registry = useChartRegistry();
-  const definition = registry.get(type);
-
-  if (!definition) {
-    throw new Error(`Chart type ${type} not registered`);
-  }
-
-  return definition;
-}
-```
-
 ## Implementation Plan
 
 ### Phase 1: Core Infrastructure
@@ -159,8 +96,8 @@ export function useChartDefinition(type: ChartType) {
 
 ### Phase 5: Chart Implementations
 
-- [ ] Bar Chart Implementation
-- [ ] Row Chart Implementation
+- [x ] Bar Chart Implementation
+- [x ] Row Chart Implementation
 - [ ] Scatter Plot Implementation
 - [ ] 3D Scatter Plot Implementation
 - [ ] Pivot Table Implementation

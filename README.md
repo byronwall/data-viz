@@ -94,3 +94,8 @@ Will be updated when done...
   - Grid lines - tick counts
   - Axis limits
   - Need to hide certain axis settings that cannot be easily changed
+
+### Random
+
+- Animate the `update charts` button - make it smaller too
+- Row chart min and max bar sizes don't seem to be working

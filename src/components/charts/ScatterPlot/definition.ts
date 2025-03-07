@@ -16,7 +16,6 @@ export interface ScatterPlotSettings extends BaseChartSettings {
   type: "scatter";
   xField: string;
   yField: string;
-  sizeField?: string;
   xFilterRange: FilterRange;
   yFilterRange: FilterRange;
 }
@@ -37,8 +36,8 @@ export const scatterPlotDefinition: ChartDefinition<ScatterPlotSettings> = {
     title: "Scatter Plot",
     layout,
     margin: {},
-    xField: field ?? "",
-    yField: "",
+    xField: "__ID",
+    yField: field ?? "",
     xFilterRange: null,
     yFilterRange: null,
   }),

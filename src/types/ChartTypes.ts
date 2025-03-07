@@ -190,8 +190,10 @@ export interface ChartSettingsPanelProps<
   onSettingsChange: (settings: TSettings) => void;
 }
 
-export interface BaseChartProps {
-  settings: ChartSettings;
+export interface BaseChartProps<
+  TSettings extends BaseChartSettings = BaseChartSettings
+> {
+  settings: TSettings;
   width: number;
   height: number;
   facetIds?: IdType[];
@@ -235,8 +237,8 @@ export interface ChartDefinition<
   icon: LucideIcon;
 
   // Component References
-  component: React.ComponentType<BaseChartProps>;
-  settingsPanel: React.ComponentType<ChartSettingsPanelProps>;
+  component: React.ComponentType<BaseChartProps<TSettings>>;
+  settingsPanel: React.ComponentType<ChartSettingsPanelProps<TSettings>>;
 
   // Settings Management
   createDefaultSettings: (layout: ChartLayout, field?: string) => TSettings;

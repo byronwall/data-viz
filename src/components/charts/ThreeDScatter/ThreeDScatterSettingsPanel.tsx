@@ -1,9 +1,9 @@
 import { ChartSettingsPanelProps } from "@/types/ChartTypes";
 import { ThreeDScatterSettings } from "./types";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { NumericInputEnter } from "@/components/NumericInputEnter";
+import { FieldSelector } from "@/components/FieldSelector";
 
 export function ThreeDScatterSettingsPanel({
   settings,
@@ -11,63 +11,54 @@ export function ThreeDScatterSettingsPanel({
 }: ChartSettingsPanelProps<ThreeDScatterSettings>) {
   return (
     <div className="space-y-4">
-      <div>
+      <div className="grid grid-cols-[120px_1fr] items-center gap-4">
         <Label>X Field</Label>
-        <Input
+        <FieldSelector
+          label=""
           value={settings.xField}
-          onChange={(e) =>
-            onSettingsChange({ ...settings, xField: e.target.value })
-          }
+          onChange={(value) => onSettingsChange({ ...settings, xField: value })}
         />
-      </div>
 
-      <div>
         <Label>Y Field</Label>
-        <Input
+        <FieldSelector
+          label=""
           value={settings.yField}
-          onChange={(e) =>
-            onSettingsChange({ ...settings, yField: e.target.value })
-          }
+          onChange={(value) => onSettingsChange({ ...settings, yField: value })}
         />
-      </div>
 
-      <div>
         <Label>Z Field</Label>
-        <Input
+        <FieldSelector
+          label=""
           value={settings.zField}
-          onChange={(e) =>
-            onSettingsChange({ ...settings, zField: e.target.value })
-          }
+          onChange={(value) => onSettingsChange({ ...settings, zField: value })}
         />
-      </div>
 
-      <div>
-        <Label>Size Field (optional)</Label>
-        <Input
+        <Label>Size Field</Label>
+        <FieldSelector
+          label=""
           value={settings.sizeField ?? ""}
-          onChange={(e) =>
+          allowClear
+          onChange={(value) =>
             onSettingsChange({
               ...settings,
-              sizeField: e.target.value || undefined,
+              sizeField: value || undefined,
             })
           }
         />
-      </div>
 
-      <div>
         <Label>Color Field</Label>
-        <Input
+        <FieldSelector
+          label=""
           value={settings.colorField ?? ""}
-          onChange={(e) =>
+          allowClear
+          onChange={(value) =>
             onSettingsChange({
               ...settings,
-              colorField: e.target.value || undefined,
+              colorField: value || undefined,
             })
           }
         />
-      </div>
 
-      <div>
         <Label>Point Size</Label>
         <NumericInputEnter
           value={settings.pointSize}
@@ -80,9 +71,7 @@ export function ThreeDScatterSettingsPanel({
           stepMedium={0.5}
           stepLarge={1}
         />
-      </div>
 
-      <div>
         <Label>Point Opacity</Label>
         <NumericInputEnter
           value={settings.pointOpacity}
@@ -95,28 +84,32 @@ export function ThreeDScatterSettingsPanel({
           stepMedium={0.2}
           stepLarge={0.3}
         />
-      </div>
 
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="showGrid"
-          checked={settings.showGrid}
-          onCheckedChange={(checked) =>
-            onSettingsChange({ ...settings, showGrid: checked })
-          }
-        />
-        <Label htmlFor="showGrid">Show Grid</Label>
-      </div>
+        <div className="col-start-2">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="showGrid"
+              checked={settings.showGrid}
+              onCheckedChange={(checked) =>
+                onSettingsChange({ ...settings, showGrid: checked })
+              }
+            />
+            <Label htmlFor="showGrid">Show Grid</Label>
+          </div>
+        </div>
 
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="showAxes"
-          checked={settings.showAxes}
-          onCheckedChange={(checked) =>
-            onSettingsChange({ ...settings, showAxes: checked })
-          }
-        />
-        <Label htmlFor="showAxes">Show Axes</Label>
+        <div className="col-start-2">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="showAxes"
+              checked={settings.showAxes}
+              onCheckedChange={(checked) =>
+                onSettingsChange({ ...settings, showAxes: checked })
+              }
+            />
+            <Label htmlFor="showAxes">Show Axes</Label>
+          </div>
+        </div>
       </div>
     </div>
   );

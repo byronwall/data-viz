@@ -2,11 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ComboBox } from "./ComboBox";
 import { Label } from "./ui/label";
 import { X } from "lucide-react";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 
 interface FieldSelectorProps {
   label: string;
   value: string;
-  availableFields: string[];
   onChange: (value: string) => void;
   placeholder?: string;
   allowClear?: boolean;
@@ -15,11 +15,13 @@ interface FieldSelectorProps {
 export function FieldSelector({
   label,
   value,
-  availableFields,
   onChange,
   placeholder = "Select field",
   allowClear = false,
 }: FieldSelectorProps) {
+  const getColumnNames = useDataLayer((state) => state.getColumnNames);
+  const availableFields = getColumnNames();
+
   const fieldOptions = availableFields.map((field) => ({
     value: field,
     label: field,

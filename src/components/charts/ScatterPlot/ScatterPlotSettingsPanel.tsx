@@ -1,55 +1,42 @@
 import { ChartSettingsPanelProps } from "@/types/ChartTypes";
 import { ScatterPlotSettings } from "./definition";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FieldSelector } from "@/components/FieldSelector";
+import { useColorScales } from "@/hooks/useColorScales";
 
 export function ScatterPlotSettingsPanel({
   settings,
   onSettingsChange,
 }: ChartSettingsPanelProps<ScatterPlotSettings>) {
+  const { getOrCreateScaleForField } = useColorScales();
+
   return (
     <div className="space-y-4">
-      <div>
+      <div className="grid grid-cols-[120px_1fr] items-center gap-4">
         <Label>X Field</Label>
-        <Input
+        <FieldSelector
+          label=""
           value={settings.xField}
-          onChange={(e) =>
-            onSettingsChange({ ...settings, xField: e.target.value })
-          }
+          onChange={(value) => onSettingsChange({ ...settings, xField: value })}
         />
-      </div>
 
-      <div>
         <Label>Y Field</Label>
-        <Input
+        <FieldSelector
+          label=""
           value={settings.yField}
-          onChange={(e) =>
-            onSettingsChange({ ...settings, yField: e.target.value })
-          }
+          onChange={(value) => onSettingsChange({ ...settings, yField: value })}
         />
-      </div>
 
-      <div>
-        <Label>Size Field (optional)</Label>
-        <Input
-          value={settings.sizeField ?? ""}
-          onChange={(e) =>
-            onSettingsChange({
-              ...settings,
-              sizeField: e.target.value || undefined,
-            })
-          }
-        />
-      </div>
-
-      <div>
         <Label>Color Field</Label>
-        <Input
+        <FieldSelector
+          label=""
           value={settings.colorField ?? ""}
-          onChange={(e) =>
+          allowClear
+          onChange={(value) =>
             onSettingsChange({
               ...settings,
-              colorField: e.target.value || undefined,
+              colorField: value || undefined,
+              colorScaleId: value ? getOrCreateScaleForField(value) : undefined,
             })
           }
         />

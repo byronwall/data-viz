@@ -1,19 +1,15 @@
-import { ChartSettingsPanelProps, RowChartSettings } from "@/types/ChartTypes";
 import { FieldSelector } from "@/components/FieldSelector";
-import { Label } from "@/components/ui/label";
 import { NumericInputEnter } from "@/components/NumericInputEnter";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useColorScales } from "@/hooks/useColorScales";
+import { ChartSettingsPanelProps, RowChartSettings } from "@/types/ChartTypes";
 
 export function RowChartSettingsPanel({
   settings,
   onSettingsChange,
 }: ChartSettingsPanelProps<RowChartSettings>) {
-  const handleSettingChange = (key: keyof RowChartSettings, value: any) => {
-    onSettingsChange({
-      ...settings,
-      [key]: value,
-    });
-  };
+  const { getOrCreateScaleForField } = useColorScales();
 
   return (
     <div className="space-y-4">
@@ -22,14 +18,15 @@ export function RowChartSettingsPanel({
         <FieldSelector
           label=""
           value={settings.field ?? ""}
-          availableFields={[]}
-          onChange={(value) => handleSettingChange("field", value)}
+          onChange={(value) => onSettingsChange({ ...settings, field: value })}
         />
 
         <Label htmlFor="minRowHeight">Min Row Height</Label>
         <NumericInputEnter
           value={settings.minRowHeight || 30}
-          onChange={(value) => handleSettingChange("minRowHeight", value)}
+          onChange={(value) =>
+            onSettingsChange({ ...settings, minRowHeight: value })
+          }
           min={20}
           max={100}
           stepSmall={1}
@@ -41,7 +38,9 @@ export function RowChartSettingsPanel({
         <Label htmlFor="maxRowHeight">Max Row Height</Label>
         <NumericInputEnter
           value={settings.maxRowHeight || 50}
-          onChange={(value) => handleSettingChange("maxRowHeight", value)}
+          onChange={(value) =>
+            onSettingsChange({ ...settings, maxRowHeight: value })
+          }
           min={30}
           max={200}
           stepSmall={1}
@@ -56,10 +55,14 @@ export function RowChartSettingsPanel({
               id="colorField"
               checked={settings.field === settings.colorField}
               onCheckedChange={(checked) => {
-                handleSettingChange(
-                  "colorField",
-                  checked ? settings.field : undefined
-                );
+                onSettingsChange({
+                  ...settings,
+                  colorField: checked ? settings.field : undefined,
+                  colorScaleId:
+                    checked && settings.field
+                      ? getOrCreateScaleForField(settings.field)
+                      : undefined,
+                });
               }}
             />
             <Label htmlFor="colorField">Use as color field</Label>

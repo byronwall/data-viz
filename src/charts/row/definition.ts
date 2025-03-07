@@ -1,14 +1,14 @@
 import { BarChart } from "lucide-react";
 
+import { RowChart } from "@/components/charts/RowChart";
 import {
   ChartDefinition,
-  RowChartSettings,
   ChartLayout,
+  Filter,
+  RowChartSettings,
 } from "@/types/ChartTypes";
-import { Filter } from "@/types/ChartTypes";
-import { RowChart } from "@/components/charts/RowChart";
-import { RowChartSettingsPanel } from "./RowChartSettingsPanel";
 import { DEFAULT_ROW_SETTINGS } from "@/utils/defaultSettings";
+import { RowChartSettingsPanel } from "./RowChartSettingsPanel";
 
 export const rowChartDefinition: ChartDefinition<RowChartSettings> = {
   type: "row",

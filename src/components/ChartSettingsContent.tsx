@@ -12,13 +12,9 @@ import { Button } from "./ui/button";
 
 interface ChartSettingsContentProps {
   settings: ChartSettings;
-  availableFields: string[];
 }
 
-export function ChartSettingsContent({
-  settings,
-  availableFields,
-}: ChartSettingsContentProps) {
+export function ChartSettingsContent({ settings }: ChartSettingsContentProps) {
   // Local state for settings
   const [localSettings, setLocalSettings] = useState<ChartSettings>(
     mergeWithDefaultSettings(settings)
@@ -60,14 +56,12 @@ export function ChartSettingsContent({
           main: (
             <MainSettingsTab
               settings={localSettings}
-              availableFields={availableFields}
               onSettingChange={handleSettingChange}
             />
           ),
           facet: (
             <FacetSettingsTab
               settings={localSettings}
-              availableFields={availableFields}
               onSettingChange={handleSettingChange}
             />
           ),

@@ -12,7 +12,6 @@ import { ComboBox } from "../ComboBox";
 
 interface FacetSettingsTabProps {
   settings: ChartSettings;
-  availableFields: string[];
   onSettingChange: (key: string, value: any) => void;
 }
 
@@ -23,7 +22,6 @@ const FACET_TYPES = [
 
 export function FacetSettingsTab({
   settings,
-  availableFields,
   onSettingChange,
 }: FacetSettingsTabProps) {
   const handleFacetChange = (key: string, value: any) => {
@@ -91,7 +89,6 @@ export function FacetSettingsTab({
             <FieldSelector
               label=""
               value={settings.facet.rowVariable || ""}
-              availableFields={availableFields}
               onChange={(value) => handleFacetChange("rowVariable", value)}
             />
 
@@ -103,7 +100,6 @@ export function FacetSettingsTab({
                   value={
                     (settings.facet as GridFacetSettings).columnVariable || ""
                   }
-                  availableFields={availableFields}
                   onChange={(value) => {
                     onSettingChange("facet", {
                       ...settings.facet,

@@ -9,9 +9,7 @@ import { useEffect, useMemo } from "react";
 import { BaseChart } from "./BaseChart";
 import { useGetLiveData } from "./useGetLiveData";
 
-type RowChartProps = BaseChartProps & {
-  settings: RowChartSettings;
-};
+type RowChartProps = BaseChartProps<RowChartSettings>;
 
 export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
   const data = useGetLiveData(settings, undefined, facetIds);

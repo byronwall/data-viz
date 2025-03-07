@@ -13,7 +13,6 @@ interface PlotChartPanelProps {
   settings: ChartSettings;
   onDelete: () => void;
   onDuplicate: () => void;
-  availableFields: string[];
   width: number;
   height: number;
 }
@@ -22,7 +21,6 @@ export function PlotChartPanel({
   settings,
   onDelete,
   onDuplicate,
-  availableFields,
   width,
   height,
 }: PlotChartPanelProps) {
@@ -70,10 +68,7 @@ export function PlotChartPanel({
               </Button>
             </PopoverTrigger>
             <PopoverContent className="min-w-120" side="left" align="start">
-              <ChartSettingsContent
-                settings={settings}
-                availableFields={availableFields}
-              />
+              <ChartSettingsContent settings={settings} />
             </PopoverContent>
           </Popover>
           <Button variant="ghost" size="icon" onClick={handleDelete}>

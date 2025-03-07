@@ -1,13 +1,16 @@
 import { barChartDefinition } from "@/components/charts/BarChart/definition";
 import { scatterPlotDefinition } from "@/components/charts/ScatterPlot/definition";
 import { threeDScatterDefinition } from "@/components/charts/ThreeDScatter/definition";
+import { pivotTableDefinition } from "@/components/charts/PivotTable/definition";
+import { dataTableDefinition } from "@/components/charts/DataTable/definition";
+import { summaryTableDefinition } from "@/components/charts/SummaryTable/definition";
 import {
   BaseChartSettings,
   ChartDefinition,
   ChartType,
   ChartSettings,
 } from "@/types/ChartTypes";
-import { rowChartDefinition } from "./row";
+import { rowChartDefinition } from "./row/definition";
 
 export interface ChartRegistry {
   register<TSettings extends BaseChartSettings>(
@@ -81,4 +84,7 @@ export function registerAllCharts() {
   chartRegistry.register(barChartDefinition);
   chartRegistry.register(scatterPlotDefinition);
   chartRegistry.register(threeDScatterDefinition);
+  chartRegistry.register(pivotTableDefinition);
+  chartRegistry.register(dataTableDefinition);
+  chartRegistry.register(summaryTableDefinition);
 }

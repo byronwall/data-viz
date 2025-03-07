@@ -4,17 +4,17 @@ import { Progress } from "@/components/ui/progress";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { Download, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { detectColumnType } from "../utils/dataTypeDetection";
+import { detectColumnType } from "../../SummaryTable/utils/dataTypeDetection";
 import {
   estimateStatisticalSignificance,
   sampleData,
-} from "../utils/samplingStrategy";
-import { calculateColumnStatistics } from "../utils/statisticsCalculator";
+} from "../../SummaryTable/utils/samplingStrategy";
+import { calculateColumnStatistics } from "../../SummaryTable/utils/statisticsCalculator";
 
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
-import { DataType } from "../utils/dataTypeDetection";
-import { CompactSummaryTable } from "./CompactSummaryTable";
+import { DataType } from "../../SummaryTable/utils/dataTypeDetection";
+import { CompactSummaryTable } from "../../SummaryTable/components/CompactSummaryTable";
 import { BaseChartProps } from "@/types/ChartTypes";
 
 interface ColumnSummary {

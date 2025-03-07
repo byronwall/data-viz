@@ -30,9 +30,7 @@ type CategoryBin = {
   isNumeric: false;
 };
 
-type BarChartProps = BaseChartProps & {
-  settings: BarChartSettings;
-};
+type BarChartProps = BaseChartProps<BarChartSettings>;
 
 export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
   // Get all data for axis limits calculation (not filtered by current selections)

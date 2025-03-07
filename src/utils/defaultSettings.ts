@@ -1,17 +1,17 @@
+import { getChartDefinition } from "@/charts/registry";
+import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
 import {
   AxisSettings,
-  WrapFacetSettings,
+  BaseChartSettings,
   ChartSettings,
+  DataTableSettings,
+  MarginSettings,
   PivotTableSettings,
   RowChartSettings,
-  BarChartSettings,
   ScatterChartSettings,
-  MarginSettings,
-  BaseChartSettings,
   SummaryChartSettings,
-  DataTableSettings,
+  WrapFacetSettings,
 } from "@/types/ChartTypes";
-import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
 import { Vector3 } from "three";
 
 export const DEFAULT_AXIS_SETTINGS: AxisSettings = {
@@ -69,15 +69,6 @@ export const DEFAULT_ROW_SETTINGS: Omit<RowChartSettings, "id"> = {
   filterValues: { values: [] },
 };
 
-export const DEFAULT_BAR_SETTINGS: Omit<BarChartSettings, "id"> = {
-  ...DEFAULT_CHART_SETTINGS,
-  type: "bar",
-  binCount: 10,
-  forceString: false,
-  filterValues: { values: [] },
-  filterRange: null,
-};
-
 export const DEFAULT_SCATTER_SETTINGS: Omit<ScatterChartSettings, "id"> = {
   ...DEFAULT_CHART_SETTINGS,
   type: "scatter",
@@ -125,33 +116,11 @@ export const DEFAULT_DATA_TABLE_SETTINGS: Omit<DataTableSettings, "id"> = {
   tableHeight: 600,
 };
 
-export function getDefaultSettingsForType(
-  type: ChartSettings["type"]
-): Omit<ChartSettings, "id"> {
-  switch (type) {
-    case "pivot":
-      return DEFAULT_PIVOT_SETTINGS;
-    case "row":
-      return DEFAULT_ROW_SETTINGS;
-    case "bar":
-      return DEFAULT_BAR_SETTINGS;
-    case "scatter":
-      return DEFAULT_SCATTER_SETTINGS;
-    case "3d-scatter":
-      return DEFAULT_3D_SCATTER_SETTINGS;
-    case "summary":
-      return DEFAULT_SUMMARY_SETTINGS;
-    case "data-table":
-      return DEFAULT_DATA_TABLE_SETTINGS;
-    default:
-      return DEFAULT_CHART_SETTINGS;
-  }
-}
-
 export function mergeWithDefaultSettings<T extends ChartSettings>(
   settings: T
 ): T {
-  const defaults = getDefaultSettingsForType(settings.type);
+  const def = getChartDefinition(settings.type);
+  const defaults = def.createDefaultSettings(settings.layout, settings.field);
   return {
     ...defaults,
     ...settings,

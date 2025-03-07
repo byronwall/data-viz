@@ -1,6 +1,4 @@
-import { cn } from "@/lib/utils";
 import { ChartSettings } from "@/types/ChartTypes";
-import { isAxisSettingChanged } from "@/utils/settingsUtils";
 import { RotateCcw } from "lucide-react";
 import { ComboBox } from "../ComboBox";
 import { NumericInputEnter } from "../NumericInputEnter";
@@ -77,10 +75,6 @@ export function AxisSettingsTab({
           }
           optionToString={(option) => option.label}
           placeholder="X Scale"
-          className={cn(
-            isAxisSettingChanged(settings, "x", "scaleType") &&
-              "bg-yellow-50 dark:bg-yellow-900/20"
-          )}
         />
         <ComboBox
           value={SCALE_TYPES.find(
@@ -92,10 +86,6 @@ export function AxisSettingsTab({
           }
           optionToString={(option) => option.label}
           placeholder="Y Scale"
-          className={cn(
-            isAxisSettingChanged(settings, "y", "scaleType") &&
-              "bg-yellow-50 dark:bg-yellow-900/20"
-          )}
         />
 
         <Label>Grid Lines</Label>
@@ -130,10 +120,6 @@ export function AxisSettingsTab({
           stepSmall={1}
           stepMedium={10}
           stepLarge={100}
-          className={cn(
-            isAxisSettingChanged(settings, "x", "min") &&
-              "bg-yellow-50 dark:bg-yellow-900/20"
-          )}
         />
         <NumericInputEnter
           value={settings.yAxis?.min || 0}
@@ -144,10 +130,6 @@ export function AxisSettingsTab({
           stepSmall={1}
           stepMedium={10}
           stepLarge={100}
-          className={cn(
-            isAxisSettingChanged(settings, "y", "min") &&
-              "bg-yellow-50 dark:bg-yellow-900/20"
-          )}
         />
 
         <Label>Domain Max</Label>
@@ -160,10 +142,6 @@ export function AxisSettingsTab({
           stepSmall={1}
           stepMedium={10}
           stepLarge={100}
-          className={cn(
-            isAxisSettingChanged(settings, "x", "max") &&
-              "bg-yellow-50 dark:bg-yellow-900/20"
-          )}
         />
         <NumericInputEnter
           value={settings.yAxis?.max || 100}
@@ -174,10 +152,6 @@ export function AxisSettingsTab({
           stepSmall={1}
           stepMedium={10}
           stepLarge={100}
-          className={cn(
-            isAxisSettingChanged(settings, "y", "max") &&
-              "bg-yellow-50 dark:bg-yellow-900/20"
-          )}
         />
       </div>
     </div>

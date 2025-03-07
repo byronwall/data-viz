@@ -19,6 +19,7 @@ Will be updated when done...
 - Improve handling of times stamps
 - Create a `LineChart` that favors plotting time series data with a line
 - Create a `HeatMap` that shows a matrix of values - default to counts
+- Create a `BoxPlot` that shows a box plot of the data
 - Need a color legend type that can be rendered
 - Need a Markdown text type that can be rendered
 
@@ -56,6 +57,7 @@ Will be updated when done...
   - Set a max length on that label
   - Allow ordering by label
   - Allow keeping 0 count items in display to avoid layout shift when filtering
+  - Click on `others` to double height of chart
 - Scatter points need to render on top of gridlines
 - Do not attempt to render points and bars that are not visible due to axis limits
 - Decide if it is worth allowing the y categories to be globally shared in Row charts w/ facets

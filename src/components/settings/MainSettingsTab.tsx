@@ -1,10 +1,10 @@
+import { chartRegistry, useChartDefinition } from "@/charts/registry";
 import { useColorScales } from "@/hooks/useColorScales";
 import {
-  CHART_TYPES,
+  BaseChartSettings,
   ChartSettings,
-  ChartTypeOption,
-  PivotTableSettings,
   DataTableSettings,
+  PivotTableSettings,
 } from "@/types/ChartTypes";
 import { ComboBox } from "../ComboBox";
 import { FieldSelector } from "../FieldSelector";
@@ -48,6 +48,11 @@ export function MainSettingsTab({
   onSettingChange,
 }: MainSettingsTabProps) {
   const { getOrCreateScaleForField } = useColorScales();
+
+  const chartDefinition = useChartDefinition(settings.type);
+  const chartTypes = chartRegistry.getAll();
+  const SettingsPanel = chartDefinition.settingsPanel;
+
   const hasDataField = settings.type === "row" || settings.type === "bar";
   const isRowChart = settings.type === "row";
   const isPivotChart = settings.type === "pivot";
@@ -60,25 +65,29 @@ export function MainSettingsTab({
       <div className="grid grid-cols-[120px_1fr] items-center gap-4">
         <Label htmlFor="chartType">Chart Type</Label>
         <ComboBox
-          value={
-            CHART_TYPES.find(
-              (type) => type.value === settings.type
-            ) as ChartTypeOption
-          }
-          options={CHART_TYPES as any}
-          onChange={(option) =>
-            onSettingChange("type", option?.value as ChartSettings["type"])
-          }
+          value={chartDefinition}
+          options={chartTypes}
+          onChange={(option) => {
+            if (option) {
+              const newSettings = option.createDefaultSettings(
+                settings.layout,
+                settings.field
+              );
+              Object.entries(newSettings).forEach(([key, value]) => {
+                onSettingChange(key, value);
+              });
+            }
+          }}
           optionToNode={(option) => {
             const Icon = option.icon;
             return (
               <div className="flex items-center gap-2">
                 <Icon className="h-4 w-4" />
-                <span>{option.label}</span>
+                <span>{option.name}</span>
               </div>
             );
           }}
-          optionToString={(option) => option.value}
+          optionToString={(option) => option.name}
           placeholder="Select chart type"
         />
 
@@ -432,6 +441,15 @@ export function MainSettingsTab({
           </div>
         )}
       </div>
+
+      <SettingsPanel
+        settings={settings as BaseChartSettings}
+        onSettingsChange={(newSettings) => {
+          Object.entries(newSettings).forEach(([key, value]) => {
+            onSettingChange(key, value);
+          });
+        }}
+      />
     </div>
   );
 }

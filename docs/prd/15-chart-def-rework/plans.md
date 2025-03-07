@@ -91,29 +91,29 @@ export function useChartDefinition(type: ChartType) {
 
 ### Phase 1: Core Infrastructure
 
-- [ ] Create base chart registry system
+- [x ] Create base chart registry system
 
-  - [ ] Implement `ChartDefinition` interface
-  - [ ] Create registry class with `Map<ChartType, ChartDefinition>`
-  - [ ] Add registration and lookup methods
-  - [ ] Add type safety and validation
+  - [x] Implement `ChartDefinition` interface
+  - [x] Create registry class with `Map<ChartType, ChartDefinition>`
+  - [x] Add registration and lookup methods
+  - [x] Add type safety and validation
 
-- [ ] Set up file structure
-  - [ ] Create `/src/charts` directory
-  - [ ] Add `/src/charts/registry.ts`
-  - [ ] Add `/src/charts/types.ts`
-  - [ ] Create `/src/charts/utils` for shared utilities
-  - [ ] Create template structure for individual chart folders
+- [x] Set up file structure
+  - [x] Create `/src/charts` directory
+  - [x] Add `/src/charts/registry.ts`
+  - [x] Add `/src/charts/types.ts`
+  - [x] Create `/src/charts/utils` for shared utilities
+  - [x] Create template structure for individual chart folders
 
 ### Phase 2: Core Components Update
 
-- [ ] Update `ChartRenderer` to use registry
+- [ x] Update `ChartRenderer` to use registry
 
-  - [ ] Remove switch statements
-  - [ ] Add error boundaries
-  - [ ] Handle async transformations
+  - [x] Remove switch statements
+  - [x] Add error boundaries
+  - [x] Handle async transformations
 
-- [ ] Update `ChartSettingsPanel` to use registry
+- [ ] Update `MainSettingsTab` to use registry
 
   - [ ] Remove switch statements
   - [ ] Add validation handling
@@ -171,19 +171,45 @@ export function useChartDefinition(type: ChartType) {
 
 ### Phase 1: Core Infrastructure
 
-- [ ] Create base chart registry system
-  - [ ] Implement `ChartDefinition` interface
-  - [ ] Create registry class
-  - [ ] Add registration methods
-  - [ ] Add type safety
+- [x] Create base chart registry system
+  - [x] Implement `ChartDefinition` interface
+  - [x] Create registry class
+  - [x] Add registration methods
+  - [x] Add type safety
+
+### Phase 2: Core Components Update
+
+- [x] Create BarChart implementation
+  - [x] Create chart definition
+  - [x] Create settings panel
+  - [x] Move component to new location
+  - [ ] Fix type errors in component
+    - [x] Fix Filter type usage
+    - [x] Fix ChartSettings type compatibility
+    - [x] Fix facetIds type compatibility
+    - [ ] Fix remaining type errors
+      - [ ] Fix filterValues type compatibility
+      - [ ] Fix implicit any type in filter function
 
 ### Current Progress
 
-- Initial plan created
-- Core types defined
+- Core types defined in `src/types/ChartTypes.ts`
+- Registry implementation created in `src/charts/registry.ts`
+- Created BarChart definition with new system
+- Created BarChartSettingsPanel component
+- Moved BarChart component to new location
+- Updated imports and file structure
+- Fixed most type errors in BarChart component
+- Fixed facetIds type compatibility
+- Identified remaining type issues:
+  - filterValues property missing from ChartSettings type
+  - Implicit any type in filter function
 
 ### Next Steps
 
-- Begin Phase 1 implementation
-- Set up core file structure
-- Implement base registry system
+- Fix remaining type errors in BarChart component
+  - Add filterValues property to ChartSettings type
+  - Add type annotation for filter function parameter
+- Continue with other chart implementations
+- Add providers and context setup
+- Update chart renderer to use registry

@@ -7,8 +7,10 @@ import {
   Table,
   Box,
   Info,
+  LucideIcon,
 } from "lucide-react";
 import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
+import { BarChartSettings } from "@/components/charts/BarChart/definition";
 
 export const CHART_TYPES = [
   { value: "row", label: "Row Chart", icon: BarChartBig },
@@ -101,16 +103,6 @@ export interface RowChartSettings extends BaseChartSettings {
   filterValues: FilterValues;
 }
 
-export interface BarChartSettings extends BaseChartSettings {
-  type: "bar";
-  binCount?: number;
-
-  forceString?: boolean;
-
-  filterValues: FilterValues;
-  filterRange: FilterRange;
-}
-
 export interface ScatterChartSettings extends BaseChartSettings {
   type: "scatter";
   xField: string;
@@ -191,6 +183,13 @@ export type ChartSettings =
   | SummaryChartSettings
   | DataTableSettings;
 
+export interface ChartSettingsPanelProps<
+  TSettings extends BaseChartSettings = BaseChartSettings
+> {
+  settings: TSettings;
+  onSettingsChange: (settings: TSettings) => void;
+}
+
 export interface BaseChartProps {
   settings: ChartSettings;
   width: number;
@@ -225,3 +224,25 @@ export type Filter =
   | Filter2dRange
   | ScatterFilter
   | undefined;
+
+export interface ChartDefinition<
+  TSettings extends BaseChartSettings = BaseChartSettings
+> {
+  // Metadata
+  type: ChartType;
+  name: string;
+  description: string;
+  icon: LucideIcon;
+
+  // Component References
+  component: React.ComponentType<BaseChartProps>;
+  settingsPanel: React.ComponentType<ChartSettingsPanelProps>;
+
+  // Settings Management
+  createDefaultSettings: (layout: ChartLayout, field?: string) => TSettings;
+  validateSettings: (settings: TSettings) => boolean;
+
+  // Filtering
+  filterData: (data: any[], filters: Filter) => any[];
+  createFilterFromSelection: (selection: any, settings: TSettings) => Filter;
+}

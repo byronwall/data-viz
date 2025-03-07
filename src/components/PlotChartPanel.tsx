@@ -5,19 +5,9 @@ import { Copy, FilterX, GripVertical, Settings2, X } from "lucide-react";
 import { ChartRenderer } from "./charts/ChartRenderer";
 import { FacetContainer } from "./charts/FacetContainer";
 import { ChartSettingsContent } from "./ChartSettingsContent";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "./ui/alert-dialog";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { useAlertStore } from "@/stores/alertStore";
 
 interface PlotChartPanelProps {
   settings: ChartSettings;
@@ -37,6 +27,17 @@ export function PlotChartPanel({
   height,
 }: PlotChartPanelProps) {
   const clearFilter = useDataLayer((state) => state.clearFilter);
+  const showAlert = useAlertStore((state) => state.showAlert);
+
+  const handleDelete = async () => {
+    const confirmed = await showAlert(
+      "Delete Chart",
+      "Are you sure you want to delete this chart? This action cannot be undone."
+    );
+    if (confirmed) {
+      onDelete();
+    }
+  };
 
   return (
     <div
@@ -75,28 +76,9 @@ export function PlotChartPanel({
               />
             </PopoverContent>
           </Popover>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <X className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Chart</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this chart? This action cannot
-                  be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onDelete} autoFocus>
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button variant="ghost" size="icon" onClick={handleDelete}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       </div>
       <div>

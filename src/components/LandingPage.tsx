@@ -1,17 +1,16 @@
+import { Button } from "@/components/ui/button";
 import { ExampleData, examples } from "@/demos/examples";
-import { DataLayerProvider } from "@/providers/DataLayerProvider";
 import type { DatumObject } from "@/providers/DataLayerProvider";
+import { DataLayerProvider } from "@/providers/DataLayerProvider";
+import { parseCsvData } from "@/utils/csvParser";
 import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { CsvUpload } from "./CsvUpload";
 import { ExampleSelector } from "./ExampleSelector";
 import { PlotManager } from "./PlotManager";
-import { CsvUpload } from "./CsvUpload";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import { parseCsvData } from "@/utils/csvParser";
-import { GlobalAlertDialog } from "./GlobalAlertDialog";
 
 export function LandingPage() {
   const [searchParams, setSearchParams] = useSearchParams();

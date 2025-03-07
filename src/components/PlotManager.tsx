@@ -22,6 +22,7 @@ import { ChartGridLayout } from "./ChartGridLayout";
 import { PlotChartPanel } from "./PlotChartPanel";
 import { CalculationManager } from "./calculations/CalculationManager";
 import { GridSettingsPanel } from "./settings/GridSettingsPanel";
+import { useAlertStore } from "@/stores/alertStore";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +73,7 @@ export function PlotManager() {
   const gridSettings = useDataLayer((state) => state.gridSettings);
   const saveToStructure = useDataLayer((state) => state.saveToStructure);
   const data = useDataLayer((state) => state.data);
+  const showAlert = useAlertStore((state) => state.showAlert);
 
   const [activeTab, setActiveTab] = useState("charts");
   const [isCopying, setIsCopying] = useState(false);
@@ -166,6 +168,18 @@ export function PlotManager() {
     }
   };
 
+  const handleRemoveAllCharts = async () => {
+    const confirmed = await showAlert(
+      "Remove All Charts",
+      "Are you sure you want to remove all charts? This action cannot be undone."
+    );
+
+    if (confirmed) {
+      removeAllCharts();
+      toast("All charts have been removed");
+    }
+  };
+
   return (
     <div className="w-full pb-40" ref={containerRef}>
       <div className="flex justify-between items-center mb-4">
@@ -222,7 +236,7 @@ export function PlotManager() {
                     Clear All Filters
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={removeAllCharts}
+                    onClick={handleRemoveAllCharts}
                     className="flex items-center gap-2 text-destructive"
                   >
                     <X className="h-4 w-4" />

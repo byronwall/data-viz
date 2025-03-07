@@ -68,19 +68,6 @@ Will be updated when done...
 - Verify that null detection is working correctly
 - Need to build chart title from data fields
 
-### UI/UX Improvements
-
-- ChartActions - tooltip is annoying - slow down or remove (add a legend?)
-- Need to swap out the multi select comp with good one from Plantasktic
-- Add button to create blank chart by choosing type
-- Allow the summary table to show up in a popover if the sidebar is collapsed
-- `Remove all charts` needs a warning
-- Default chart width needs to allow 4-5 charts in grid (12 and 2?)
-- Add small grid marks to the background of the chart containing interface so that it's clear where the size break points are
-- Create a landing page that allows quickly loading some sample data
-- Remove the CSV header at the top - too big
-- Integrate the summary table into the main chart area - takes up too much space?
-
 ### Summary and Pivot Table
 
 - Debounce the slider on the summary table to prevent too many re-renders
@@ -90,11 +77,6 @@ Will be updated when done...
 - Summary table causes a render with each column? Do them all in one shot if possible - check time and then RAF to continue
 - Need to wire up the "details" view for the pivot table
 - Integrate the data summary info into the field chooser drop downs - show icon for field (maybe a count, etc)
-
-### Color and Scale Management
-
-- Should not be creating colorScaleId all the time
-- The colorScaleId should not be saved - or need to save the scales too
 
 ### Calculations and Filtering
 

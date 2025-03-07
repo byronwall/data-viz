@@ -11,6 +11,7 @@ import { CsvUpload } from "./CsvUpload";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { parseCsvData } from "@/utils/csvParser";
+import { GlobalAlertDialog } from "./GlobalAlertDialog";
 
 export function LandingPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -89,63 +90,69 @@ export function LandingPage() {
   };
 
   return (
-    <div className="flex flex-col items-center p-8 gap-8">
-      {hasData && (
-        <Button
-          variant="ghost"
-          className="absolute top-4 left-[50%] self-start"
-          style={{ transform: "translateX(-50%)" }}
-          onClick={handleClearData}
-        >
-          <X className="h-4 w-4" />
-          Return to Examples
-        </Button>
-      )}
-      <AnimatePresence mode="wait">
-        {!hasData ? (
-          <motion.div
-            key="selector"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-4xl"
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="flex flex-col items-center p-8 gap-8">
+        {hasData && (
+          <Button
+            variant="ghost"
+            className="absolute top-4 left-[50%] self-start"
+            style={{ transform: "translateX(-50%)" }}
+            onClick={handleClearData}
           >
-            <h1 className="text-3xl font-bold mb-8 text-center">
-              Data Visualization Examples
-            </h1>
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Import CSV Data</h2>
-                <CsvUpload onImport={handleCsvImport} />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Try Example Data</h2>
-                <ExampleSelector onSelect={handleExampleSelect} />
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="plot"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="w-full"
-          >
-            <DataLayerProvider
-              data={isCsvMode ? csvData : exampleData}
-              savedData={isCsvMode ? undefined : example?.savedData}
-            >
-              <PlotManager />
-            </DataLayerProvider>
-          </motion.div>
+            <X className="h-4 w-4" />
+            Return to Examples
+          </Button>
         )}
-      </AnimatePresence>
-      {isLoading && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-        </div>
-      )}
+        <AnimatePresence mode="wait">
+          {!hasData ? (
+            <motion.div
+              key="selector"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="w-full max-w-4xl"
+            >
+              <h1 className="text-3xl font-bold mb-8 text-center">
+                Data Visualization Examples
+              </h1>
+              <div className="space-y-8">
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Import CSV Data
+                  </h2>
+                  <CsvUpload onImport={handleCsvImport} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Try Example Data
+                  </h2>
+                  <ExampleSelector onSelect={handleExampleSelect} />
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="plot"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="w-full"
+            >
+              <DataLayerProvider
+                data={isCsvMode ? csvData : exampleData}
+                savedData={isCsvMode ? undefined : example?.savedData}
+              >
+                <PlotManager />
+              </DataLayerProvider>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {isLoading && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

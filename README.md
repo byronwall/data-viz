@@ -14,10 +14,7 @@ Will be updated when done...
 
 ### Core data viz
 
-- Need a `SavedChartSettings` that contain chart defs, color scales, calcs, etc.
-- Wire up "load examples" buttons for main data sets - get rid of current default state
 - Top level filter + steps = ability to quickly segment data and work on slices
-- Allow controlling grid layout settings better
 - Add a filter summary + filter controller
 - Improve handling of times stamps
 - Create a `LineChart` that favors plotting time series data with a line
@@ -25,7 +22,6 @@ Will be updated when done...
 - Create a `3D scatter plot` that shows a 3D scatter plot of the data - allow for interactive pan + zoom
 - Need a color legend type that can be rendered
 - Need a Markdown text type that can be rendered
-- Need a data summary type that can be rendered
 
 ### Packaging and usages
 
@@ -74,7 +70,6 @@ Will be updated when done...
 
 ### UI/UX Improvements
 
-- Got a weird double scroll bar on plot manager
 - ChartActions - tooltip is annoying - slow down or remove (add a legend?)
 - Need to swap out the multi select comp with good one from Plantasktic
 - Add button to create blank chart by choosing type

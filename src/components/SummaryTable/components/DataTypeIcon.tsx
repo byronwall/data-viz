@@ -1,11 +1,5 @@
+import { Calendar, Hash, HelpCircle, ToggleLeft, Type } from "lucide-react";
 import { DataType } from "../utils/dataTypeDetection";
-import { Hash, Calendar, Type, HelpCircle, ToggleLeft } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface DataTypeIconProps {
   type: DataType | "unknown";
@@ -25,16 +19,5 @@ export function DataTypeIcon({ type }: DataTypeIconProps) {
 
   const { icon: Icon, label } = iconMap[type];
 
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger>
-          <Icon className="h-4 w-4" />
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{label}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
+  return <Icon className="h-4 w-4" />;
 }

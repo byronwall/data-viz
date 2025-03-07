@@ -6,8 +6,8 @@ import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { scaleBand, scaleLinear } from "d3-scale";
 import { useEffect, useMemo } from "react";
-import { BaseChart } from "./BaseChart";
-import { useGetLiveData } from "./useGetLiveData";
+import { BaseChart } from "../BaseChart";
+import { useGetLiveData } from "../useGetLiveData";
 
 type RowChartProps = BaseChartProps<RowChartSettings>;
 

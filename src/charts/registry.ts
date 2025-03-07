@@ -10,7 +10,7 @@ import {
   ChartType,
   ChartSettings,
 } from "@/types/ChartTypes";
-import { rowChartDefinition } from "./row/definition";
+import { rowChartDefinition } from "../components/charts/RowChart/definition";
 
 export interface ChartRegistry {
   register<TSettings extends BaseChartSettings>(

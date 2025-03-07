@@ -1,6 +1,6 @@
 import { BarChart } from "lucide-react";
 
-import { RowChart } from "@/components/charts/RowChart";
+import { RowChart } from "@/components/charts/RowChart/RowChart";
 import {
   ChartDefinition,
   ChartLayout,

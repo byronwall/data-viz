@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { ChartSettingsPanelProps } from "@/types/ChartTypes";
 import { BarChartSettings } from "./definition";
 import { useColorScales } from "@/hooks/useColorScales";
+
 export function BarChartSettingsPanel({
   settings,
   onSettingsChange,

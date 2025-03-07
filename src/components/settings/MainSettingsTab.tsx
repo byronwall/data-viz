@@ -14,6 +14,8 @@ export function MainSettingsTab({
 }: MainSettingsTabProps) {
   const chartDefinition = useChartDefinition(settings.type);
   const chartTypes = chartRegistry.getAll();
+
+  // this magic flies in the right settings for the chart type
   const SettingsPanel = chartDefinition.settingsPanel;
 
   return (

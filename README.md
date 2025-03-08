@@ -14,12 +14,13 @@ Will be updated when done...
 
 ### Core data viz
 
+- Rework how filters are stored in chart settings - need a single `filters` object that can hold different values - rework examples - get switch logic out of various files like `src/hooks/getFilterValues.ts`
 - Top level filter + steps = ability to quickly segment data and work on slices
 - Add a filter summary + filter controller
 - Improve handling of times stamps
 - Create a `LineChart` that favors plotting time series data with a line
 - Create a `HeatMap` that shows a matrix of values - default to counts
-- Create a `3D scatter plot` that shows a 3D scatter plot of the data - allow for interactive pan + zoom
+- Create a `BoxPlot` that shows a box plot of the data
 - Need a color legend type that can be rendered
 - Need a Markdown text type that can be rendered
 
@@ -57,10 +58,13 @@ Will be updated when done...
   - Set a max length on that label
   - Allow ordering by label
   - Allow keeping 0 count items in display to avoid layout shift when filtering
+  - Click on `others` to double height of chart
 - Scatter points need to render on top of gridlines
 - Do not attempt to render points and bars that are not visible due to axis limits
 - Decide if it is worth allowing the y categories to be globally shared in Row charts w/ facets
 - Row chart should give a warning about missing field instead of rendering undefined - maybe give a drop down immediately
+- Row chart should allow clicking anywhere on bar or label to filter - use pointer cursor - give a visual indicator of the filter in case base is small (bold + funnel)
+- Put the `clear all filters` button in the main toolbar - make it icon only
 
 ### Data Display and Formatting
 
@@ -93,3 +97,8 @@ Will be updated when done...
   - Grid lines - tick counts
   - Axis limits
   - Need to hide certain axis settings that cannot be easily changed
+
+### Random
+
+- Animate the `update charts` button - make it smaller too
+- Row chart min and max bar sizes don't seem to be working

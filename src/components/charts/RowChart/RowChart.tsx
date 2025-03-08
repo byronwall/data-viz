@@ -6,15 +6,13 @@ import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { scaleBand, scaleLinear } from "d3-scale";
 import { useEffect, useMemo } from "react";
-import { BaseChart } from "./BaseChart";
-import { useGetLiveData } from "./useGetLiveData";
+import { BaseChart } from "../BaseChart";
+import { useGetLiveData } from "../useGetLiveData";
 
-type RowChartProps = BaseChartProps & {
-  settings: RowChartSettings;
-};
+type RowChartProps = BaseChartProps<RowChartSettings>;
 
 export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
-  const data = useGetLiveData(settings, undefined, facetIds);
+  const data = useGetLiveData(settings, settings.field, facetIds);
 
   const { getColorForValue } = useColorScales();
   const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);

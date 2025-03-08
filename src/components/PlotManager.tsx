@@ -63,7 +63,6 @@ const gridToPixels = (
 };
 
 export function PlotManager() {
-  const getColumnNames = useDataLayer((state) => state.getColumnNames);
   const charts = useDataLayer((state) => state.charts);
   const updateChart = useDataLayer((state) => state.updateChart);
   const addChart = useDataLayer((state) => state.addChart);
@@ -76,11 +75,6 @@ export function PlotManager() {
   const showAlert = useAlertStore((state) => state.showAlert);
 
   const [activeTab, setActiveTab] = useState("charts");
-  const [isCopying, setIsCopying] = useState(false);
-  const [isCopyingData, setIsCopyingData] = useState(false);
-
-  // Get column names
-  const columns = getColumnNames();
 
   // Add ref and state for container dimensions
   const containerRef = useRef<HTMLDivElement>(null);
@@ -129,14 +123,6 @@ export function PlotManager() {
       const savedData = saveToStructure();
       await saveToClipboard(savedData);
 
-      // Set copying state to true to trigger animation
-      setIsCopying(true);
-
-      // Reset after animation duration
-      setTimeout(() => {
-        setIsCopying(false);
-      }, 1500);
-
       toast("Configuration saved to clipboard");
     } catch (error) {
       console.error("Failed to copy to clipboard:", error);
@@ -152,14 +138,6 @@ export function PlotManager() {
 
     try {
       await saveRawDataToClipboard(data);
-
-      // Set copying state to true to trigger animation
-      setIsCopyingData(true);
-
-      // Reset after animation duration
-      setTimeout(() => {
-        setIsCopyingData(false);
-      }, 1500);
 
       toast("Data saved to clipboard");
     } catch (error) {
@@ -288,7 +266,6 @@ export function PlotManager() {
                   <PlotChartPanel
                     settings={chart}
                     onDelete={() => removeChart(chart)}
-                    availableFields={columns}
                     onDuplicate={() => {
                       const { id, ...chartWithoutId } = chart;
                       addChart(chartWithoutId);

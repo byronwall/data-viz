@@ -1,12 +1,6 @@
+import { useChartDefinition } from "@/charts/registry";
 import { IdType } from "@/providers/DataLayerProvider";
 import { ChartSettings } from "@/types/ChartTypes";
-import { SummaryTable } from "../SummaryTable/components/SummaryTable";
-import { BarChart } from "./BarChart";
-import { PivotTable } from "./PivotTable/PivotTable";
-import { RowChart } from "./RowChart";
-import { ScatterPlot } from "./ScatterPlot";
-import { ThreeDScatterChart } from "./ThreeDScatter/ThreeDScatterChart";
-import { DataTable } from "./DataTable/DataTable";
 
 interface ChartRendererProps {
   settings: ChartSettings;
@@ -21,64 +15,15 @@ export function ChartRenderer({
   height,
   facetIds,
 }: ChartRendererProps) {
-  switch (settings.type) {
-    case "row":
-      return (
-        <RowChart
-          settings={settings}
-          width={width}
-          height={height}
-          facetIds={facetIds}
-        />
-      );
-    case "bar":
-      return (
-        <BarChart
-          settings={settings}
-          width={width}
-          height={height}
-          facetIds={facetIds}
-        />
-      );
-    case "scatter":
-      return (
-        <ScatterPlot
-          settings={settings}
-          width={width}
-          height={height}
-          facetIds={facetIds}
-        />
-      );
-    case "pivot":
-      return (
-        <PivotTable
-          settings={settings}
-          width={width}
-          height={height}
-          facetIds={facetIds}
-        />
-      );
-    case "3d-scatter":
-      return (
-        <ThreeDScatterChart
-          settings={settings}
-          width={width}
-          height={height}
-          facetIds={facetIds}
-        />
-      );
-    case "summary":
-      return (
-        <SummaryTable
-          settings={settings}
-          width={width}
-          height={height}
-          facetIds={facetIds}
-        />
-      );
-    case "data-table":
-      return <DataTable settings={settings} width={width} height={height} />;
-    default:
-      return null;
-  }
+  const definition = useChartDefinition(settings.type);
+  const ChartComponent = definition.component;
+
+  return (
+    <ChartComponent
+      settings={settings}
+      width={width}
+      height={height}
+      facetIds={facetIds}
+    />
+  );
 }

@@ -5,9 +5,9 @@ import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
 import { ScaleLinear, scaleLinear } from "d3-scale";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { BaseChart } from "./BaseChart";
-import { useGetLiveData } from "./useGetLiveData";
-import { useGetColumnDataForIds } from "./useGetColumnData";
+import { BaseChart } from "../BaseChart";
+import { useGetLiveData } from "../useGetLiveData";
+import { useGetColumnDataForIds } from "../useGetColumnData";
 
 // Configurable constant for axis buffer (10%)
 const AXIS_BUFFER_PERCENTAGE = 0.1;
@@ -33,9 +33,9 @@ export function ScatterPlot({
   const allYData = useGetColumnDataForIds(settings.yField, facetIds);
 
   // Get filtered data for rendering
-  const xData = useGetLiveData(settings, "xField", facetIds);
-  const yData = useGetLiveData(settings, "yField", facetIds);
-  const colorData = useGetLiveData(settings, "colorField", facetIds);
+  const xData = useGetLiveData(settings, settings.xField, facetIds);
+  const yData = useGetLiveData(settings, settings.yField, facetIds);
+  const colorData = useGetLiveData(settings, settings.colorField, facetIds);
 
   // Convert object to array and map to numbers
   const xValues = xData.map(Number);

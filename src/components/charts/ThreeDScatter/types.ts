@@ -10,13 +10,12 @@ export interface Point3D {
   size?: number;
 }
 
-export interface ThreeDScatterSettings
-  extends Omit<BaseChartSettings, "colorField"> {
+export interface ThreeDScatterSettings extends BaseChartSettings {
   type: "3d-scatter";
   xField: string;
   yField: string;
   zField: string;
-  colorField?: string;
+  colorField: string | undefined;
   sizeField?: string;
 
   // Camera state

@@ -1,6 +1,6 @@
 import { ChartSettings } from "@/types/ChartTypes";
 import { useMemo } from "react";
-import { ChartRenderer } from "./ChartRenderer";
+import { ChartRenderer } from "../ChartRenderer";
 import { FacetData } from "./FacetContainer";
 import { IdType } from "@/providers/DataLayerProvider";
 

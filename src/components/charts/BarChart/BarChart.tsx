@@ -3,14 +3,15 @@ import { getFilterObj, isEmptyFilter } from "@/hooks/getFilterValues";
 import { useColorScales } from "@/hooks/useColorScales";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
-import { BarChartSettings, BaseChartProps } from "@/types/ChartTypes";
+import { BaseChartProps } from "@/types/ChartTypes";
 import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from "d3-scale";
 import { useCallback, useEffect, useMemo } from "react";
 import isEqual from "react-fast-compare";
 import { useCustomCompareMemo } from "use-custom-compare";
-import { BaseChart } from "./BaseChart";
-import { useGetLiveData } from "./useGetLiveData";
-import { useGetColumnDataForIds } from "./useGetColumnData";
+import { BaseChart } from "../BaseChart";
+import { useGetColumnDataForIds } from "../useGetColumnData";
+import { useGetLiveData } from "../useGetLiveData";
+import { BarChartSettings } from "./definition";
 
 const X_SCALE_PADDING = 0.05; // 5% padding on each side
 const Y_SCALE_PADDING = 0.1; // 10% padding for top of bars
@@ -29,15 +30,13 @@ type CategoryBin = {
   isNumeric: false;
 };
 
-type BarChartProps = BaseChartProps & {
-  settings: BarChartSettings;
-};
+type BarChartProps = BaseChartProps<BarChartSettings>;
 
 export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
   // Get all data for axis limits calculation (not filtered by current selections)
   const allColData = useGetColumnDataForIds(settings.field);
   // Get filtered data for rendering
-  const liveColData = useGetLiveData(settings, undefined, facetIds);
+  const liveColData = useGetLiveData(settings, settings.field, facetIds);
 
   const updateChart = useDataLayer((s) => s.updateChart);
   const { getColorForValue } = useColorScales();
@@ -180,12 +179,6 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
   // Register axis limits with the facet context if in a facet
   useEffect(() => {
     if (facetIds && chartData.length > 0) {
-      // Register x-axis limits (categorical for bar chart)
-      // registerAxisLimits(settings.id, "x", {
-      //   type: "categorical",
-      //   categories: new Set(chartData.map((d) => d.label)),
-      // });
-
       // determine x limits based on data type
       if (isNumeric) {
         registerAxisLimits(settings.id, "x", {

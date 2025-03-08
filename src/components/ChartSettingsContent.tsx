@@ -7,19 +7,14 @@ import { AxisSettingsTab } from "./settings/AxisSettingsTab";
 import { FacetSettingsTab } from "./settings/FacetSettingsTab";
 import { LabelsSettingsTab } from "./settings/LabelsSettingsTab";
 import { MainSettingsTab } from "./settings/MainSettingsTab";
-import { DataTableSettingsTab } from "./settings/DataTableSettingsTab";
 import { TabContainer } from "./settings/TabContainer";
 import { Button } from "./ui/button";
 
 interface ChartSettingsContentProps {
   settings: ChartSettings;
-  availableFields: string[];
 }
 
-export function ChartSettingsContent({
-  settings,
-  availableFields,
-}: ChartSettingsContentProps) {
+export function ChartSettingsContent({ settings }: ChartSettingsContentProps) {
   // Local state for settings
   const [localSettings, setLocalSettings] = useState<ChartSettings>(
     mergeWithDefaultSettings(settings)
@@ -61,14 +56,12 @@ export function ChartSettingsContent({
           main: (
             <MainSettingsTab
               settings={localSettings}
-              availableFields={availableFields}
               onSettingChange={handleSettingChange}
             />
           ),
           facet: (
             <FacetSettingsTab
               settings={localSettings}
-              availableFields={availableFields}
               onSettingChange={handleSettingChange}
             />
           ),

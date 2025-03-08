@@ -7,8 +7,10 @@ import {
   Table,
   Box,
   Info,
+  LucideIcon,
 } from "lucide-react";
 import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
+import { BarChartSettings } from "@/components/charts/BarChart/definition";
 
 export const CHART_TYPES = [
   { value: "row", label: "Row Chart", icon: BarChartBig },
@@ -101,16 +103,6 @@ export interface RowChartSettings extends BaseChartSettings {
   filterValues: FilterValues;
 }
 
-export interface BarChartSettings extends BaseChartSettings {
-  type: "bar";
-  binCount?: number;
-
-  forceString?: boolean;
-
-  filterValues: FilterValues;
-  filterRange: FilterRange;
-}
-
 export interface ScatterChartSettings extends BaseChartSettings {
   type: "scatter";
   xField: string;
@@ -191,8 +183,17 @@ export type ChartSettings =
   | SummaryChartSettings
   | DataTableSettings;
 
-export interface BaseChartProps {
-  settings: ChartSettings;
+export interface ChartSettingsPanelProps<
+  TSettings extends BaseChartSettings = BaseChartSettings
+> {
+  settings: TSettings;
+  onSettingsChange: (settings: TSettings) => void;
+}
+
+export interface BaseChartProps<
+  TSettings extends BaseChartSettings = BaseChartSettings
+> {
+  settings: TSettings;
   width: number;
   height: number;
   facetIds?: IdType[];
@@ -225,3 +226,26 @@ export type Filter =
   | Filter2dRange
   | ScatterFilter
   | undefined;
+
+export interface ChartDefinition<
+  TSettings extends BaseChartSettings = BaseChartSettings
+> {
+  // Metadata
+  type: ChartType;
+  name: string;
+  description: string;
+  icon: LucideIcon;
+
+  // Component References
+  component: React.ComponentType<BaseChartProps<TSettings>>;
+  settingsPanel: React.ComponentType<ChartSettingsPanelProps<TSettings>>;
+
+  // Settings Management
+  createDefaultSettings: (layout: ChartLayout, field?: string) => TSettings;
+  validateSettings: (settings: TSettings) => boolean;
+
+  getFilterFunction: (
+    settings: TSettings,
+    fieldGetter: (name: string) => Record<IdType, datum>
+  ) => (d: IdType) => boolean;
+}

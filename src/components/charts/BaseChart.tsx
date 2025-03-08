@@ -1,6 +1,6 @@
 import { ReactNode, useRef } from "react";
 import { ScaleBand, ScaleLinear } from "d3-scale";
-import { XAxis, YAxis } from "./Axis";
+import { XAxis, YAxis } from "./Axis/Axis";
 import { useBrush } from "@/hooks/useBrush";
 import { cn } from "@/lib/utils";
 import { ChartSettings } from "@/types/ChartTypes";

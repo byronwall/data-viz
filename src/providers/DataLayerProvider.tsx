@@ -1,3 +1,4 @@
+import { getChartDefinition } from "@/charts/registry";
 import {
   CrossfilterWrapper,
   LiveItem,
@@ -12,13 +13,12 @@ import { ColorScaleType } from "@/types/ColorScaleTypes";
 import {
   GridSettings,
   SavedDataStructure,
-  ViewMetadata,
   SerializedColorScale,
+  ViewMetadata,
 } from "@/types/SavedDataTypes";
 import { saveProject } from "@/utils/localStorage";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
-import { createSummaryChartSettings } from "@/types/createSummaryChartSettings";
 
 type DatumObject = { [key: string]: datum };
 export type { DatumObject };
@@ -274,7 +274,9 @@ const createDataLayerStore = <T extends DatumObject>(
       } = getDataAndCrossfilterWrapper(rawData, get().getColumnData);
 
       // Create default summary chart
-      const summaryChart = createSummaryChartSettings({
+      const definition = getChartDefinition("summary");
+
+      const summaryChart = definition.createDefaultSettings({
         x: 0,
         y: 0,
         w: 4,

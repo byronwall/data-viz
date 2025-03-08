@@ -108,7 +108,10 @@ function NumericalScaleEditor({
             type="number"
             value={scale.min}
             onChange={(e) =>
-              onUpdate({ ...scale, min: parseFloat(e.target.value) })
+              onUpdate({
+                ...scale,
+                min: parseFloat(e.target.value),
+              })
             }
           />
         </div>
@@ -118,7 +121,10 @@ function NumericalScaleEditor({
             type="number"
             value={scale.max}
             onChange={(e) =>
-              onUpdate({ ...scale, max: parseFloat(e.target.value) })
+              onUpdate({
+                ...scale,
+                max: parseFloat(e.target.value),
+              })
             }
           />
         </div>

@@ -129,10 +129,13 @@ function getDataAndCrossfilterWrapper<T extends DatumObject>(
 
   return {
     data: dataWithIds,
-    emptyColumn: data.reduce((acc, row) => {
-      acc[row.__ID as IdType] = undefined;
-      return acc;
-    }, {} as Record<IdType, datum>),
+    emptyColumn: data.reduce(
+      (acc, row) => {
+        acc[row.__ID as IdType] = undefined;
+        return acc;
+      },
+      {} as Record<IdType, datum>
+    ),
     crossfilterWrapper: newCrossFilter,
     charts: charts ?? [],
     colorScales: [],
@@ -200,10 +203,13 @@ const getInitialStoreState = <T extends DatumObject>(
 
     return {
       data: initData,
-      emptyColumn: initData.reduce((acc, row) => {
-        acc[row.__ID as IdType] = undefined;
-        return acc;
-      }, {} as Record<IdType, datum>),
+      emptyColumn: initData.reduce(
+        (acc, row) => {
+          acc[row.__ID as IdType] = undefined;
+          return acc;
+        },
+        {} as Record<IdType, datum>
+      ),
       crossfilterWrapper,
       calculationManager: ogCalculationManager,
       calculations: newCalculations,
@@ -221,10 +227,13 @@ const getInitialStoreState = <T extends DatumObject>(
   // Return default state if no saved data
   return {
     data: initData,
-    emptyColumn: initData.reduce((acc, row) => {
-      acc[row.__ID as IdType] = undefined;
-      return acc;
-    }, {} as Record<IdType, datum>),
+    emptyColumn: initData.reduce(
+      (acc, row) => {
+        acc[row.__ID as IdType] = undefined;
+        return acc;
+      },
+      {} as Record<IdType, datum>
+    ),
     crossfilterWrapper,
     calculationManager: ogCalculationManager,
     calculations: [],

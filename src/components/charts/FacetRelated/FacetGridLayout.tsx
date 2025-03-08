@@ -84,7 +84,12 @@ export function FacetGridLayout({
               {/* Facet cells */}
               {columns.map((col) => (
                 <td key={`${row}-${col}`} className="border p-0">
-                  <div style={{ width: cellWidth, height: cellHeight }}>
+                  <div
+                    style={{
+                      width: cellWidth,
+                      height: cellHeight,
+                    }}
+                  >
                     {grid[row]?.[col]?.length > 0 ? (
                       <ChartRenderer
                         settings={settings}

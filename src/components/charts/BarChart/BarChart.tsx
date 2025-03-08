@@ -94,7 +94,7 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
             label,
             value,
             isNumeric: false,
-          } as CategoryBin)
+          }) as CategoryBin
       );
     }
   }, [liveColData, allColData, isNumeric, settings.binCount]);

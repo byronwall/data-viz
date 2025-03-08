@@ -25,7 +25,10 @@ export function AdvancedSettingsTab({
               <NumericInputEnter
                 value={settings.margin?.top || 20}
                 onChange={(value) =>
-                  onSettingChange("margin", { ...settings.margin, top: value })
+                  onSettingChange("margin", {
+                    ...settings.margin,
+                    top: value,
+                  })
                 }
                 min={0}
                 max={100}
@@ -39,7 +42,10 @@ export function AdvancedSettingsTab({
               <NumericInputEnter
                 value={settings.margin?.left || 20}
                 onChange={(value) =>
-                  onSettingChange("margin", { ...settings.margin, left: value })
+                  onSettingChange("margin", {
+                    ...settings.margin,
+                    left: value,
+                  })
                 }
                 min={0}
                 max={100}

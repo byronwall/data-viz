@@ -39,7 +39,10 @@ export function BarChartSettingsPanel({
               id="forceString"
               checked={settings.forceString}
               onCheckedChange={(checked) =>
-                onSettingsChange({ ...settings, forceString: checked })
+                onSettingsChange({
+                  ...settings,
+                  forceString: checked,
+                })
               }
             />
             <Label htmlFor="forceString">Force String Values</Label>

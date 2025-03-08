@@ -11,7 +11,12 @@ const mockSettings: DataTableSettings = {
   layout: { x: 0, y: 0, w: 12, h: 6 },
   colorScaleId: undefined,
   colorField: undefined,
-  facet: { enabled: false, type: "grid", rowVariable: "", columnVariable: "" },
+  facet: {
+    enabled: false,
+    type: "grid",
+    rowVariable: "",
+    columnVariable: "",
+  },
   xAxis: {},
   yAxis: {},
   margin: {},

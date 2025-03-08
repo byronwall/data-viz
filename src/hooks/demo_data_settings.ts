@@ -10,7 +10,12 @@ export const demoSettings: SavedDataStructure = {
       xAxis: { scaleType: "linear", grid: false, min: 0, max: 100 },
       yAxis: { scaleType: "linear", grid: false, min: 0, max: 100 },
       margin: { top: 20, right: 20, bottom: 20, left: 20 },
-      facet: { enabled: false, type: "wrap", rowVariable: "", columnCount: 2 },
+      facet: {
+        enabled: false,
+        type: "wrap",
+        rowVariable: "",
+        columnCount: 2,
+      },
       colorScaleId: "b9b0fa64-5d7b-4fdc-b191-daeb7920ecb3",
       colorField: "Run ID",
       xAxisLabel: "",

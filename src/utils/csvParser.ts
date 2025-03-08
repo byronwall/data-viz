@@ -17,7 +17,10 @@ export async function parseCsvData(
       if (input instanceof File) {
         Papa.parse<DatumObject>(input, baseConfig);
       } else {
-        Papa.parse<DatumObject>(input, { ...baseConfig, download: false });
+        Papa.parse<DatumObject>(input, {
+          ...baseConfig,
+          download: false,
+        });
       }
     } catch (error) {
       reject(error);

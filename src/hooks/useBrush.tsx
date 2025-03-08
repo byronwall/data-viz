@@ -327,7 +327,10 @@ export function useBrush({
         case "dragging":
           setBrushState({
             ...brushState,
-            current: { x: clampedX, y: mode === "2d" ? clampedY : innerHeight },
+            current: {
+              x: clampedX,
+              y: mode === "2d" ? clampedY : innerHeight,
+            },
           });
           break;
         case "moving": {
@@ -351,7 +354,10 @@ export function useBrush({
           setBrushState({
             state: "moving",
             start: { x: clampedX, y: clampedY },
-            brushStart: { x: newStartX, y: mode === "2d" ? newStartY : 0 },
+            brushStart: {
+              x: newStartX,
+              y: mode === "2d" ? newStartY : 0,
+            },
             brushEnd: {
               x: newStartX + brushWidth,
               y: mode === "2d" ? newStartY + brushHeight : innerHeight,
@@ -363,7 +369,10 @@ export function useBrush({
           if (brushState.edge === "left") {
             setBrushState({
               ...brushState,
-              brushStart: { x: clampedX, y: brushState.brushStart.y },
+              brushStart: {
+                x: clampedX,
+                y: brushState.brushStart.y,
+              },
             });
           } else if (brushState.edge === "right") {
             setBrushState({
@@ -373,7 +382,10 @@ export function useBrush({
           } else if (brushState.edge === "top" && mode === "2d") {
             setBrushState({
               ...brushState,
-              brushStart: { x: brushState.brushStart.x, y: clampedY },
+              brushStart: {
+                x: brushState.brushStart.x,
+                y: clampedY,
+              },
             });
           } else if (brushState.edge === "bottom" && mode === "2d") {
             setBrushState({
@@ -390,14 +402,26 @@ export function useBrush({
             } else if (brushState.edge === "topRight") {
               setBrushState({
                 ...brushState,
-                brushStart: { x: brushState.brushStart.x, y: clampedY },
-                brushEnd: { x: clampedX, y: brushState.brushEnd.y },
+                brushStart: {
+                  x: brushState.brushStart.x,
+                  y: clampedY,
+                },
+                brushEnd: {
+                  x: clampedX,
+                  y: brushState.brushEnd.y,
+                },
               });
             } else if (brushState.edge === "bottomLeft") {
               setBrushState({
                 ...brushState,
-                brushStart: { x: clampedX, y: brushState.brushStart.y },
-                brushEnd: { x: brushState.brushEnd.x, y: clampedY },
+                brushStart: {
+                  x: clampedX,
+                  y: brushState.brushStart.y,
+                },
+                brushEnd: {
+                  x: brushState.brushEnd.x,
+                  y: clampedY,
+                },
               });
             } else if (brushState.edge === "bottomRight") {
               setBrushState({
@@ -455,7 +479,10 @@ export function useBrush({
           x: Math.min(start.x, end.x),
           y: Math.min(start.y, end.y),
         },
-        brushEnd: { x: Math.max(start.x, end.x), y: Math.max(start.y, end.y) },
+        brushEnd: {
+          x: Math.max(start.x, end.x),
+          y: Math.max(start.y, end.y),
+        },
       });
     }
   }, [brushState, mode, innerHeight]);

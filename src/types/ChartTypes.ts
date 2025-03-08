@@ -184,14 +184,14 @@ export type ChartSettings =
   | DataTableSettings;
 
 export interface ChartSettingsPanelProps<
-  TSettings extends BaseChartSettings = BaseChartSettings
+  TSettings extends BaseChartSettings = BaseChartSettings,
 > {
   settings: TSettings;
   onSettingsChange: (settings: TSettings) => void;
 }
 
 export interface BaseChartProps<
-  TSettings extends BaseChartSettings = BaseChartSettings
+  TSettings extends BaseChartSettings = BaseChartSettings,
 > {
   settings: TSettings;
   width: number;
@@ -228,7 +228,7 @@ export type Filter =
   | undefined;
 
 export interface ChartDefinition<
-  TSettings extends BaseChartSettings = BaseChartSettings
+  TSettings extends BaseChartSettings = BaseChartSettings,
 > {
   // Metadata
   type: ChartType;

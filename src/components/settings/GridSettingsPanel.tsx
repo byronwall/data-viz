@@ -15,7 +15,9 @@ export function GridSettingsPanel() {
           type="number"
           value={gridSettings.columnCount}
           onChange={(e) =>
-            updateGridSettings({ columnCount: parseInt(e.target.value) })
+            updateGridSettings({
+              columnCount: parseInt(e.target.value),
+            })
           }
           min={1}
           max={24}
@@ -28,7 +30,9 @@ export function GridSettingsPanel() {
           type="number"
           value={gridSettings.rowHeight}
           onChange={(e) =>
-            updateGridSettings({ rowHeight: parseInt(e.target.value) })
+            updateGridSettings({
+              rowHeight: parseInt(e.target.value),
+            })
           }
           min={20}
           max={200}
@@ -41,7 +45,9 @@ export function GridSettingsPanel() {
           type="number"
           value={gridSettings.containerPadding}
           onChange={(e) =>
-            updateGridSettings({ containerPadding: parseInt(e.target.value) })
+            updateGridSettings({
+              containerPadding: parseInt(e.target.value),
+            })
           }
           min={0}
           max={50}

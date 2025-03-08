@@ -93,8 +93,8 @@ export function CalculationForm({
                   statusMessage.type === "success"
                     ? "text-green-500"
                     : statusMessage.type === "error"
-                    ? "text-red-500"
-                    : ""
+                      ? "text-red-500"
+                      : ""
                 }`}
               >
                 {statusMessage.text}

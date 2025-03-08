@@ -48,7 +48,7 @@ export function FacetContainer({
     allIds.forEach((id) => {
       const rowValue = rowData[id] ?? "undefined";
       const colValue = columnData
-        ? columnData[id as IdType] ?? "undefined"
+        ? (columnData[id as IdType] ?? "undefined")
         : null;
 
       const rowLabel = getFacetLabel(rowValue);

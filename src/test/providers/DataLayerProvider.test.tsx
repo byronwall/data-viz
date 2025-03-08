@@ -195,7 +195,9 @@ function TestComponent({ children }: { children?: ReactNode }) {
           <button
             data-testid="update-chart"
             onClick={() =>
-              updateChart(charts[0].id, { title: "Updated Chart" })
+              updateChart(charts[0].id, {
+                title: "Updated Chart",
+              })
             }
           >
             Update Chart

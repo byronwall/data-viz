@@ -27,7 +27,12 @@ export const basicNumbersSettings = {
       xAxis: { scaleType: "linear", grid: false, min: 0, max: 100 },
       yAxis: { scaleType: "linear", grid: false, min: 0, max: 100 },
       margin: { top: 20, right: 20, bottom: 20, left: 20 },
-      facet: { enabled: false, type: "wrap", rowVariable: "", columnCount: 2 },
+      facet: {
+        enabled: false,
+        type: "wrap",
+        rowVariable: "",
+        columnCount: 2,
+      },
       xAxisLabel: "",
       yAxisLabel: "",
       xGridLines: 5,

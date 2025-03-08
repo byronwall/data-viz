@@ -139,7 +139,10 @@ export function PivotTableSettingsPanel({
                 ...settings,
                 valueFields: [
                   ...settings.valueFields,
-                  { field: availableFields[0], aggregation: "count" },
+                  {
+                    field: availableFields[0],
+                    aggregation: "count",
+                  },
                 ],
               });
             }}

@@ -91,7 +91,10 @@ export function ThreeDScatterSettingsPanel({
               id="showGrid"
               checked={settings.showGrid}
               onCheckedChange={(checked) =>
-                onSettingsChange({ ...settings, showGrid: checked })
+                onSettingsChange({
+                  ...settings,
+                  showGrid: checked,
+                })
               }
             />
             <Label htmlFor="showGrid">Show Grid</Label>
@@ -104,7 +107,10 @@ export function ThreeDScatterSettingsPanel({
               id="showAxes"
               checked={settings.showAxes}
               onCheckedChange={(checked) =>
-                onSettingsChange({ ...settings, showAxes: checked })
+                onSettingsChange({
+                  ...settings,
+                  showAxes: checked,
+                })
               }
             />
             <Label htmlFor="showAxes">Show Axes</Label>

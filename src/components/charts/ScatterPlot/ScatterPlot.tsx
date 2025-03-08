@@ -33,9 +33,9 @@ export function ScatterPlot({
   const allYData = useGetColumnDataForIds(settings.yField, facetIds);
 
   // Get filtered data for rendering
-  const xData = useGetLiveData(settings, "xField", facetIds);
-  const yData = useGetLiveData(settings, "yField", facetIds);
-  const colorData = useGetLiveData(settings, "colorField", facetIds);
+  const xData = useGetLiveData(settings, settings.xField, facetIds);
+  const yData = useGetLiveData(settings, settings.yField, facetIds);
+  const colorData = useGetLiveData(settings, settings.colorField, facetIds);
 
   // Convert object to array and map to numbers
   const xValues = xData.map(Number);

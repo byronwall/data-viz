@@ -36,7 +36,7 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
   // Get all data for axis limits calculation (not filtered by current selections)
   const allColData = useGetColumnDataForIds(settings.field);
   // Get filtered data for rendering
-  const liveColData = useGetLiveData(settings, undefined, facetIds);
+  const liveColData = useGetLiveData(settings, settings.field, facetIds);
 
   const updateChart = useDataLayer((s) => s.updateChart);
   const { getColorForValue } = useColorScales();

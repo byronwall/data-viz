@@ -2,13 +2,12 @@ import { calculatePivotData } from "@/components/charts/PivotTable/utils/calcula
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { BaseChartProps, PivotTableSettings } from "@/types/ChartTypes";
 import { Search } from "lucide-react";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { PivotCell, PivotHeader, PivotRow } from "./types";
 import { useGetLiveIds } from "../useGetLiveData";
+import { PivotCell, PivotHeader, PivotRow } from "./types";
 
 type PivotTableProps = BaseChartProps & {
   settings: PivotTableSettings;

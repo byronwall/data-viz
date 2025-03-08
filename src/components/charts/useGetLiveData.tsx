@@ -1,20 +1,20 @@
 import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
-import { ChartSettings, ScatterChartSettings, datum } from "@/types/ChartTypes";
+import { ChartSettings, datum } from "@/types/ChartTypes";
 import { useMemo } from "react";
-import { ThreeDScatterSettings } from "./ThreeDScatter/types";
+import { useGetColumnDataForIds } from "./useGetColumnData";
 
 export function useGetLiveData(
   settings: ChartSettings,
-  field?: "xField" | "yField" | "colorField" | "sizeField" | "zField",
+  field: string | undefined,
   facetIds?: IdType[]
 ) {
   const getLiveItems = useDataLayer((s) => s.getLiveItems);
-  const getColumnData = useDataLayer((s) => s.getColumnData);
-  const nonce = useDataLayer((s) => s.nonce);
 
+  // WARNING: this must live outside the hook below
+  // need to see new items on every render
   const liveItems = getLiveItems(settings);
 
-  const data = useMemo(() => {
+  const liveIdsPerFacet = useMemo(() => {
     if (!liveItems) {
       return [];
     }
@@ -28,33 +28,16 @@ export function useGetLiveData(
       )
       .map((d) => d.key);
 
-    let _data: Record<string, datum> = {};
+    return liveIds;
 
-    if (settings.type === "row" || settings.type === "bar") {
-      _data = getColumnData(settings.field);
-    } else if (settings.type === "scatter" || settings.type === "3d-scatter") {
-      const scatterSettings = settings as ScatterChartSettings;
-      if (field === "xField") {
-        _data = getColumnData(scatterSettings.xField);
-      } else if (field === "yField") {
-        _data = getColumnData(scatterSettings.yField);
-      } else if (field === "colorField") {
-        _data = getColumnData(scatterSettings.colorField);
-      } else if (settings.type === "3d-scatter") {
-        const threeDSettings = settings as ThreeDScatterSettings;
-        if (field === "sizeField") {
-          _data = getColumnData(threeDSettings.sizeField);
-        } else if (field === "zField") {
-          _data = getColumnData(threeDSettings.zField);
-        }
-      }
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [facetIds, liveItems?.nonce]);
 
-    const data = liveIds.map((id) => _data[id]);
+  const data = useGetColumnDataForIds(field, liveIdsPerFacet);
 
-    return data as datum[];
-    // TODO: this should really be the nonce
-  }, [nonce, field, getColumnData, liveItems?.items, settings, facetIds]);
+  if (!field) {
+    return [];
+  }
 
   return data;
 }

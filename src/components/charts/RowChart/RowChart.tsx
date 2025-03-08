@@ -12,7 +12,7 @@ import { useGetLiveData } from "../useGetLiveData";
 type RowChartProps = BaseChartProps<RowChartSettings>;
 
 export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
-  const data = useGetLiveData(settings, undefined, facetIds);
+  const data = useGetLiveData(settings, settings.field, facetIds);
 
   const { getColorForValue } = useColorScales();
   const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);

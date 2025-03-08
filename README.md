@@ -62,6 +62,8 @@ Will be updated when done...
 - Do not attempt to render points and bars that are not visible due to axis limits
 - Decide if it is worth allowing the y categories to be globally shared in Row charts w/ facets
 - Row chart should give a warning about missing field instead of rendering undefined - maybe give a drop down immediately
+- Row chart should allow clicking anywhere on bar or label to filter - use pointer cursor - give a visual indicator of the filter in case base is small (bold + funnel)
+- Put the `clear all filters` button in the main toolbar - make it icon only
 
 ### Data Display and Formatting
 

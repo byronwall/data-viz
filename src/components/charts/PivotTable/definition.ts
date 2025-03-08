@@ -1,9 +1,20 @@
-import { BaseChartSettings, ChartDefinition, Filter } from "@/types/ChartTypes";
+import {
+  BaseChartSettings,
+  ChartDefinition,
+  Filter,
+  datum,
+} from "@/types/ChartTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { Table } from "lucide-react";
 
 import { PivotTable } from "./PivotTable";
 import { PivotTableSettingsPanel } from "./PivotTableSettingsPanel";
+import { IdType } from "@/providers/DataLayerProvider";
+
+interface FilterConfig {
+  field: string;
+  values: Set<string | number>;
+}
 
 export interface PivotTableSettings extends BaseChartSettings {
   type: "pivot";
@@ -73,49 +84,60 @@ export const pivotTableDefinition: ChartDefinition<PivotTableSettings> = {
     );
   },
 
-  filterData: (data: any[], filters: Filter) => {
-    if (!filters || !("rowFilterValues" in filters)) {
-      return data;
-    }
+  getFilterFunction: (
+    settings: PivotTableSettings,
+    fieldGetter: (name: string) => Record<IdType, datum>
+  ) => {
+    // Check if any row or column filters are active
+    const rowFilters: FilterConfig[] = settings.rowFields.map(
+      (field: string) => ({
+        field,
+        values: new Set(settings.rowFilterValues?.[field] || []),
+      })
+    );
 
-    const { rowFilterValues, columnFilterValues } = filters as {
-      rowFilterValues?: Record<string, Array<string | number>>;
-      columnFilterValues?: Record<string, Array<string | number>>;
-    };
+    const columnFilters: FilterConfig[] = settings.columnFields.map(
+      (field: string) => ({
+        field,
+        values: new Set(settings.columnFilterValues?.[field] || []),
+      })
+    );
 
-    return data.filter((row) => {
-      // Apply row filters
-      if (rowFilterValues) {
-        for (const [field, values] of Object.entries(rowFilterValues)) {
-          if (!values.includes(row[field])) {
-            return false;
-          }
-        }
-      }
+    const noMatchingFilters =
+      rowFilters.every((f) => f.values.size === 0) &&
+      columnFilters.every((f) => f.values.size === 0);
 
-      // Apply column filters
-      if (columnFilterValues) {
-        for (const [field, values] of Object.entries(columnFilterValues)) {
-          if (!values.includes(row[field])) {
-            return false;
-          }
-        }
-      }
-
-      return true;
+    const rowGetter = rowFilters.map((f) => {
+      return fieldGetter(f.field);
     });
-  },
 
-  createFilterFromSelection: (selection: any, settings: PivotTableSettings) => {
-    if (
-      typeof selection === "object" &&
-      ("rowFilters" in selection || "columnFilters" in selection)
-    ) {
-      return {
-        rowFilterValues: selection.rowFilters,
-        columnFilterValues: selection.columnFilters,
-      };
-    }
-    return {};
+    const columnGetter = columnFilters.map((f) => {
+      return fieldGetter(f.field);
+    });
+
+    return (d: IdType) => {
+      if (noMatchingFilters) {
+        return true;
+      }
+      // Check if the data point matches any active row filters
+      const matchesRowFilters = rowFilters.every((filter, index) => {
+        if (filter.values.size === 0) {
+          return true;
+        }
+        const value = rowGetter[index][d];
+        return filter.values.has(value as string | number);
+      });
+
+      // Check if the data point matches any active column filters
+      const matchesColumnFilters = columnFilters.every((filter, index) => {
+        if (filter.values.size === 0) {
+          return true;
+        }
+        const value = columnGetter[index][d];
+        return filter.values.has(value as string | number);
+      });
+
+      return matchesRowFilters && matchesColumnFilters;
+    };
   },
 };

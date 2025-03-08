@@ -5,11 +5,14 @@ import {
   Filter,
   FilterRange,
   FilterValues,
+  datum,
 } from "@/types/ChartTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { ChartBarBig } from "lucide-react";
 import { BarChart } from "./BarChart";
 import { BarChartSettingsPanel } from "./BarChartSettingsPanel";
+import { getFilterObj } from "@/hooks/getFilterValues";
+import { IdType } from "@/providers/DataLayerProvider";
 
 export interface BarChartSettings extends BaseChartSettings {
   type: "bar";
@@ -47,25 +50,13 @@ export const barChartDefinition: ChartDefinition<BarChartSettings> = {
     return !!settings.field;
   },
 
-  filterData: (data: any[], filters: Filter) => {
-    if (!filters.values?.length && !filters.range) {
-      return data;
-    }
+  getFilterFunction: (
+    settings: BarChartSettings,
+    fieldGetter: (name: string) => Record<IdType, datum>
+  ) => {
+    const dataHash = fieldGetter(settings.field);
+    const filters = getFilterObj(settings);
 
-    return data.filter((d) => barChartPureFilter(filters, d));
-  },
-
-  createFilterFromSelection: (selection: any, settings: BarChartSettings) => {
-    if (typeof selection === "string") {
-      return { values: [selection] };
-    }
-    if (
-      typeof selection === "object" &&
-      "min" in selection &&
-      "max" in selection
-    ) {
-      return { range: selection };
-    }
-    return {};
+    return (d: IdType) => barChartPureFilter(filters, dataHash[d]);
   },
 };

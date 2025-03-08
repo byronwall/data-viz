@@ -244,7 +244,8 @@ export interface ChartDefinition<
   createDefaultSettings: (layout: ChartLayout, field?: string) => TSettings;
   validateSettings: (settings: TSettings) => boolean;
 
-  // Filtering
-  filterData: (data: any[], filters: Filter) => any[];
-  createFilterFromSelection: (selection: any, settings: TSettings) => Filter;
+  getFilterFunction: (
+    settings: TSettings,
+    fieldGetter: (name: string) => Record<IdType, datum>
+  ) => (d: IdType) => boolean;
 }

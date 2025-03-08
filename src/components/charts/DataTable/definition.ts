@@ -1,9 +1,15 @@
-import { BaseChartSettings, ChartDefinition, Filter } from "@/types/ChartTypes";
+import {
+  BaseChartSettings,
+  ChartDefinition,
+  Filter,
+  datum,
+} from "@/types/ChartTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { Table } from "lucide-react";
 
 import { DataTable } from "./DataTable";
 import { DataTableSettingsPanel } from "./DataTableSettingsPanel";
+import { IdType } from "@/providers/DataLayerProvider";
 
 export interface DataTableSettings extends BaseChartSettings {
   type: "data-table";
@@ -56,82 +62,54 @@ export const dataTableDefinition: ChartDefinition<DataTableSettings> = {
     return settings.columns.length > 0;
   },
 
-  filterData: (data: any[], filters: Filter) => {
-    if (!filters || !("filters" in filters)) {
-      return data;
+  getFilterFunction: (
+    settings: DataTableSettings,
+    fieldGetter: (name: string) => Record<IdType, datum>
+  ) => {
+    // If no filters are active, return true
+    if (Object.keys(settings.filters).length === 0) {
+      return (d: IdType) => true;
     }
 
-    const { filters: columnFilters, globalSearch } = filters as {
-      filters: Record<
-        string,
-        {
-          value: string;
-          operator: "contains" | "equals" | "startsWith" | "endsWith";
+    // Create filter functions for each active filter
+    const filterFunctions = Object.entries(settings.filters).map(
+      ([columnId, filter]) => {
+        const column = settings.columns.find((col) => col.id === columnId);
+        if (!column) {
+          return () => true;
         }
-      >;
-      globalSearch?: string;
-    };
 
-    return data.filter((row) => {
-      // Apply global search
-      if (globalSearch) {
-        const searchStr = globalSearch.toLowerCase();
-        const matchesGlobal = Object.values(row).some(
-          (value) => value && value.toString().toLowerCase().includes(searchStr)
-        );
-        if (!matchesGlobal) {
-          return false;
-        }
+        const dataHash = fieldGetter(column.field);
+
+        return (d: IdType) => {
+          const value = dataHash[d];
+          if (value === undefined) {
+            return false;
+          }
+
+          switch (filter.operator) {
+            case "contains":
+              return String(value)
+                .toLowerCase()
+                .includes(String(filter.value).toLowerCase());
+            case "equals":
+              return String(value) === String(filter.value);
+            case "startsWith":
+              return String(value)
+                .toLowerCase()
+                .startsWith(String(filter.value).toLowerCase());
+            case "endsWith":
+              return String(value)
+                .toLowerCase()
+                .endsWith(String(filter.value).toLowerCase());
+            default:
+              return true;
+          }
+        };
       }
+    );
 
-      // Apply column filters
-      for (const [field, filter] of Object.entries(columnFilters)) {
-        const value = row[field];
-        if (!value) {
-          return false;
-        }
-
-        const strValue = value.toString().toLowerCase();
-        const filterValue = filter.value.toLowerCase();
-
-        switch (filter.operator) {
-          case "contains":
-            if (!strValue.includes(filterValue)) {
-              return false;
-            }
-            break;
-          case "equals":
-            if (strValue !== filterValue) {
-              return false;
-            }
-            break;
-          case "startsWith":
-            if (!strValue.startsWith(filterValue)) {
-              return false;
-            }
-            break;
-          case "endsWith":
-            if (!strValue.endsWith(filterValue)) {
-              return false;
-            }
-            break;
-        }
-      }
-
-      return true;
-    });
-  },
-
-  createFilterFromSelection: (selection: any, settings: DataTableSettings) => {
-    if (
-      typeof selection === "object" &&
-      ("filters" in selection || "globalSearch" in selection)
-    ) {
-      return {
-        filters: selection.filters || {},
-        globalSearch: selection.globalSearch || "",
-      };
-    }
-    return {};
+    // Combine all filter functions with AND logic
+    return (d: IdType) => filterFunctions.every((fn) => fn(d));
   },
 };

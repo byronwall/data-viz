@@ -1,9 +1,15 @@
-import { BaseChartSettings, ChartDefinition, Filter } from "@/types/ChartTypes";
+import {
+  BaseChartSettings,
+  ChartDefinition,
+  Filter,
+  datum,
+} from "@/types/ChartTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { Info } from "lucide-react";
 
 import { SummaryTable } from "./SummaryTable";
 import { SummaryTableSettingsPanel } from "./SummaryTableSettingsPanel";
+import { IdType } from "@/providers/DataLayerProvider";
 
 export interface SummaryTableSettings extends BaseChartSettings {
   type: "summary";
@@ -34,16 +40,11 @@ export const summaryTableDefinition: ChartDefinition<SummaryTableSettings> = {
     return true;
   },
 
-  filterData: (data: any[], filters: Filter) => {
-    // Summary table doesn't support filtering
-    return data;
-  },
-
-  createFilterFromSelection: (
-    selection: any,
-    settings: SummaryTableSettings
+  getFilterFunction: (
+    settings: SummaryTableSettings,
+    fieldGetter: (name: string) => Record<IdType, datum>
   ) => {
     // Summary table doesn't support filtering
-    return {};
+    return (d: IdType) => true;
   },
 };

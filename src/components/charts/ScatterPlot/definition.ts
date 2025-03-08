@@ -4,6 +4,7 @@ import {
   Filter,
   FilterRange,
   ScatterFilter,
+  datum,
 } from "@/types/ChartTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { ScatterChart } from "lucide-react";
@@ -11,6 +12,7 @@ import { ScatterChart } from "lucide-react";
 import { ScatterPlotSettingsPanel } from "./ScatterPlotSettingsPanel";
 import { ScatterPlot } from "./ScatterPlot";
 import { scatterChartPureFilter } from "@/hooks/scatterChartPureFilter";
+import { IdType } from "@/providers/DataLayerProvider";
 
 export interface ScatterPlotSettings extends BaseChartSettings {
   type: "scatter";
@@ -45,42 +47,19 @@ export const scatterPlotDefinition: ChartDefinition<ScatterPlotSettings> = {
   validateSettings: (settings) => {
     return !!settings.xField && !!settings.yField;
   },
-
-  filterData: (data: any[], filters: Filter) => {
-    if (
-      !filters ||
-      !("xFilterRange" in filters) ||
-      !("yFilterRange" in filters)
-    ) {
-      return data;
-    }
-
-    const { xFilterRange, yFilterRange } = filters as ScatterFilter;
-    if (!xFilterRange || !yFilterRange) {
-      return data;
-    }
-
-    return data.filter((d) =>
-      scatterChartPureFilter(filters as ScatterFilter, d)
-    );
-  },
-
-  createFilterFromSelection: (
-    selection: any,
-    settings: ScatterPlotSettings
+  getFilterFunction: (
+    settings: ScatterPlotSettings,
+    fieldGetter: (name: string) => Record<IdType, datum>
   ) => {
-    if (
-      typeof selection === "object" &&
-      "x" in selection &&
-      "y" in selection &&
-      selection.x &&
-      selection.y
-    ) {
-      return {
-        xFilterRange: selection.x,
-        yFilterRange: selection.y,
-      } as ScatterFilter;
-    }
-    return {};
+    const xDataHash = fieldGetter(settings.xField);
+    const yDataHash = fieldGetter(settings.yField);
+
+    return (d: IdType) =>
+      scatterChartPureFilter(
+        settings.xFilterRange,
+        settings.yFilterRange,
+        xDataHash[d],
+        yDataHash[d]
+      );
   },
 };

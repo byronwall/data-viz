@@ -3,7 +3,7 @@ import { ChartSettings, datum } from "@/types/ChartTypes";
 import { useMemo } from "react";
 import { FacetGridLayout } from "./FacetGridLayout";
 import { FacetWrapLayout } from "./FacetWrapLayout";
-import { useGetAllIds, useGetLiveIds } from "./useGetLiveData";
+import { useGetAllIds } from "../useGetLiveData";
 
 interface FacetContainerProps {
   settings: ChartSettings;

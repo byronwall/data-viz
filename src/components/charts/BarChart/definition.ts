@@ -1,8 +1,9 @@
 import { barChartPureFilter } from "@/hooks/barChartPureFilter";
+import { getFilterObj } from "@/hooks/getFilterValues";
+import { IdType } from "@/providers/DataLayerProvider";
 import {
   BaseChartSettings,
   ChartDefinition,
-  Filter,
   FilterRange,
   FilterValues,
   datum,
@@ -11,8 +12,6 @@ import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { ChartBarBig } from "lucide-react";
 import { BarChart } from "./BarChart";
 import { BarChartSettingsPanel } from "./BarChartSettingsPanel";
-import { getFilterObj } from "@/hooks/getFilterValues";
-import { IdType } from "@/providers/DataLayerProvider";
 
 export interface BarChartSettings extends BaseChartSettings {
   type: "bar";

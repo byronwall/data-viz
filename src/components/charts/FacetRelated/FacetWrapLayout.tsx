@@ -1,5 +1,5 @@
 import { ChartSettings } from "@/types/ChartTypes";
-import { ChartRenderer } from "./ChartRenderer";
+import { ChartRenderer } from "../ChartRenderer";
 import { FacetData } from "./FacetContainer";
 
 interface FacetWrapLayoutProps {

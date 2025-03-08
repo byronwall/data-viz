@@ -3,7 +3,7 @@ import { FacetAxisProvider } from "@/providers/FacetAxisProvider";
 import { ChartSettings } from "@/types/ChartTypes";
 import { Copy, FilterX, GripVertical, Settings2, X } from "lucide-react";
 import { ChartRenderer } from "./charts/ChartRenderer";
-import { FacetContainer } from "./charts/FacetContainer";
+import { FacetContainer } from "./charts/FacetRelated/FacetContainer";
 import { ChartSettingsContent } from "./ChartSettingsContent";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";

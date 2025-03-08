@@ -185,6 +185,14 @@ export function PlotManager() {
         <div className="flex items-center gap-2">
           {charts.length > 0 && activeTab === "charts" && (
             <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearAllFilters}
+                title="Clear All Filters"
+              >
+                <FilterX className="h-4 w-4" />
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -205,13 +213,6 @@ export function PlotManager() {
                   >
                     <Copy className="h-4 w-4" />
                     Copy Data
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={clearAllFilters}
-                    className="flex items-center gap-2"
-                  >
-                    <FilterX className="h-4 w-4" />
-                    Clear All Filters
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={handleRemoveAllCharts}

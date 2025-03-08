@@ -1,12 +1,9 @@
-import { DEFAULT_SUMMARY_SETTINGS } from "@/utils/defaultSettings";
+import { getChartDefinition } from "@/charts/registry";
 import { SummaryChartSettings, ChartLayout } from "./ChartTypes";
 
 export function createSummaryChartSettings(
   layout: ChartLayout
 ): SummaryChartSettings {
-  return {
-    ...DEFAULT_SUMMARY_SETTINGS,
-    id: crypto.randomUUID(),
-    layout,
-  };
+  const definition = getChartDefinition("summary");
+  return definition.createDefaultSettings(layout) as SummaryChartSettings;
 }

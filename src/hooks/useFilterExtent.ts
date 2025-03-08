@@ -1,13 +1,13 @@
-import { ChartSettings, FilterRange } from "@/types/ChartTypes";
-import { ScaleBand, ScaleLinear } from "d3-scale";
+import { ChartSettings } from "@/types/ChartTypes";
+import { ScaleLinear } from "d3-scale";
 import { useCallback, useMemo } from "react";
-
-type Scale = ScaleLinear<number, number> | ScaleBand<string>;
+import { getAxisFilter } from "./useFilters";
+import { RangeFilter } from "@/types/FilterTypes";
 
 interface UseFilterExtentProps {
   settings: ChartSettings;
-  xScale: Scale;
-  yScale: Scale;
+  xScale: ScaleLinear<number, number>;
+  yScale: ScaleLinear<number, number>;
   innerHeight: number;
 }
 
@@ -18,18 +18,14 @@ export function useFilterExtent({
   innerHeight,
 }: UseFilterExtentProps) {
   const convertFilterRangeToExtent = useCallback(
-    (filterRange: FilterRange, scale: ScaleLinear<number, number>) => {
-      if (
-        !filterRange ||
-        typeof filterRange.min !== "number" ||
-        typeof filterRange.max !== "number"
-      ) {
+    (filter: RangeFilter, scale: ScaleLinear<number, number>) => {
+      if (!filter || filter.min === undefined || filter.max === undefined) {
         return null;
       }
 
       // Round to 4 decimal places to avoid floating point issues
-      const min = Math.round(scale(filterRange.min) * 10000) / 10000;
-      const max = Math.round(scale(filterRange.max) * 10000) / 10000;
+      const min = Math.round(scale(filter.min) * 10000) / 10000;
+      const max = Math.round(scale(filter.max) * 10000) / 10000;
 
       return [min, max] as [number, number];
     },
@@ -39,18 +35,15 @@ export function useFilterExtent({
   const extent = useMemo(() => {
     switch (settings.type) {
       case "scatter": {
-        if (!settings.xFilterRange || !settings.yFilterRange) {
+        const xFilter = getAxisFilter(settings.filters, settings.xField);
+        const yFilter = getAxisFilter(settings.filters, settings.yField);
+
+        if (!xFilter || !yFilter) {
           return null;
         }
 
-        const xExtent = convertFilterRangeToExtent(
-          settings.xFilterRange,
-          xScale as ScaleLinear<number, number>
-        );
-        const yExtent = convertFilterRangeToExtent(
-          settings.yFilterRange,
-          yScale as ScaleLinear<number, number>
-        );
+        const xExtent = convertFilterRangeToExtent(xFilter, xScale);
+        const yExtent = convertFilterRangeToExtent(yFilter, yScale);
 
         if (!xExtent || !yExtent) {
           return null;
@@ -63,14 +56,16 @@ export function useFilterExtent({
       }
 
       case "bar": {
-        if ("bandwidth" in xScale || !settings.filterRange) {
+        if ("bandwidth" in xScale) {
           return null;
         }
 
-        const xExtent = convertFilterRangeToExtent(
-          settings.filterRange,
-          xScale as ScaleLinear<number, number>
-        );
+        const rangeFilter = getAxisFilter(settings.filters, settings.field);
+        if (!rangeFilter) {
+          return null;
+        }
+
+        const xExtent = convertFilterRangeToExtent(rangeFilter, xScale);
 
         if (!xExtent) {
           return null;

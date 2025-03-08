@@ -1,4 +1,4 @@
-import { demoSettings } from "@/hooks/demo_data_settings";
+import { demoSettings } from "@/demos/lorenz";
 import { SavedDataStructure } from "@/types/SavedDataTypes";
 import { BarChart3, LucideIcon } from "lucide-react";
 import { categoricalChartSettings } from "./categoricalChartSettings";

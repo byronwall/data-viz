@@ -1,25 +1,18 @@
-import {
-  BaseChartSettings,
-  ChartDefinition,
-  Filter,
-  FilterRange,
-  ScatterFilter,
-  datum,
-} from "@/types/ChartTypes";
+import { BaseChartSettings, ChartDefinition, datum } from "@/types/ChartTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { ScatterChart } from "lucide-react";
 
 import { ScatterPlotSettingsPanel } from "./ScatterPlotSettingsPanel";
 import { ScatterPlot } from "./ScatterPlot";
-import { scatterChartPureFilter } from "@/hooks/scatterChartPureFilter";
 import { IdType } from "@/providers/DataLayerProvider";
+import { applyFilter, getAxisFilter } from "@/hooks/useFilters";
+import { Filter } from "@/types/FilterTypes";
 
 export interface ScatterPlotSettings extends BaseChartSettings {
   type: "scatter";
   xField: string;
   yField: string;
-  xFilterRange: FilterRange;
-  yFilterRange: FilterRange;
+  filters: Filter[];
 }
 
 export const scatterPlotDefinition: ChartDefinition<ScatterPlotSettings> = {
@@ -40,13 +33,13 @@ export const scatterPlotDefinition: ChartDefinition<ScatterPlotSettings> = {
     margin: {},
     xField: "__ID",
     yField: field ?? "",
-    xFilterRange: null,
-    yFilterRange: null,
+    filters: [],
   }),
 
   validateSettings: (settings) => {
     return !!settings.xField && !!settings.yField;
   },
+
   getFilterFunction: (
     settings: ScatterPlotSettings,
     fieldGetter: (name: string) => Record<IdType, datum>
@@ -54,12 +47,28 @@ export const scatterPlotDefinition: ChartDefinition<ScatterPlotSettings> = {
     const xDataHash = fieldGetter(settings.xField);
     const yDataHash = fieldGetter(settings.yField);
 
-    return (d: IdType) =>
-      scatterChartPureFilter(
-        settings.xFilterRange,
-        settings.yFilterRange,
-        xDataHash[d],
-        yDataHash[d]
-      );
+    const xFilter = getAxisFilter(settings.filters, settings.xField);
+    const yFilter = getAxisFilter(settings.filters, settings.yField);
+
+    return (d: IdType) => {
+      if (!xFilter && !yFilter) {
+        return true;
+      }
+
+      const xValue = xDataHash[d];
+      const yValue = yDataHash[d];
+
+      // check both for exclusion -- if OK, then return true
+      // we need both to be true to return true
+      if (xFilter && !applyFilter(xValue, xFilter)) {
+        return false;
+      }
+
+      if (yFilter && !applyFilter(yValue, yFilter)) {
+        return false;
+      }
+
+      return true;
+    };
   },
 };

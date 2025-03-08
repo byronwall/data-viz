@@ -280,3 +280,124 @@ interface BarChartSettings extends BaseChartSettings {
    - Remove old code
    - Documentation
    - Final testing
+
+## Remaining Tasks
+
+### 1. Chart Component Updates
+
+1. Scatter Chart
+
+   - [x] Move filter logic from component to `applyFilter` function
+   - [ ] Update `isFiltered` logic to use `applyFilter` helper
+   - [ ] Remove inline filter checks
+
+2. Bar Chart
+
+   - [ ] Update to use `applyFilter` function for both value and range filters
+   - [ ] Consolidate filter logic in definition file
+   - [ ] Remove inline filter checks
+
+3. Row Chart
+
+   - [ ] Update to use `applyFilter` function consistently
+   - [ ] Remove any remaining inline filter logic
+
+4. Data Layer Updates
+
+   - [ ] Replace summary table chart settings creator in DataLayerProvider
+   - [ ] Update DataLayerProvider to use new filter functions
+   - [ ] Update useChartExtent to use new filter functions
+
+5. Data Table Fixes
+   - [ ] Review and fix data table filter implementation
+   - [ ] Ensure compatibility with new filter system
+   - [ ] Test all filter types (text, value, range)
+
+### 2. Testing & Validation
+
+1. Unit Tests
+
+   - [ ] Test filter application across all chart types
+   - [ ] Verify filter combinations work correctly
+   - [ ] Test edge cases for each filter type
+
+2. Integration Tests
+   - [ ] Test filters across multiple charts
+   - [ ] Verify data consistency
+   - [ ] Test performance with large datasets
+
+### 3. Cleanup
+
+1. Code Cleanup
+
+   - [ ] Remove old filter types and implementations
+   - [ ] Clean up any remaining inline filter logic
+   - [ ] Update type references
+
+2. Documentation
+   - [ ] Update API documentation
+   - [ ] Add examples for each filter type
+   - [ ] Document migration steps for custom implementations
+
+## Status
+
+### Phase 1: Core Infrastructure ✅
+
+- [x] Create new filter type system
+
+  - [x] Create FilterTypes.ts with base types
+  - [x] Add type guards for filter types
+  - [x] Add ChartFilters interface
+
+- [x] Implement filter utilities
+  - [x] Create useFilters.ts hook
+  - [x] Implement createFilter function
+  - [x] Implement applyFilter function
+  - [x] Implement combineFilters function
+  - [x] Add chart-specific helper functions
+
+### Phase 2: Chart Migration 🔄
+
+- [x] Update ScatterChartSettings
+
+  - [x] Replace xFilterRange and yFilterRange with unified filters array
+  - [ ] Update scatter chart component to use applyFilter
+  - [x] Update scatter chart definition
+
+- [x] Update RowChartSettings
+
+  - [x] Replace filterValues with unified filters array
+  - [ ] Update row chart component to use applyFilter consistently
+  - [x] Update row chart definition
+
+- [x] Update BarChartSettings
+
+  - [x] Replace filterValues and filterRange with unified filters array
+  - [ ] Update bar chart component to use applyFilter
+  - [x] Update bar chart definition
+
+- [x] Update DataTableSettings
+  - [x] Replace filters object with unified filters array
+  - [ ] Fix filter implementation
+  - [x] Update data table definition
+
+### Phase 3: Cleanup & Documentation 📝
+
+- [ ] Remove old filter code
+
+  - [ ] Remove deprecated filter types
+  - [ ] Clean up inline filter logic
+  - [ ] Update type references
+
+- [ ] Update documentation
+  - [ ] API documentation
+  - [ ] Migration guide
+  - [ ] Examples
+
+## Next Steps
+
+1. Update scatter chart component to use applyFilter helper
+2. Update bar chart and row chart components to use applyFilter consistently
+3. Fix data table filter implementation
+4. Complete DataLayerProvider updates
+5. Remove old filter code and update documentation

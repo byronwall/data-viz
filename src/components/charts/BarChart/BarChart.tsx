@@ -1,9 +1,9 @@
-import { barChartPureFilter } from "@/hooks/barChartPureFilter";
-import { getFilterObj, isEmptyFilter } from "@/hooks/getFilterValues";
 import { useColorScales } from "@/hooks/useColorScales";
+import { applyFilter, getAxisFilter } from "@/hooks/useFilters";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { BaseChartProps } from "@/types/ChartTypes";
+import { ValueFilter } from "@/types/FilterTypes";
 import { scaleBand, ScaleBand, scaleLinear, ScaleLinear } from "d3-scale";
 import { useCallback, useEffect, useMemo } from "react";
 import isEqual from "react-fast-compare";
@@ -215,8 +215,11 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
 
   const isBandScale = "bandwidth" in xScale;
 
-  const activeFilters = getFilterObj(settings);
-  const isFilterEmpty = isEmptyFilter(activeFilters);
+  const valueFilter = settings.filters.find(
+    (f): f is ValueFilter => f.type === "value" && f.field === settings.field
+  );
+  const rangeFilter = getAxisFilter(settings.filters, settings.field);
+  const hasActiveFilters = valueFilter || rangeFilter;
 
   const handleBarClick = useCallback(
     (label: string) => {
@@ -224,25 +227,47 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
         return;
       }
 
-      const filters = settings.filterValues?.values ?? [];
-      const newValues = filters.includes(label)
-        ? filters.filter((f) => f !== label)
-        : [...filters, label];
+      const filterValues = valueFilter?.values ?? [];
+      const newValues = filterValues.includes(label)
+        ? filterValues.filter((f) => f !== label)
+        : [...filterValues, label];
+
+      // Create new filters array with updated value filter
+      const newFilters = settings.filters.filter(
+        (f) => f.type !== "value" || f.field !== settings.field
+      );
+
+      if (newValues.length > 0) {
+        newFilters.push({
+          type: "value",
+          field: settings.field,
+          values: newValues,
+        });
+      }
 
       updateChart(settings.id, {
-        filterValues: { values: newValues },
-        filterRange: undefined,
+        filters: newFilters,
       });
     },
-    [isBandScale, settings.id, updateChart, settings.filterValues?.values]
+    [
+      isBandScale,
+      settings.id,
+      settings.field,
+      updateChart,
+      valueFilter,
+      settings.filters,
+    ]
   );
 
   const handleBrushChange = useCallback(
     (extent: [[number, number], [number, number]] | null) => {
       if (!extent) {
+        // Remove both value and range filters for the field
+        const newFilters = settings.filters.filter(
+          (f) => f.field !== settings.field
+        );
         updateChart(settings.id, {
-          filterValues: { values: [] },
-          filterRange: null,
+          filters: newFilters,
         });
         return;
       }
@@ -258,12 +283,30 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
       const start = linearScale.invert(xStart);
       const end = linearScale.invert(xEnd);
 
+      // Create new filters array with updated range filter
+      const newFilters = settings.filters.filter(
+        (f) => f.field !== settings.field
+      );
+
+      newFilters.push({
+        type: "range",
+        field: settings.field,
+        min: start,
+        max: end,
+      });
+
       updateChart(settings.id, {
-        filterRange: { min: start, max: end },
-        filterValues: undefined,
+        filters: newFilters,
       });
     },
-    [isBandScale, settings.id, updateChart, xScale]
+    [
+      isBandScale,
+      settings.id,
+      settings.field,
+      updateChart,
+      xScale,
+      settings.filters,
+    ]
   );
 
   return (
@@ -297,19 +340,26 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
               barWidth = bandScale.bandwidth();
             }
 
-            const isFiltered = barChartPureFilter(
-              activeFilters,
-              isNumeric ? (d as NumericBin).start : (d as CategoryBin).label
-            );
+            const value = isNumeric
+              ? (d as NumericBin).start
+              : (d as CategoryBin).label;
+            let isFiltered = true;
+
+            // Apply value and range filters using applyFilter
+            if (valueFilter) {
+              isFiltered = applyFilter(value, valueFilter);
+            }
+
+            if (rangeFilter && isNumeric) {
+              isFiltered = applyFilter(value, rangeFilter);
+            }
 
             const color =
-              activeFilters && !isFilterEmpty && !isFiltered
+              hasActiveFilters && !isFiltered
                 ? "rgb(156 163 175)" // gray-400 for filtered out points
                 : getColorForValue(
                     settings.colorScaleId,
-                    isNumeric
-                      ? (d as NumericBin).start
-                      : (d as CategoryBin).label,
+                    value,
                     "hsl(217.2 91.2% 59.8%)"
                   );
 

@@ -37,6 +37,7 @@ export const basicNumbersSettings = {
       yAxisLabel: "",
       xGridLines: 5,
       yGridLines: 5,
+      filters: [],
       id: "9c8a9f83-916a-4beb-910a-902b58cfe5d8",
     },
     // {

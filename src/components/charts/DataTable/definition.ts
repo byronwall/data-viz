@@ -1,15 +1,12 @@
-import {
-  BaseChartSettings,
-  ChartDefinition,
-  Filter,
-  datum,
-} from "@/types/ChartTypes";
+import { BaseChartSettings, ChartDefinition, datum } from "@/types/ChartTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { Table } from "lucide-react";
 
 import { DataTable } from "./DataTable";
 import { DataTableSettingsPanel } from "./DataTableSettingsPanel";
 import { IdType } from "@/providers/DataLayerProvider";
+import { Filter, TextFilter } from "@/types/FilterTypes";
+import { applyFilter } from "@/hooks/useFilters";
 
 export interface DataTableSettings extends BaseChartSettings {
   type: "data-table";
@@ -22,13 +19,7 @@ export interface DataTableSettings extends BaseChartSettings {
   currentPage: number;
   sortBy?: string;
   sortDirection: "asc" | "desc";
-  filters: Record<
-    string,
-    {
-      value: string;
-      operator: "contains" | "equals" | "startsWith" | "endsWith";
-    }
-  >;
+  filters: Filter[];
   globalSearch: string;
   tableHeight: number;
 }
@@ -53,7 +44,7 @@ export const dataTableDefinition: ChartDefinition<DataTableSettings> = {
     pageSize: 25,
     currentPage: 1,
     sortDirection: "asc",
-    filters: {},
+    filters: [],
     globalSearch: "",
     tableHeight: 400,
   }),
@@ -67,47 +58,32 @@ export const dataTableDefinition: ChartDefinition<DataTableSettings> = {
     fieldGetter: (name: string) => Record<IdType, datum>
   ) => {
     // If no filters are active, return true
-    if (Object.keys(settings.filters).length === 0) {
+    if (settings.filters.length === 0) {
       return (d: IdType) => true;
     }
 
     // Create filter functions for each active filter
-    const filterFunctions = Object.entries(settings.filters).map(
-      ([columnId, filter]) => {
-        const column = settings.columns.find((col) => col.id === columnId);
-        if (!column) {
-          return () => true;
+    const filterFunctions = settings.filters.map((filter) => {
+      const column = settings.columns.find((col) => col.field === filter.field);
+      if (!column) {
+        return () => true;
+      }
+
+      const dataHash = fieldGetter(column.field);
+
+      return (d: IdType) => {
+        const value = dataHash[d];
+        if (value === undefined) {
+          return false;
         }
 
-        const dataHash = fieldGetter(column.field);
+        if (applyFilter(value, filter)) {
+          return true;
+        }
 
-        return (d: IdType) => {
-          const value = dataHash[d];
-          if (value === undefined) {
-            return false;
-          }
-
-          switch (filter.operator) {
-            case "contains":
-              return String(value)
-                .toLowerCase()
-                .includes(String(filter.value).toLowerCase());
-            case "equals":
-              return String(value) === String(filter.value);
-            case "startsWith":
-              return String(value)
-                .toLowerCase()
-                .startsWith(String(filter.value).toLowerCase());
-            case "endsWith":
-              return String(value)
-                .toLowerCase()
-                .endsWith(String(filter.value).toLowerCase());
-            default:
-              return true;
-          }
-        };
-      }
-    );
+        return false;
+      };
+    });
 
     // Combine all filter functions with AND logic
     return (d: IdType) => filterFunctions.every((fn) => fn(d));

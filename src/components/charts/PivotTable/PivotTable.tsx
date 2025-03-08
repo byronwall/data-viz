@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { BaseChartProps, PivotTableSettings } from "@/types/ChartTypes";
+import { Filter, ValueFilter } from "@/types/FilterTypes";
 import { Search } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
@@ -56,28 +57,36 @@ export function PivotTable({
 
   const handleFilterClick = useCallback(
     (field: string, value: string | number) => {
-      const isRowField = settings.rowFields.includes(field);
-      const filterKey = isRowField ? "rowFilterValues" : "columnFilterValues";
-      const currentFilters = settings[filterKey] || {};
-      const fieldFilters = currentFilters[field] || [];
+      const currentFilters = settings.filters || [];
+      const existingFilterIndex = currentFilters.findIndex(
+        (f): f is ValueFilter =>
+          f.type === "value" && f.field === field && f.values.includes(value)
+      );
 
-      // Toggle the value in the filter
-      const newFieldFilters = fieldFilters.includes(value)
-        ? fieldFilters.filter((v) => v !== value)
-        : [...fieldFilters, value];
-
-      const newFilters = {
-        ...currentFilters,
-        [field]: newFieldFilters,
-      };
+      let newFilters: Filter[];
+      if (existingFilterIndex >= 0) {
+        // Remove the filter if it exists
+        newFilters = [
+          ...currentFilters.slice(0, existingFilterIndex),
+          ...currentFilters.slice(existingFilterIndex + 1),
+        ];
+      } else {
+        // Add new filter
+        const newFilter: ValueFilter = {
+          type: "value",
+          field,
+          values: [value],
+        };
+        newFilters = [...currentFilters, newFilter];
+      }
 
       updateChart(settings.id, {
         ...settings,
-        [filterKey]: newFilters,
+        filters: newFilters,
       });
 
       toast(
-        `Filter ${newFieldFilters.length ? "applied" : "removed"} for ${field}`
+        `Filter ${existingFilterIndex >= 0 ? "removed" : "applied"} for ${field}`
       );
     },
     [settings, updateChart]

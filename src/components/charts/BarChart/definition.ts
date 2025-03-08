@@ -1,26 +1,17 @@
-import { barChartPureFilter } from "@/hooks/barChartPureFilter";
-import { getFilterObj } from "@/hooks/getFilterValues";
 import { IdType } from "@/providers/DataLayerProvider";
-import {
-  BaseChartSettings,
-  ChartDefinition,
-  FilterRange,
-  FilterValues,
-  datum,
-} from "@/types/ChartTypes";
+import { BaseChartSettings, ChartDefinition, datum } from "@/types/ChartTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { ChartBarBig } from "lucide-react";
 import { BarChart } from "./BarChart";
 import { BarChartSettingsPanel } from "./BarChartSettingsPanel";
+import { applyFilter, getAxisFilter } from "@/hooks/useFilters";
+import { Filter, ValueFilter } from "@/types/FilterTypes";
 
 export interface BarChartSettings extends BaseChartSettings {
   type: "bar";
   binCount?: number;
-
   forceString?: boolean;
-
-  filterValues: FilterValues;
-  filterRange: FilterRange;
+  filters: Filter[];
 }
 
 export const barChartDefinition: ChartDefinition<BarChartSettings> = {
@@ -41,8 +32,7 @@ export const barChartDefinition: ChartDefinition<BarChartSettings> = {
     title: "Bar Chart",
     layout,
     margin: {},
-    filterValues: { values: [] },
-    filterRange: null,
+    filters: [],
   }),
 
   validateSettings: (settings) => {
@@ -54,8 +44,29 @@ export const barChartDefinition: ChartDefinition<BarChartSettings> = {
     fieldGetter: (name: string) => Record<IdType, datum>
   ) => {
     const dataHash = fieldGetter(settings.field);
-    const filters = getFilterObj(settings);
 
-    return (d: IdType) => barChartPureFilter(filters, dataHash[d]);
+    const valueFilter = settings.filters.find(
+      (f): f is ValueFilter => f.type === "value" && f.field === settings.field
+    );
+
+    const rangeFilter = getAxisFilter(settings.filters, settings.field);
+
+    return (d: IdType) => {
+      const value = dataHash[d];
+
+      if (valueFilter) {
+        if (!applyFilter(value, valueFilter)) {
+          return false;
+        }
+      }
+
+      if (rangeFilter) {
+        if (!applyFilter(value, rangeFilter)) {
+          return false;
+        }
+      }
+
+      return true;
+    };
   },
 };

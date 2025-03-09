@@ -11,25 +11,41 @@ import {
 import { useAlertStore } from "@/stores/alertStore";
 
 export function GlobalAlertDialog() {
-  const { isOpen, title, description, closeAlert } = useAlertStore();
+  const { isOpen, title, description, closeAlert, id } = useAlertStore();
 
   return (
     <AlertDialog
+      key={id}
       open={isOpen}
       onOpenChange={(open) => !open && closeAlert(false)}
     >
-      <AlertDialogContent>
+      <AlertDialogContent
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          const action = document.getElementById(`alert-dialog-action-${id}`);
+          if (action) {
+            action.focus();
+          }
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => closeAlert(false)}>
-            Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction onClick={() => closeAlert(true)} autoFocus>
+          <AlertDialogAction
+            onClick={() => closeAlert(true)}
+            autoFocus
+            id={`alert-dialog-action-${id}`}
+          >
             Continue
           </AlertDialogAction>
+          <AlertDialogCancel
+            onClick={() => closeAlert(false)}
+            autoFocus={false}
+          >
+            Cancel
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

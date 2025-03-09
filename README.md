@@ -14,13 +14,13 @@ Will be updated when done...
 
 ### Core data viz
 
-- Top level filter + steps = ability to quickly segment data and work on slices
+- Create a `BoxPlot` that shows a box plot of the data
 - Add a filter summary + filter controller
 - Improve handling of times stamps
 - Create a `LineChart` that favors plotting time series data with a line
 - Create a `HeatMap` that shows a matrix of values - default to counts
-- Create a `BoxPlot` that shows a box plot of the data
 - Need a `color legend` type that can be rendered
+- Top level filter + steps = ability to quickly segment data and work on slices
 
 ### Packaging and usages
 

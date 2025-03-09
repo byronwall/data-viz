@@ -14,7 +14,6 @@ Will be updated when done...
 
 ### Core data viz
 
-- Rework how filters are stored in chart settings - need a single `filters` object that can hold different values - rework examples - get switch logic out of various files like `src/hooks/getFilterValues.ts`
 - Top level filter + steps = ability to quickly segment data and work on slices
 - Add a filter summary + filter controller
 - Improve handling of times stamps

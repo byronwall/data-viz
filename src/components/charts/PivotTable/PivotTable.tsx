@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { BaseChartProps, PivotTableSettings } from "@/types/ChartTypes";
 import { Filter, ValueFilter } from "@/types/FilterTypes";
-import { Search } from "lucide-react";
+import { Filter as FilterIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { useGetLiveIds } from "../useGetLiveData";
@@ -84,10 +84,6 @@ export function PivotTable({
         ...settings,
         filters: newFilters,
       });
-
-      toast(
-        `Filter ${existingFilterIndex >= 0 ? "removed" : "applied"} for ${field}`
-      );
     },
     [settings, updateChart]
   );
@@ -106,15 +102,28 @@ export function PivotTable({
     []
   );
 
+  const isValueFiltered = useCallback(
+    (field: string, value: string | number) => {
+      const currentFilters = settings.filters || [];
+      return currentFilters.some(
+        (f): f is ValueFilter =>
+          f.type === "value" && f.field === field && f.values.includes(value)
+      );
+    },
+    [settings.filters]
+  );
+
   const renderHeader = useCallback(
     (header: PivotHeader) => {
+      const isFiltered = isValueFiltered(header.field, header.value);
       return (
         <th
           key={`${header.field}-${header.value}`}
           colSpan={header.span * settings.valueFields.length}
           className={cn(
-            "border p-2 bg-muted/50",
-            header.depth === 0 && "font-semibold"
+            "border p-2",
+            header.depth === 0 && "font-semibold",
+            isFiltered ? "bg-yellow-100" : "bg-muted/50"
           )}
         >
           <div className="flex items-center justify-between gap-2">
@@ -125,13 +134,13 @@ export function PivotTable({
               className="h-6 w-6"
               onClick={() => handleFilterClick(header.field, header.value)}
             >
-              <Search className="h-4 w-4" />
+              <FilterIcon className="h-4 w-4" />
             </Button>
           </div>
         </th>
       );
     },
-    [handleFilterClick, settings.valueFields.length]
+    [handleFilterClick, settings.valueFields.length, isValueFiltered]
   );
 
   // Calculate the number of header rows needed
@@ -214,11 +223,16 @@ export function PivotTable({
                 {row.headers.map((header: PivotHeader, i) => {
                   // Calculate cumulative width of previous headers
                   const leftPosition = i * 150; // Using fixed width for consistency
+                  const isFiltered = isValueFiltered(
+                    header.field,
+                    header.value
+                  );
                   return (
                     <th
                       key={`${header.field}-${header.value}`}
                       className={cn(
-                        "border p-2 text-left font-normal sticky bg-white",
+                        "border p-2 text-left font-normal sticky",
+                        isFiltered ? "bg-yellow-100" : "bg-white",
                         // Add z-index that decreases as we go right to ensure proper layering
                         `z-[${20 - i}]`
                       )}
@@ -228,7 +242,19 @@ export function PivotTable({
                         maxWidth: "150px",
                       }}
                     >
-                      {header.label}
+                      <div className="flex items-center justify-between gap-2">
+                        <span>{header.label}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() =>
+                            handleFilterClick(header.field, header.value)
+                          }
+                        >
+                          <FilterIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </th>
                   );
                 })}

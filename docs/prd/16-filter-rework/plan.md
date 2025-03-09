@@ -339,6 +339,21 @@ interface BarChartSettings extends BaseChartSettings {
    - [ ] Add examples for each filter type
    - [ ] Document migration steps for custom implementations
 
+### 4. Pivot Table Improvements
+
+1. Filter UI Updates
+
+   - [x] Change search icon to filter icon for better clarity
+   - [x] Add row filter icon similar to column filter
+   - [x] Remove toast notifications when filters are applied
+   - [x] Add yellow background highlight for cells that meet filter conditions
+
+2. Filter Functionality
+   - [x] Update filter icon click handlers
+   - [x] Implement row filtering mechanism
+   - [x] Add visual feedback for active filters
+   - [x] Ensure all live data is rendered in filtered state
+
 ## Status
 
 ### Phase 1: Core Infrastructure ✅

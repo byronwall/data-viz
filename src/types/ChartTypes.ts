@@ -9,6 +9,7 @@ import {
   Box,
   Info,
   LucideIcon,
+  FileText,
 } from "lucide-react";
 import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
 import { BarChartSettings } from "@/components/charts/BarChart/definition";
@@ -16,6 +17,7 @@ import { PivotTableSettings } from "@/components/charts/PivotTable/definition";
 import { ScatterPlotSettings } from "@/components/charts/ScatterPlot/definition";
 import { DataTableSettings } from "@/components/charts/DataTable/definition";
 import { SummaryTableSettings } from "@/components/charts/SummaryTable/definition";
+import { MarkdownSettings } from "@/components/charts/Markdown/definition";
 
 export const CHART_TYPES = [
   { value: "row", label: "Row Chart", icon: BarChartBig },
@@ -25,6 +27,7 @@ export const CHART_TYPES = [
   { value: "3d-scatter", label: "3D Scatter", icon: Box },
   { value: "summary", label: "Summary", icon: Info },
   { value: "data-table", label: "Data Table", icon: Table },
+  { value: "markdown", label: "Markdown", icon: FileText },
 ] as const;
 
 export type ChartType = (typeof CHART_TYPES)[number]["value"];
@@ -114,7 +117,8 @@ export type ChartSettings =
   | PivotTableSettings
   | ThreeDScatterSettings
   | SummaryTableSettings
-  | DataTableSettings;
+  | DataTableSettings
+  | MarkdownSettings;
 
 export interface ChartSettingsPanelProps<
   TSettings extends BaseChartSettings = BaseChartSettings,
@@ -144,7 +148,7 @@ export interface ChartDefinition<
 
   // Component References
   component: React.ComponentType<BaseChartProps<TSettings>>;
-  settingsPanel: React.ComponentType<ChartSettingsPanelProps<TSettings>>;
+  settingsPanel: React.ComponentType<ChartSettingsPanelProps<TSettings>> | null;
 
   // Settings Management
   createDefaultSettings: (layout: ChartLayout, field?: string) => TSettings;

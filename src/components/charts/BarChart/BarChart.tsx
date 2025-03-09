@@ -1,5 +1,5 @@
 import { useColorScales } from "@/hooks/useColorScales";
-import { getAxisFilter } from "@/hooks/getAxisFilter";
+import { getRangeFilterForField } from "@/hooks/getAxisFilter";
 import { applyFilter } from "@/hooks/applyFilter";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
@@ -219,7 +219,7 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
   const valueFilter = settings.filters.find(
     (f): f is ValueFilter => f.type === "value" && f.field === settings.field
   );
-  const rangeFilter = getAxisFilter(settings.filters, settings.field);
+  const rangeFilter = getRangeFilterForField(settings.filters, settings.field);
   const hasActiveFilters = valueFilter || rangeFilter;
 
   const handleBarClick = useCallback(

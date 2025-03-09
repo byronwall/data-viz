@@ -1,6 +1,6 @@
 import { Filter, RangeFilter } from "@/types/FilterTypes";
 
-export function getAxisFilter(
+export function getRangeFilterForField(
   filters: Filter[],
   field: string
 ): RangeFilter | undefined {

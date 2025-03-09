@@ -4,7 +4,7 @@ import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { ChartBarBig } from "lucide-react";
 import { BarChart } from "./BarChart";
 import { BarChartSettingsPanel } from "./BarChartSettingsPanel";
-import { getAxisFilter } from "@/hooks/getAxisFilter";
+import { getRangeFilterForField } from "@/hooks/getAxisFilter";
 import { applyFilter } from "@/hooks/applyFilter";
 import { Filter, ValueFilter } from "@/types/FilterTypes";
 
@@ -50,7 +50,10 @@ export const barChartDefinition: ChartDefinition<BarChartSettings> = {
       (f): f is ValueFilter => f.type === "value" && f.field === settings.field
     );
 
-    const rangeFilter = getAxisFilter(settings.filters, settings.field);
+    const rangeFilter = getRangeFilterForField(
+      settings.filters,
+      settings.field
+    );
 
     return (d: IdType) => {
       const value = dataHash[d];

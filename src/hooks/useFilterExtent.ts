@@ -1,7 +1,7 @@
 import { ChartSettings } from "@/types/ChartTypes";
 import { ScaleLinear } from "d3-scale";
 import { useCallback, useMemo } from "react";
-import { getAxisFilter } from "./getAxisFilter";
+import { getRangeFilterForField } from "./getAxisFilter";
 import { RangeFilter } from "@/types/FilterTypes";
 
 interface UseFilterExtentProps {
@@ -35,8 +35,14 @@ export function useFilterExtent({
   const extent = useMemo(() => {
     switch (settings.type) {
       case "scatter": {
-        const xFilter = getAxisFilter(settings.filters, settings.xField);
-        const yFilter = getAxisFilter(settings.filters, settings.yField);
+        const xFilter = getRangeFilterForField(
+          settings.filters,
+          settings.xField
+        );
+        const yFilter = getRangeFilterForField(
+          settings.filters,
+          settings.yField
+        );
 
         if (!xFilter || !yFilter) {
           return null;
@@ -60,7 +66,10 @@ export function useFilterExtent({
           return null;
         }
 
-        const rangeFilter = getAxisFilter(settings.filters, settings.field);
+        const rangeFilter = getRangeFilterForField(
+          settings.filters,
+          settings.field
+        );
         if (!rangeFilter) {
           return null;
         }

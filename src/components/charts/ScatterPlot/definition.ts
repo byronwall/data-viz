@@ -5,7 +5,7 @@ import { ScatterChart } from "lucide-react";
 import { ScatterPlotSettingsPanel } from "./ScatterPlotSettingsPanel";
 import { ScatterPlot } from "./ScatterPlot";
 import { IdType } from "@/providers/DataLayerProvider";
-import { getAxisFilter } from "@/hooks/getAxisFilter";
+import { getRangeFilterForField } from "@/hooks/getAxisFilter";
 import { applyFilter } from "@/hooks/applyFilter";
 import { Filter } from "@/types/FilterTypes";
 
@@ -48,8 +48,8 @@ export const scatterPlotDefinition: ChartDefinition<ScatterPlotSettings> = {
     const xDataHash = fieldGetter(settings.xField);
     const yDataHash = fieldGetter(settings.yField);
 
-    const xFilter = getAxisFilter(settings.filters, settings.xField);
-    const yFilter = getAxisFilter(settings.filters, settings.yField);
+    const xFilter = getRangeFilterForField(settings.filters, settings.xField);
+    const yFilter = getRangeFilterForField(settings.filters, settings.yField);
 
     return (d: IdType) => {
       if (!xFilter && !yFilter) {

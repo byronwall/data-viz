@@ -1,5 +1,5 @@
 import { useColorScales } from "@/hooks/useColorScales";
-import { getAxisFilter } from "@/hooks/getAxisFilter";
+import { getRangeFilterForField } from "@/hooks/getAxisFilter";
 import { applyFilter } from "@/hooks/applyFilter";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
@@ -171,8 +171,8 @@ export function ScatterPlot({
     // Draw points using the same scales as BaseChart
     ctx.translate(60, 20); // Match the margin from BaseChart
 
-    const xFilter = getAxisFilter(settings.filters, settings.xField);
-    const yFilter = getAxisFilter(settings.filters, settings.yField);
+    const xFilter = getRangeFilterForField(settings.filters, settings.xField);
+    const yFilter = getRangeFilterForField(settings.filters, settings.yField);
 
     for (let i = 0; i < xValues.length; i++) {
       const x = xScale(xValues[i]);

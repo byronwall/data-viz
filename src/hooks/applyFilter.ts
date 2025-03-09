@@ -14,15 +14,18 @@ export function applyFilter(value: datum, filter: Filter): boolean {
       break;
     case "text":
       if (typeof value === "string") {
+        const lower = value.toLowerCase();
+        const search = filter.value.toLowerCase();
+
         switch (filter.operator) {
           case "contains":
-            return value.includes(filter.value);
+            return lower.includes(search);
           case "equals":
-            return value === filter.value;
+            return lower === search;
           case "startsWith":
-            return value.startsWith(filter.value);
+            return lower.startsWith(search);
           case "endsWith":
-            return value.endsWith(filter.value);
+            return lower.endsWith(search);
         }
       }
   }

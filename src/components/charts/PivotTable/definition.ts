@@ -92,9 +92,6 @@ export const pivotTableDefinition: ChartDefinition<PivotTableSettings> = {
     const noMatchingFilters =
       rowFilters.length === 0 && columnFilters.length === 0;
 
-    console.log("rowFilters", rowFilters);
-    console.log("columnFilters", columnFilters);
-
     return (d: IdType) => {
       if (noMatchingFilters) {
         return true;

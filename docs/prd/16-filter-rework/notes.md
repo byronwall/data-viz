@@ -3,7 +3,6 @@
 ### Pivot Table
 
 - Pivot table row header needs to use the raw value with type and not a string
-- Need to apply an OR to the columns and an OR to the rows if there are multiple entries
 
 ### Related to Data Table
 

@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { BaseChartProps, PivotTableSettings } from "@/types/ChartTypes";
-import { Filter, ValueFilter } from "@/types/FilterTypes";
+import { Filter, ValueFilter, datum } from "@/types/FilterTypes";
 import { Filter as FilterIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { useGetLiveIds } from "../useGetLiveData";
-import { PivotCell, PivotHeader, PivotRow, CellKey } from "./types";
+import { PivotCell, PivotHeader, PivotRow, CellKey, RowKey } from "./types";
 import { applyFilter } from "@/hooks/applyFilter";
 
 type PivotTableProps = BaseChartProps & {
@@ -57,11 +57,13 @@ export function PivotTable({
   }, [facetIds, allLiveIds, settings, getColumnData]);
 
   const handleFilterClick = useCallback(
-    (field: string, value: string | number) => {
+    (field: string, value: datum) => {
       const currentFilters = settings.filters || [];
       const existingFilterIndex = currentFilters.findIndex(
         (f): f is ValueFilter =>
-          f.type === "value" && f.field === field && f.values.includes(value)
+          f.type === "value" &&
+          f.field === field &&
+          f.values.includes(value as string | number)
       );
 
       let newFilters: Filter[];
@@ -76,7 +78,7 @@ export function PivotTable({
         const newFilter: ValueFilter = {
           type: "value",
           field,
-          values: [value],
+          values: [value as string | number],
         };
         newFilters = [...currentFilters, newFilter];
       }
@@ -90,7 +92,7 @@ export function PivotTable({
   );
 
   const handleCellClick = useCallback(
-    (cell: PivotCell, rowKey: string, colKey: CellKey) => {
+    (cell: PivotCell, rowKeys: RowKey[], colKey: CellKey) => {
       if (!cell.sourceRows) {
         return;
       }
@@ -104,7 +106,7 @@ export function PivotTable({
   );
 
   const isValueFiltered = useCallback(
-    (field: string, value: string | number) => {
+    (field: string, value: datum) => {
       const currentFilters = settings.filters || [];
       const fieldFilters = currentFilters.filter((f) => f.field === field);
 
@@ -273,7 +275,7 @@ export function PivotTable({
           </thead>
           <tbody>
             {pivotData.rows.map((row: PivotRow) => (
-              <tr key={row.key}>
+              <tr key={row.keys.map((k) => `${k.field}-${k.value}`).join(":")}>
                 {row.headers.map((header: PivotHeader, i) => {
                   // Calculate cumulative width of previous headers
                   const leftPosition = i * 150; // Using fixed width for consistency
@@ -296,7 +298,7 @@ export function PivotTable({
                         maxWidth: "150px",
                       }}
                     >
-                      <div className="flex items-center  gap-2">
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -322,7 +324,7 @@ export function PivotTable({
                     )}
                     onClick={() =>
                       cell.sourceRows &&
-                      handleCellClick(cell, row.key, cell.key)
+                      handleCellClick(cell, row.keys, cell.key)
                     }
                   >
                     {typeof cell.value === "number"

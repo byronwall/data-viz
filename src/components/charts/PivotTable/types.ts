@@ -3,7 +3,7 @@ import { datum } from "@/types/FilterTypes";
 export interface PivotHeader {
   label: string;
   field: string;
-  value: string | number;
+  value: datum;
   children?: PivotHeader[];
   span: number;
   depth: number;
@@ -15,6 +15,11 @@ export interface CellKey {
   valueField?: string;
 }
 
+export interface RowKey {
+  field: string;
+  value: datum;
+}
+
 export interface PivotCell {
   key: CellKey;
   value: number | string | null;
@@ -23,7 +28,7 @@ export interface PivotCell {
 }
 
 export interface PivotRow {
-  key: string;
+  keys: RowKey[];
   headers: PivotHeader[];
   cells: PivotCell[];
   subtotal?: boolean;

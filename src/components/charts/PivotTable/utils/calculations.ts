@@ -1,4 +1,5 @@
 import { PivotTableSettings } from "@/types/ChartTypes";
+import { datum } from "@/types/FilterTypes";
 import {
   PivotTableData,
   PivotHeader,
@@ -82,7 +83,7 @@ function generateHeaders(data: any[], fields: string[]): PivotHeader[] {
   }
 
   // Pre-compute unique values for better performance
-  const uniqueValues = new Map<string, Set<any>>();
+  const uniqueValues = new Map<string, Set<datum>>();
   fields.forEach((field) => {
     uniqueValues.set(field, new Set(data.map((d) => d[field])));
   });
@@ -128,7 +129,7 @@ function generateCells(
       cells.push({
         key: {
           columnField: "total",
-          columnValue: "total",
+          columnValue: "total" as datum,
           valueField: valueField.field,
         },
         value,
@@ -143,7 +144,7 @@ function generateCells(
   // Pre-compute column data filters for better performance
   const columnFilters = flatColumns.map((column) => {
     let current: PivotHeader | undefined = column;
-    const filters: Array<{ field: string; value: any }> = [];
+    const filters: Array<{ field: string; value: datum }> = [];
     while (current) {
       filters.push({ field: current.field, value: current.value });
       current = current.children?.[0];
@@ -192,19 +193,29 @@ function generateRows(
   // Pre-compute row groups for better performance
   const rowGroups = new Map<string, any[]>();
   data.forEach((item) => {
-    const key = rowFields.map((field) => item[field]).join(":");
-    if (!rowGroups.has(key)) {
-      rowGroups.set(key, []);
+    // Create a composite key for grouping, but store the individual values
+    const keyString = rowFields.map((field) => item[field]).join(":");
+    if (!rowGroups.has(keyString)) {
+      rowGroups.set(keyString, []);
     }
-    rowGroups.get(key)!.push(item);
+    rowGroups.get(keyString)!.push(item);
   });
 
   // Generate rows
-  rowGroups.forEach((groupData, key) => {
-    const headers = key.split(":").map((value, index) => ({
-      label: String(value),
-      field: rowFields[index],
-      value,
+  rowGroups.forEach((groupData, keyString) => {
+    // Create properly typed keys and headers
+    const keys = rowFields.map((field, index) => {
+      const value = groupData[0][field];
+      return {
+        field,
+        value,
+      };
+    });
+
+    const headers = keys.map((key, index) => ({
+      label: String(key.value),
+      field: key.field,
+      value: key.value,
       span: 1,
       depth: index,
     }));
@@ -212,7 +223,7 @@ function generateRows(
     const cells = generateCells(groupData, columnHeaders, valueFields);
 
     rows.push({
-      key,
+      keys,
       headers,
       cells,
     });

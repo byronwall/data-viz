@@ -1,3 +1,5 @@
+import { datum } from "@/types/FilterTypes";
+
 export interface PivotHeader {
   label: string;
   field: string;
@@ -7,8 +9,14 @@ export interface PivotHeader {
   depth: number;
 }
 
+export interface CellKey {
+  columnField: string;
+  columnValue: datum;
+  valueField?: string;
+}
+
 export interface PivotCell {
-  key: string;
+  key: CellKey;
   value: number | string | null;
   rawValue?: any;
   sourceRows?: any[];

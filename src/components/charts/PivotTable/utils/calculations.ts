@@ -1,5 +1,11 @@
 import { PivotTableSettings } from "@/types/ChartTypes";
-import { PivotTableData, PivotHeader, PivotRow, PivotCell } from "../types";
+import {
+  PivotTableData,
+  PivotHeader,
+  PivotRow,
+  PivotCell,
+  CellKey,
+} from "../types";
 
 type AggregationFunction = (values: any[]) => number | string;
 
@@ -120,7 +126,11 @@ function generateCells(
       const value = aggregationFunctions[valueField.aggregation](values);
 
       cells.push({
-        key: `total-${valueField.field}`,
+        key: {
+          columnField: "total",
+          columnValue: "total",
+          valueField: valueField.field,
+        },
         value,
         rawValue: value,
         sourceRows: rowData,
@@ -154,7 +164,11 @@ function generateCells(
       const value = aggregationFunctions[valueField.aggregation](values);
 
       cells.push({
-        key: `${column.field}-${column.value}-${valueField.field}`,
+        key: {
+          columnField: column.field,
+          columnValue: column.value,
+          valueField: valueField.field,
+        },
         value,
         rawValue: value,
         sourceRows: columnData,

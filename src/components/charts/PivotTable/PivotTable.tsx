@@ -8,7 +8,8 @@ import { Filter as FilterIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { useGetLiveIds } from "../useGetLiveData";
-import { PivotCell, PivotHeader, PivotRow } from "./types";
+import { PivotCell, PivotHeader, PivotRow, CellKey } from "./types";
+import { applyFilter } from "@/hooks/applyFilter";
 
 type PivotTableProps = BaseChartProps & {
   settings: PivotTableSettings;
@@ -44,7 +45,7 @@ export function PivotTable({
     });
 
     // Create data array for pivot calculations
-    const data = liveIds.map((id) => {
+    const data = liveIds.map((id: string | number) => {
       const row: Record<string, any> = {};
       allFields.forEach((field) => {
         row[field] = fieldData[field][id];
@@ -89,7 +90,7 @@ export function PivotTable({
   );
 
   const handleCellClick = useCallback(
-    (cell: PivotCell, rowKey: string, colKey: string) => {
+    (cell: PivotCell, rowKey: string, colKey: CellKey) => {
       if (!cell.sourceRows) {
         return;
       }
@@ -105,10 +106,63 @@ export function PivotTable({
   const isValueFiltered = useCallback(
     (field: string, value: string | number) => {
       const currentFilters = settings.filters || [];
-      return currentFilters.some(
-        (f): f is ValueFilter =>
-          f.type === "value" && f.field === field && f.values.includes(value)
+      const fieldFilters = currentFilters.filter((f) => f.field === field);
+
+      // If no filters for this field, return false
+      if (fieldFilters.length === 0) {
+        return false;
+      }
+
+      // Check if the value matches any of the filters for this field
+      return fieldFilters.some((filter) => applyFilter(value, filter));
+    },
+    [settings.filters]
+  );
+
+  const isCellFiltered = useCallback(
+    (rowHeaders: PivotHeader[], cellKey: CellKey) => {
+      const currentFilters = settings.filters || [];
+
+      if (currentFilters.length === 0) {
+        return false;
+      }
+
+      // Get all row field filters
+      const rowFieldFilters = rowHeaders.map((header) => {
+        const fieldFilters = currentFilters.filter(
+          (f) => f.field === header.field
+        );
+        return {
+          header,
+          filters: fieldFilters,
+        };
+      });
+
+      // Check if any row header matches its field's filters
+      const hasRowFilters = rowFieldFilters.some((rf) => rf.filters.length > 0);
+      const rowMatches =
+        !hasRowFilters ||
+        rowFieldFilters.some(
+          ({ header, filters }) =>
+            filters.length > 0 &&
+            filters.some((filter) => applyFilter(header.value, filter))
+        );
+
+      // Get column filters
+      const columnFilters = currentFilters.filter(
+        (f) => f.field === cellKey.columnField
       );
+
+      // Check if column matches its filters
+      const hasColumnFilters = columnFilters.length > 0;
+      const columnMatches =
+        !hasColumnFilters ||
+        columnFilters.some((filter) =>
+          applyFilter(cellKey.columnValue, filter)
+        );
+
+      // Cell is highlighted if both row and column conditions are met
+      return rowMatches && columnMatches;
     },
     [settings.filters]
   );
@@ -260,10 +314,11 @@ export function PivotTable({
                 })}
                 {row.cells.map((cell: PivotCell) => (
                   <td
-                    key={cell.key}
+                    key={`${cell.key.columnField}-${cell.key.columnValue}${cell.key.valueField ? `-${cell.key.valueField}` : ""}`}
                     className={cn(
                       "border p-2 text-right",
-                      cell.sourceRows && "cursor-pointer hover:bg-muted/20"
+                      cell.sourceRows && "cursor-pointer hover:bg-muted/20",
+                      isCellFiltered(row.headers, cell.key) && "bg-yellow-50"
                     )}
                     onClick={() =>
                       cell.sourceRows &&

@@ -1,12 +1,11 @@
+import { applyFilter } from "@/hooks/applyFilter";
 import { IdType } from "@/providers/DataLayerProvider";
 import { BaseChartSettings, ChartDefinition, datum } from "@/types/ChartTypes";
+import { Filter } from "@/types/FilterTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { ChartBarBig } from "lucide-react";
 import { BarChart } from "./BarChart";
 import { BarChartSettingsPanel } from "./BarChartSettingsPanel";
-import { getRangeFilterForField } from "@/hooks/getAxisFilter";
-import { applyFilter } from "@/hooks/applyFilter";
-import { Filter, ValueFilter } from "@/types/FilterTypes";
 
 export interface BarChartSettings extends BaseChartSettings {
   type: "bar";
@@ -46,26 +45,15 @@ export const barChartDefinition: ChartDefinition<BarChartSettings> = {
   ) => {
     const dataHash = fieldGetter(settings.field);
 
-    const valueFilter = settings.filters.find(
-      (f): f is ValueFilter => f.type === "value" && f.field === settings.field
-    );
-
-    const rangeFilter = getRangeFilterForField(
-      settings.filters,
-      settings.field
+    const filter = settings.filters.find(
+      (f): f is Filter => f.field === settings.field
     );
 
     return (d: IdType) => {
       const value = dataHash[d];
 
-      if (valueFilter) {
-        if (!applyFilter(value, valueFilter)) {
-          return false;
-        }
-      }
-
-      if (rangeFilter) {
-        if (!applyFilter(value, rangeFilter)) {
+      if (filter) {
+        if (!applyFilter(value, filter)) {
           return false;
         }
       }

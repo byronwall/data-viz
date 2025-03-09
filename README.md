@@ -103,3 +103,4 @@ Will be updated when done...
 - Animate the `update charts` button - make it smaller too
 - Row chart min and max bar sizes don't seem to be working
 - Lorenz bar chart for Run ID is missing a bar?
+- Pivot table needs supports for sorting and filtering

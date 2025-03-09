@@ -1,6 +1,6 @@
 import { datum, Filter } from "@/types/FilterTypes";
 
-export const applyFilter = (value: datum, filter: Filter): boolean => {
+export function applyFilter(value: datum, filter: Filter): boolean {
   switch (filter.type) {
     case "value":
       return filter.values.includes(value as string | number);
@@ -28,4 +28,4 @@ export const applyFilter = (value: datum, filter: Filter): boolean => {
   }
 
   return false;
-};
+}

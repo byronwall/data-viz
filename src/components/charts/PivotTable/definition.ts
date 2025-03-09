@@ -92,23 +92,37 @@ export const pivotTableDefinition: ChartDefinition<PivotTableSettings> = {
     const noMatchingFilters =
       rowFilters.length === 0 && columnFilters.length === 0;
 
+    console.log("rowFilters", rowFilters);
+    console.log("columnFilters", columnFilters);
+
     return (d: IdType) => {
       if (noMatchingFilters) {
         return true;
       }
 
       // Check if the data point matches all active row filters
-      const matchesRowFilters = rowFilters.every((filter) => {
+      const matchesRowFilters = rowFilters.some((filter) => {
         const dataHash = fieldGetter(filter.field);
         return applyFilter(dataHash[d], filter);
       });
 
       // Check if the data point matches all active column filters
-      const matchesColumnFilters = columnFilters.every((filter) => {
+      const matchesColumnFilters = columnFilters.some((filter) => {
         const dataHash = fieldGetter(filter.field);
         return applyFilter(dataHash[d], filter);
       });
 
+      // if there are only row filters, return true if any row filter matches
+      if (columnFilters.length === 0) {
+        return matchesRowFilters;
+      }
+
+      // if there are only column filters, return true if any column filter matches
+      if (rowFilters.length === 0) {
+        return matchesColumnFilters;
+      }
+
+      // if there are both row and column filters, return true if any row or column filter matches
       return matchesRowFilters && matchesColumnFilters;
     };
   },

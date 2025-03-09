@@ -1,9 +1,10 @@
-import { BaseChartProps, datum, RowChartSettings } from "@/types/ChartTypes";
+import { BaseChartProps, RowChartSettings } from "@/types/ChartTypes";
 
-import { rowChartPureFilter } from "@/hooks/rowChartPureFilter";
 import { useColorScales } from "@/hooks/useColorScales";
+import { applyFilter } from "@/hooks/applyFilter";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
+import { datum, Filter, ValueFilter } from "@/types/FilterTypes";
 import { scaleBand, scaleLinear } from "d3-scale";
 import { useEffect, useMemo } from "react";
 import { BaseChart } from "../BaseChart";
@@ -20,7 +21,11 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
 
   const updateChart = useDataLayer((s) => s.updateChart);
 
-  const filters = settings.filterValues?.values ?? [];
+  const valueFilter = settings.filters.find(
+    (f: Filter): f is ValueFilter =>
+      f.type === "value" && f.field === settings.field
+  );
+  const filterValues = valueFilter?.values ?? [];
 
   const handleBarClick = (label: datum) => {
     if (label === "Others") {
@@ -28,12 +33,25 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
       return;
     }
 
-    const newValues = filters.includes(label)
-      ? filters.filter((f) => f !== label)
-      : [...filters, label];
+    const newValues = filterValues.includes(label)
+      ? filterValues.filter((f) => f !== label)
+      : [...filterValues, label];
+
+    // Create new filters array with updated value filter
+    const newFilters = settings.filters.filter(
+      (f) => f.type !== "value" || f.field !== settings.field
+    );
+
+    if (newValues.length > 0) {
+      newFilters.push({
+        type: "value",
+        field: settings.field,
+        values: newValues,
+      });
+    }
 
     updateChart(settings.id, {
-      filterValues: { values: newValues },
+      filters: newFilters,
     });
   };
 
@@ -46,7 +64,7 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
   const { displayCounts } = useMemo(() => {
     const countMap = new Map<datum, number>();
     data.forEach((value) => {
-      const key = value;
+      const key = value === undefined ? "undefined" : value;
       countMap.set(key, (countMap.get(key) || 0) + 1);
     });
 
@@ -150,9 +168,13 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
         <g className="select-none">
           {/* Bars */}
           {displayCounts.map(({ label, count }) => {
-            const isFiltered = rowChartPureFilter(filters, label);
+            let isFiltered = true;
+            if (valueFilter) {
+              isFiltered = applyFilter(label, valueFilter);
+            }
+
             const color =
-              filters.length > 0 && !isFiltered
+              valueFilter && !isFiltered
                 ? "rgb(156 163 175)" // gray-400 for filtered out points
                 : getColorForValue(
                     settings.colorScaleId,

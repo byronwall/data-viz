@@ -11,6 +11,7 @@ export async function parseCsvData(
       complete: (results: Papa.ParseResult<DatumObject>) => {
         resolve(results.data);
       },
+      dynamicTyping: true,
     };
 
     try {

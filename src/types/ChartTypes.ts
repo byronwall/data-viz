@@ -1,4 +1,5 @@
 import { IdType } from "@/providers/DataLayerProvider";
+import { Filter } from "./FilterTypes";
 
 import {
   BarChart,
@@ -11,6 +12,10 @@ import {
 } from "lucide-react";
 import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
 import { BarChartSettings } from "@/components/charts/BarChart/definition";
+import { PivotTableSettings } from "@/components/charts/PivotTable/definition";
+import { ScatterPlotSettings } from "@/components/charts/ScatterPlot/definition";
+import { DataTableSettings } from "@/components/charts/DataTable/definition";
+import { SummaryTableSettings } from "@/components/charts/SummaryTable/definition";
 
 export const CHART_TYPES = [
   { value: "row", label: "Row Chart", icon: BarChartBig },
@@ -54,7 +59,7 @@ export interface GridFacetSettings extends BaseFacetSettings {
 export interface WrapFacetSettings extends BaseFacetSettings {
   type: "wrap";
   rowVariable: string;
-  columnCount: number; // Number of columns in wrap mode
+  columnCount: number;
 }
 
 // Discriminated union for facet settings
@@ -87,6 +92,7 @@ export interface BaseChartSettings {
   xAxis: AxisSettings;
   yAxis: AxisSettings;
   margin: MarginSettings;
+  filters: Filter[];
 
   // Label settings
   xAxisLabel: string;
@@ -99,88 +105,15 @@ export interface RowChartSettings extends BaseChartSettings {
   type: "row";
   minRowHeight: number;
   maxRowHeight: number;
-
-  filterValues: FilterValues;
-}
-
-export interface ScatterChartSettings extends BaseChartSettings {
-  type: "scatter";
-  xField: string;
-  yField: string;
-
-  xFilterRange: FilterRange;
-  yFilterRange: FilterRange;
-}
-
-export interface PivotTableSettings extends BaseChartSettings {
-  type: "pivot";
-  rowFields: string[];
-  columnFields: string[];
-  valueFields: Array<{
-    field: string;
-    aggregation:
-      | "sum"
-      | "count"
-      | "avg"
-      | "min"
-      | "max"
-      | "median"
-      | "mode"
-      | "stddev"
-      | "variance"
-      | "countUnique"
-      | "singleValue";
-    formula?: string;
-    label?: string;
-  }>;
-  showTotals: {
-    row: boolean;
-    column: boolean;
-    grand: boolean;
-  };
-  dateBinning?: {
-    field: string;
-    type: "day" | "month" | "year";
-  };
-  rowFilterValues?: Record<string, Array<string | number>>;
-  columnFilterValues?: Record<string, Array<string | number>>;
-}
-
-export interface SummaryChartSettings extends BaseChartSettings {
-  type: "summary";
-  // Inherits all base settings
-  // No additional settings needed as this is a simple display
-}
-
-export interface DataTableSettings extends BaseChartSettings {
-  type: "data-table";
-  columns: Array<{
-    id: string;
-    field: string;
-    width?: number;
-  }>;
-  pageSize: number;
-  currentPage: number;
-  sortBy?: string;
-  sortDirection: "asc" | "desc";
-  filters: Record<
-    string,
-    {
-      value: string;
-      operator: "contains" | "equals" | "startsWith" | "endsWith";
-    }
-  >;
-  globalSearch: string;
-  tableHeight: number;
 }
 
 export type ChartSettings =
   | RowChartSettings
   | BarChartSettings
-  | ScatterChartSettings
+  | ScatterPlotSettings
   | PivotTableSettings
   | ThreeDScatterSettings
-  | SummaryChartSettings
+  | SummaryTableSettings
   | DataTableSettings;
 
 export interface ChartSettingsPanelProps<
@@ -200,33 +133,6 @@ export interface BaseChartProps<
 }
 
 export type datum = string | number | boolean | undefined;
-
-export type FilterValues = {
-  values: datum[];
-};
-
-export type FilterRange = {
-  min: datum;
-  max: datum;
-} | null;
-
-export type Filter2dRange = {
-  x: FilterRange;
-  y: FilterRange;
-} | null;
-
-export type ScatterFilter = {
-  xFilterRange: FilterRange;
-  yFilterRange: FilterRange;
-};
-
-export type Filter =
-  | FilterValues
-  | FilterRange
-  | Filter2dRange
-  | ScatterFilter
-  | undefined;
-
 export interface ChartDefinition<
   TSettings extends BaseChartSettings = BaseChartSettings,
 > {

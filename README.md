@@ -14,7 +14,6 @@ Will be updated when done...
 
 ### Core data viz
 
-- Rework how filters are stored in chart settings - need a single `filters` object that can hold different values - rework examples - get switch logic out of various files like `src/hooks/getFilterValues.ts`
 - Top level filter + steps = ability to quickly segment data and work on slices
 - Add a filter summary + filter controller
 - Improve handling of times stamps
@@ -102,3 +101,13 @@ Will be updated when done...
 
 - Animate the `update charts` button - make it smaller too
 - Row chart min and max bar sizes don't seem to be working
+- Lorenz bar chart for Run ID is missing a bar?
+- Pivot table needs supports for sorting and filtering
+
+### Related to Data Table
+
+- Should include option to filter only the component or to filter the entire crossfilter context
+- Global search seems to not work - does it search all fields? or just those involved in the display
+- Add highlighter when using the global search or other filters
+- Show filter as a row below the header - add option to change type
+- Add a popover for quick access to advanced filtering options

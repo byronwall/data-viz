@@ -1,4 +1,6 @@
-export const categoricalChartSettings = {
+import { SavedDataStructure } from "@/types/SavedDataTypes";
+
+export const categoricalChartSettings: SavedDataStructure = {
   charts: [
     {
       title: "Row Chart: ",
@@ -20,7 +22,7 @@ export const categoricalChartSettings = {
       yGridLines: 5,
       minRowHeight: 30,
       maxRowHeight: 50,
-      filterValues: { values: [] },
+      filters: [],
       id: "2437c0f2-6ad0-4b1d-a47b-445ab15056b1",
       colorScaleId: "ffca7163-a613-40fe-9a1c-a85e6bdc37b9",
       colorField: "Category",
@@ -44,9 +46,10 @@ export const categoricalChartSettings = {
       xGridLines: 5,
       yGridLines: 5,
       rowFields: ["Category", "Subcategory"],
-      columnFields: ["Rating"],
+      columnField: "Rating",
       valueFields: [{ field: "Category", aggregation: "count" }],
       showTotals: { row: false, column: false, grand: false },
+      filters: [],
       id: "7a345418-85b6-42d7-a86d-018cefe74d6e",
     },
     {
@@ -70,11 +73,10 @@ export const categoricalChartSettings = {
       yGridLines: 5,
       minRowHeight: 30,
       maxRowHeight: 30,
-      filterValues: { values: [] },
+      filters: [],
       id: "270bde24-5470-4f8b-8b74-f6e035279ce8",
       binCount: 10,
       forceString: false,
-      filterRange: null,
     },
   ],
   calculations: [],

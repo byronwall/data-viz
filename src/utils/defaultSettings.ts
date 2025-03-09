@@ -13,6 +13,7 @@ import {
   WrapFacetSettings,
 } from "@/types/ChartTypes";
 import { Vector3 } from "three";
+import { Filter } from "@/types/FilterTypes";
 
 export const DEFAULT_AXIS_SETTINGS: AxisSettings = {
   scaleType: "linear",
@@ -50,6 +51,7 @@ export const DEFAULT_CHART_SETTINGS: Omit<BaseChartSettings, "id"> = {
   yAxisLabel: "",
   xGridLines: 5,
   yGridLines: 5,
+  filters: [] as Filter[],
 };
 
 export const DEFAULT_PIVOT_SETTINGS: Omit<PivotTableSettings, "id"> = {
@@ -66,7 +68,7 @@ export const DEFAULT_ROW_SETTINGS: Omit<RowChartSettings, "id"> = {
   type: "row",
   minRowHeight: 30,
   maxRowHeight: 50,
-  filterValues: { values: [] },
+  filters: [],
 };
 
 export const DEFAULT_SCATTER_SETTINGS: Omit<ScatterChartSettings, "id"> = {
@@ -74,8 +76,7 @@ export const DEFAULT_SCATTER_SETTINGS: Omit<ScatterChartSettings, "id"> = {
   type: "scatter",
   xField: "",
   yField: "",
-  xFilterRange: null,
-  yFilterRange: null,
+  filters: [],
 };
 
 export const DEFAULT_3D_SCATTER_SETTINGS: Omit<ThreeDScatterSettings, "id"> = {
@@ -111,7 +112,7 @@ export const DEFAULT_DATA_TABLE_SETTINGS: Omit<DataTableSettings, "id"> = {
   pageSize: 10,
   currentPage: 1,
   sortDirection: "asc",
-  filters: {},
+  filters: [] as Filter[],
   globalSearch: "",
   tableHeight: 600,
 };

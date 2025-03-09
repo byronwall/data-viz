@@ -1,9 +1,9 @@
+import { getChartDefinition } from "@/charts/registry";
 import {
   CrossfilterWrapper,
   LiveItem,
   LiveItemMap,
 } from "@/hooks/CrossfilterWrapper";
-import { getEmptyFilterObj } from "@/hooks/getFilterValues";
 import {
   CalculationDefinition,
   CalculationManager,
@@ -13,13 +13,12 @@ import { ColorScaleType } from "@/types/ColorScaleTypes";
 import {
   GridSettings,
   SavedDataStructure,
-  ViewMetadata,
   SerializedColorScale,
+  ViewMetadata,
 } from "@/types/SavedDataTypes";
 import { saveProject } from "@/utils/localStorage";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";
-import { createSummaryChartSettings } from "@/types/createSummaryChartSettings";
 
 type DatumObject = { [key: string]: datum };
 export type { DatumObject };
@@ -275,7 +274,9 @@ const createDataLayerStore = <T extends DatumObject>(
       } = getDataAndCrossfilterWrapper(rawData, get().getColumnData);
 
       // Create default summary chart
-      const summaryChart = createSummaryChartSettings({
+      const definition = getChartDefinition("summary");
+
+      const summaryChart = definition.createDefaultSettings({
         x: 0,
         y: 0,
         w: 4,
@@ -337,12 +338,24 @@ const createDataLayerStore = <T extends DatumObject>(
         return;
       }
 
-      const updatedChart: ChartSettings = {
-        ...chart,
-        ...settings,
-      } as ChartSettings;
+      let updatedChart: ChartSettings;
 
-      crossfilterWrapper.updateChart(updatedChart);
+      if (id !== settings.id && settings.id) {
+        // goal here is to catch obvious problem where id has changed
+
+        // remove the old chart, add the new one
+        crossfilterWrapper.removeChart(chart);
+        crossfilterWrapper.addChart(settings as ChartSettings);
+
+        updatedChart = settings as ChartSettings;
+      } else {
+        updatedChart = {
+          ...chart,
+          ...settings,
+        } as ChartSettings;
+
+        crossfilterWrapper.updateChart(updatedChart);
+      }
       set((state) => ({
         charts: state.charts.map((chart) =>
           chart.id === id ? updatedChart : chart
@@ -381,14 +394,10 @@ const createDataLayerStore = <T extends DatumObject>(
     clearAllFilters: () => {
       const { charts, crossfilterWrapper } = get();
 
-      const newCharts = charts.map((chart) => {
-        const emptyFilter = getEmptyFilterObj(chart);
-
-        return {
-          ...chart,
-          ...emptyFilter,
-        };
-      }) as ChartSettings[];
+      const newCharts = charts.map((chart) => ({
+        ...chart,
+        filters: [],
+      })) as ChartSettings[];
 
       for (const chart of newCharts) {
         crossfilterWrapper.updateChart(chart);
@@ -403,11 +412,7 @@ const createDataLayerStore = <T extends DatumObject>(
 
     clearFilter: (chart) => {
       const { updateChart } = get();
-
-      const emptyFilter = getEmptyFilterObj(chart);
-      if (emptyFilter) {
-        updateChart(chart.id, emptyFilter);
-      }
+      updateChart(chart.id, { filters: [] });
     },
 
     getLiveItems: (chart) => {

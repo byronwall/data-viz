@@ -1,5 +1,6 @@
-import { PivotTableSettings } from "@/types/ChartTypes";
-import { PivotTableData, PivotHeader, PivotRow, PivotCell } from "../types";
+import { datum } from "@/types/FilterTypes";
+import { PivotCell, PivotHeader, PivotRow, PivotTableData } from "../types";
+import { PivotTableSettings } from "../definition";
 
 type AggregationFunction = (values: any[]) => number | string;
 
@@ -70,39 +71,23 @@ function flattenHeaders(headers: PivotHeader[]): PivotHeader[] {
   return result;
 }
 
-function generateHeaders(data: any[], fields: string[]): PivotHeader[] {
-  if (!fields.length) {
+function generateHeaders(data: any[], field: string): PivotHeader[] {
+  if (!field) {
     return [];
   }
 
-  // Pre-compute unique values for better performance
-  const uniqueValues = new Map<string, Set<any>>();
-  fields.forEach((field) => {
-    uniqueValues.set(field, new Set(data.map((d) => d[field])));
-  });
+  // Get unique values for the column field
+  const uniqueValues = new Set(data.map((d) => d[field]));
+  const values = Array.from(uniqueValues).sort();
 
-  function buildHeaderTree(depth: number): PivotHeader[] {
-    if (depth >= fields.length) {
-      return [];
-    }
-
-    const field = fields[depth];
-    const values = Array.from(uniqueValues.get(field) || []).sort();
-    return values.map((value) => {
-      const children = buildHeaderTree(depth + 1);
-      const span = children.length || 1;
-      return {
-        label: String(value),
-        field,
-        value,
-        children,
-        span,
-        depth,
-      };
-    });
-  }
-
-  return buildHeaderTree(0);
+  return values.map((value) => ({
+    label: String(value),
+    field,
+    value,
+    children: [],
+    span: 1,
+    depth: 0,
+  }));
 }
 
 function generateCells(
@@ -110,17 +95,20 @@ function generateCells(
   columnHeaders: PivotHeader[],
   valueFields: PivotTableSettings["valueFields"]
 ): PivotCell[] {
-  const flatColumns = flattenHeaders(columnHeaders);
   const cells: PivotCell[] = [];
 
   // If there are no columns defined, create a single cell for the total
-  if (flatColumns.length === 0) {
+  if (columnHeaders.length === 0) {
     for (const valueField of valueFields) {
       const values = rowData.map((d) => d[valueField.field]);
       const value = aggregationFunctions[valueField.aggregation](values);
 
       cells.push({
-        key: `total-${valueField.field}`,
+        key: {
+          columnField: "total",
+          columnValue: "total" as datum,
+          valueField: valueField.field,
+        },
         value,
         rawValue: value,
         sourceRows: rowData,
@@ -129,32 +117,20 @@ function generateCells(
     return cells;
   }
 
-  // Rest of the original function for when columns are defined
-  // Pre-compute column data filters for better performance
-  const columnFilters = flatColumns.map((column) => {
-    let current: PivotHeader | undefined = column;
-    const filters: Array<{ field: string; value: any }> = [];
-    while (current) {
-      filters.push({ field: current.field, value: current.value });
-      current = current.children?.[0];
-    }
-    return filters;
-  });
-
-  for (let colIndex = 0; colIndex < flatColumns.length; colIndex++) {
-    const column = flatColumns[colIndex];
-    const filters = columnFilters[colIndex];
-
-    const columnData = rowData.filter((d) =>
-      filters.every((f) => d[f.field] === f.value)
-    );
+  // Generate cells for each column header
+  for (const header of columnHeaders) {
+    const columnData = rowData.filter((d) => d[header.field] === header.value);
 
     for (const valueField of valueFields) {
       const values = columnData.map((d) => d[valueField.field]);
       const value = aggregationFunctions[valueField.aggregation](values);
 
       cells.push({
-        key: `${column.field}-${column.value}-${valueField.field}`,
+        key: {
+          columnField: header.field,
+          columnValue: header.value,
+          valueField: valueField.field,
+        },
         value,
         rawValue: value,
         sourceRows: columnData,
@@ -168,29 +144,39 @@ function generateCells(
 function generateRows(
   data: any[],
   rowFields: string[],
-  columnFields: string[],
+  columnField: string,
   valueFields: PivotTableSettings["valueFields"],
   showTotals: PivotTableSettings["showTotals"]
 ): PivotRow[] {
   const rows: PivotRow[] = [];
-  const columnHeaders = generateHeaders(data, columnFields);
+  const columnHeaders = generateHeaders(data, columnField);
 
   // Pre-compute row groups for better performance
   const rowGroups = new Map<string, any[]>();
   data.forEach((item) => {
-    const key = rowFields.map((field) => item[field]).join(":");
-    if (!rowGroups.has(key)) {
-      rowGroups.set(key, []);
+    // Create a composite key for grouping, but store the individual values
+    const keyString = rowFields.map((field) => item[field]).join(":");
+    if (!rowGroups.has(keyString)) {
+      rowGroups.set(keyString, []);
     }
-    rowGroups.get(key)!.push(item);
+    rowGroups.get(keyString)!.push(item);
   });
 
   // Generate rows
-  rowGroups.forEach((groupData, key) => {
-    const headers = key.split(":").map((value, index) => ({
-      label: String(value),
-      field: rowFields[index],
-      value,
+  rowGroups.forEach((groupData, keyString) => {
+    // Create properly typed keys and headers
+    const keys = rowFields.map((field, index) => {
+      const value = groupData[0][field];
+      return {
+        field,
+        value,
+      };
+    });
+
+    const headers = keys.map((key, index) => ({
+      label: String(key.value),
+      field: key.field,
+      value: key.value,
       span: 1,
       depth: index,
     }));
@@ -198,7 +184,7 @@ function generateRows(
     const cells = generateCells(groupData, columnHeaders, valueFields);
 
     rows.push({
-      key,
+      keys,
       headers,
       cells,
     });
@@ -211,11 +197,11 @@ export function calculatePivotData(
   data: any[],
   settings: PivotTableSettings
 ): PivotTableData {
-  const headers = generateHeaders(data, settings.columnFields);
+  const headers = generateHeaders(data, settings.columnField);
   const rows = generateRows(
     data,
     settings.rowFields,
-    settings.columnFields,
+    settings.columnField,
     settings.valueFields,
     settings.showTotals
   );

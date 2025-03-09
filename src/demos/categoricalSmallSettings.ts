@@ -18,6 +18,7 @@ export const categoricalSmallSettings = {
       yAxisLabel: "",
       xGridLines: 5,
       yGridLines: 5,
+      filters: [],
       id: "a4a09ac0-43bb-4c46-bd25-5ca0b1fd6a56",
     },
     {
@@ -53,7 +54,7 @@ export const categoricalSmallSettings = {
       pageSize: 10,
       currentPage: 1,
       sortConfig: [],
-      filters: {},
+      filters: [],
       groupBy: [],
       expandedGroups: {},
       selectedRows: {},

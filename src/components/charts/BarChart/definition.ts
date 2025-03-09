@@ -1,13 +1,7 @@
-import { barChartPureFilter } from "@/hooks/barChartPureFilter";
-import { getFilterObj } from "@/hooks/getFilterValues";
+import { applyFilter } from "@/hooks/applyFilter";
 import { IdType } from "@/providers/DataLayerProvider";
-import {
-  BaseChartSettings,
-  ChartDefinition,
-  FilterRange,
-  FilterValues,
-  datum,
-} from "@/types/ChartTypes";
+import { BaseChartSettings, ChartDefinition, datum } from "@/types/ChartTypes";
+import { Filter } from "@/types/FilterTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { ChartBarBig } from "lucide-react";
 import { BarChart } from "./BarChart";
@@ -16,11 +10,8 @@ import { BarChartSettingsPanel } from "./BarChartSettingsPanel";
 export interface BarChartSettings extends BaseChartSettings {
   type: "bar";
   binCount?: number;
-
   forceString?: boolean;
-
-  filterValues: FilterValues;
-  filterRange: FilterRange;
+  filters: Filter[];
 }
 
 export const barChartDefinition: ChartDefinition<BarChartSettings> = {
@@ -41,8 +32,7 @@ export const barChartDefinition: ChartDefinition<BarChartSettings> = {
     title: "Bar Chart",
     layout,
     margin: {},
-    filterValues: { values: [] },
-    filterRange: null,
+    filters: [],
   }),
 
   validateSettings: (settings) => {
@@ -54,8 +44,21 @@ export const barChartDefinition: ChartDefinition<BarChartSettings> = {
     fieldGetter: (name: string) => Record<IdType, datum>
   ) => {
     const dataHash = fieldGetter(settings.field);
-    const filters = getFilterObj(settings);
 
-    return (d: IdType) => barChartPureFilter(filters, dataHash[d]);
+    const filter = settings.filters.find(
+      (f): f is Filter => f.field === settings.field
+    );
+
+    return (d: IdType) => {
+      const value = dataHash[d];
+
+      if (filter) {
+        if (!applyFilter(value, filter)) {
+          return false;
+        }
+      }
+
+      return true;
+    };
   },
 };

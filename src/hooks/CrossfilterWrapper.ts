@@ -1,9 +1,10 @@
 import { getChartDefinition } from "@/charts/registry";
 import { IdType } from "@/providers/DataLayerProvider";
-import { ChartSettings, datum } from "@/types/ChartTypes";
+import { ChartSettings } from "@/types/ChartTypes";
 import crossfilter from "crossfilter2";
 import isEqual from "react-fast-compare";
-import { getFilterObj } from "./getFilterValues";
+
+type FieldValue = string | number | boolean | undefined;
 
 type ChartDimension<TData, TId extends IdType> = {
   dimension: crossfilter.Dimension<TData, TId>;
@@ -16,14 +17,14 @@ export class CrossfilterWrapper<T> {
   idFunction: (item: T) => IdType;
 
   // assume this gets set after creation
-  fieldGetter: (name: string) => Record<IdType, datum> = () => ({});
+  fieldGetter: (name: string) => Record<IdType, FieldValue> = () => ({});
 
   constructor(data: T[], idFunction: (item: T) => IdType) {
     this.ref = crossfilter(data);
     this.idFunction = idFunction;
   }
 
-  setFieldGetter(fieldGetter: (name: string) => Record<IdType, datum>) {
+  setFieldGetter(fieldGetter: (name: string) => Record<IdType, FieldValue>) {
     this.fieldGetter = fieldGetter;
   }
 
@@ -31,22 +32,25 @@ export class CrossfilterWrapper<T> {
     // check if the filters have changed
     const oldChart = this.charts.get(chart.id);
 
-    if (!oldChart) {
-      return;
-    }
-
-    const oldFilterValues = getFilterObj(oldChart.chart);
-    const newFilterValues = getFilterObj(chart);
-
-    if (!isEqual(oldFilterValues, newFilterValues)) {
+    // Compare filters directly
+    if (!isEqual(oldChart?.chart.filters, chart.filters)) {
       this.updateChartFilters(chart);
     }
 
     // need to update internal defs so diff works again
-    this.charts.set(chart.id, {
-      ...oldChart,
-      chart,
-    });
+
+    if (!oldChart) {
+      // will hit this case if we did an update and should have done remove/add
+      this.charts.set(chart.id, {
+        dimension: this.ref.dimension(this.idFunction),
+        chart,
+      });
+    } else {
+      this.charts.set(chart.id, {
+        ...oldChart,
+        chart,
+      });
+    }
   }
 
   updateChartFilters(chart: ChartSettings) {

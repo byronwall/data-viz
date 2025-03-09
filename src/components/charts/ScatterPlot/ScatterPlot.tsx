@@ -1,13 +1,14 @@
-import { scatterChartPureFilter } from "@/hooks/scatterChartPureFilter";
 import { useColorScales } from "@/hooks/useColorScales";
+import { getRangeFilterForField } from "@/hooks/getAxisFilter";
+import { applyFilter } from "@/hooks/applyFilter";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
 import { ScaleLinear, scaleLinear } from "d3-scale";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { BaseChart } from "../BaseChart";
-import { useGetLiveData } from "../useGetLiveData";
 import { useGetColumnDataForIds } from "../useGetColumnData";
+import { useGetLiveData } from "../useGetLiveData";
 
 // Configurable constant for axis buffer (10%)
 const AXIS_BUFFER_PERCENTAGE = 0.1;
@@ -170,19 +171,24 @@ export function ScatterPlot({
     // Draw points using the same scales as BaseChart
     ctx.translate(60, 20); // Match the margin from BaseChart
 
+    const xFilter = getRangeFilterForField(settings.filters, settings.xField);
+    const yFilter = getRangeFilterForField(settings.filters, settings.yField);
+
     for (let i = 0; i < xValues.length; i++) {
       const x = xScale(xValues[i]);
       const y = yScale(yValues[i]);
 
-      const isFiltered = scatterChartPureFilter(
-        settings.xFilterRange,
-        settings.yFilterRange,
-        xValues[i],
-        yValues[i]
-      );
+      // Apply both x and y filters
+      let isFiltered = true;
+      if (xFilter) {
+        isFiltered = applyFilter(xValues[i], xFilter);
+      }
+      if (yFilter) {
+        isFiltered = applyFilter(yValues[i], yFilter);
+      }
 
       ctx.fillStyle =
-        (settings.xFilterRange || settings.yFilterRange) && !isFiltered
+        (xFilter || yFilter) && !isFiltered
           ? "rgb(156 163 175)" // gray-400 for filtered out points
           : getColorForValue(
               settings.colorScaleId,
@@ -198,8 +204,7 @@ export function ScatterPlot({
     yValues,
     settings.xField,
     settings.yField,
-    settings.xFilterRange,
-    settings.yFilterRange,
+    settings.filters,
     settings.colorScaleId,
     width,
     height,
@@ -213,8 +218,9 @@ export function ScatterPlot({
     (extent: [[number, number], [number, number]] | null) => {
       if (!extent) {
         updateChart(settings.id, {
-          xFilterRange: null,
-          yFilterRange: null,
+          filters: settings.filters.filter(
+            (f) => f.field !== settings.xField && f.field !== settings.yField
+          ),
         });
         return;
       }
@@ -227,18 +233,40 @@ export function ScatterPlot({
       const yStart = yScale.invert(y0);
       const yEnd = yScale.invert(y1);
 
+      // Create new filters array with updated x and y filters
+      const newFilters = settings.filters.filter(
+        (f) => f.field !== settings.xField && f.field !== settings.yField
+      );
+
+      // Add x filter
+      newFilters.push({
+        type: "range",
+        field: settings.xField,
+        min: Math.min(xStart, xEnd),
+        max: Math.max(xStart, xEnd),
+      });
+
+      // Add y filter
+      newFilters.push({
+        type: "range",
+        field: settings.yField,
+        min: Math.min(yStart, yEnd),
+        max: Math.max(yStart, yEnd),
+      });
+
       updateChart(settings.id, {
-        xFilterRange: {
-          min: Math.min(xStart, xEnd),
-          max: Math.max(xStart, xEnd),
-        },
-        yFilterRange: {
-          min: Math.min(yStart, yEnd),
-          max: Math.max(yStart, yEnd),
-        },
+        filters: newFilters,
       });
     },
-    [settings.id, updateChart, xScale, yScale]
+    [
+      settings.id,
+      settings.xField,
+      settings.yField,
+      settings.filters,
+      updateChart,
+      xScale,
+      yScale,
+    ]
   );
 
   return (

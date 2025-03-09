@@ -1,7 +1,7 @@
+import { TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
 import { DataTableSettings } from "@/types/ChartTypes";
-import { TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { useDataLayer } from "@/providers/DataLayerProvider";
-import { IdType } from "@/providers/DataLayerProvider";
+import { isTextFilter } from "@/types/FilterTypes";
 
 interface DataTableBodyProps {
   settings: DataTableSettings;
@@ -89,29 +89,40 @@ export function DataTableBody({ settings }: DataTableBodyProps) {
     ? filteredData.filter((row) => matchesGlobalSearch(row, globalSearch))
     : filteredData;
 
-  // Apply filters
-  const filteredByColumns = Object.entries(filters).reduce(
-    (acc, [columnId, filter]) => {
-      return acc.filter((row) => {
-        const value = String(row[columnId]).toLowerCase();
-        const filterValue = filter.value.toLowerCase();
+  // Apply column filters
+  const filteredByColumns = searchFilteredData.filter((row) => {
+    // Get all text filters
+    const textFilters = filters.filter(isTextFilter);
 
-        switch (filter.operator) {
-          case "contains":
-            return value.includes(filterValue);
-          case "equals":
-            return value === filterValue;
-          case "startsWith":
-            return value.startsWith(filterValue);
-          case "endsWith":
-            return value.endsWith(filterValue);
-          default:
-            return true;
-        }
-      });
-    },
-    searchFilteredData
-  );
+    // If no text filters, return true
+    if (textFilters.length === 0) {
+      return true;
+    }
+
+    // Check if row matches all text filters
+    return textFilters.every((filter) => {
+      const cellValue = row[filter.field];
+      if (cellValue === null || cellValue === undefined) {
+        return false;
+      }
+
+      const value = String(cellValue).toLowerCase();
+      const filterValue = filter.value.toLowerCase();
+
+      switch (filter.operator) {
+        case "contains":
+          return value.includes(filterValue);
+        case "equals":
+          return value === filterValue;
+        case "startsWith":
+          return value.startsWith(filterValue);
+        case "endsWith":
+          return value.endsWith(filterValue);
+        default:
+          return true;
+      }
+    });
+  });
 
   // Sort data if sortBy is set
   const sortedData = sortBy

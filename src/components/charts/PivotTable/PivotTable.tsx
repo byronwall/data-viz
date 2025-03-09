@@ -2,12 +2,15 @@ import { calculatePivotData } from "@/components/charts/PivotTable/utils/calcula
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { BaseChartProps, PivotTableSettings } from "@/types/ChartTypes";
-import { Search } from "lucide-react";
+import { BaseChartProps } from "@/types/ChartTypes";
+import { Filter, ValueFilter, datum } from "@/types/FilterTypes";
+import { Filter as FilterIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { useGetLiveIds } from "../useGetLiveData";
-import { PivotCell, PivotHeader, PivotRow } from "./types";
+import { PivotCell, PivotHeader, PivotRow, CellKey, RowKey } from "./types";
+import { applyFilter } from "@/hooks/applyFilter";
+import { PivotTableSettings } from "./definition";
 
 type PivotTableProps = BaseChartProps & {
   settings: PivotTableSettings;
@@ -32,7 +35,7 @@ export function PivotTable({
     // Gather all required fields
     const allFields = new Set([
       ...settings.rowFields,
-      ...settings.columnFields,
+      settings.columnField,
       ...settings.valueFields.map((f) => f.field),
     ]);
 
@@ -43,7 +46,7 @@ export function PivotTable({
     });
 
     // Create data array for pivot calculations
-    const data = liveIds.map((id) => {
+    const data = liveIds.map((id: string | number) => {
       const row: Record<string, any> = {};
       allFields.forEach((field) => {
         row[field] = fieldData[field][id];
@@ -55,36 +58,42 @@ export function PivotTable({
   }, [facetIds, allLiveIds, settings, getColumnData]);
 
   const handleFilterClick = useCallback(
-    (field: string, value: string | number) => {
-      const isRowField = settings.rowFields.includes(field);
-      const filterKey = isRowField ? "rowFilterValues" : "columnFilterValues";
-      const currentFilters = settings[filterKey] || {};
-      const fieldFilters = currentFilters[field] || [];
+    (field: string, value: datum) => {
+      const currentFilters = settings.filters || [];
+      const existingFilterIndex = currentFilters.findIndex(
+        (f): f is ValueFilter =>
+          f.type === "value" &&
+          f.field === field &&
+          f.values.includes(value as string | number)
+      );
 
-      // Toggle the value in the filter
-      const newFieldFilters = fieldFilters.includes(value)
-        ? fieldFilters.filter((v) => v !== value)
-        : [...fieldFilters, value];
-
-      const newFilters = {
-        ...currentFilters,
-        [field]: newFieldFilters,
-      };
+      let newFilters: Filter[];
+      if (existingFilterIndex >= 0) {
+        // Remove the filter if it exists
+        newFilters = [
+          ...currentFilters.slice(0, existingFilterIndex),
+          ...currentFilters.slice(existingFilterIndex + 1),
+        ];
+      } else {
+        // Add new filter
+        const newFilter: ValueFilter = {
+          type: "value",
+          field,
+          values: [value as string | number],
+        };
+        newFilters = [...currentFilters, newFilter];
+      }
 
       updateChart(settings.id, {
         ...settings,
-        [filterKey]: newFilters,
+        filters: newFilters,
       });
-
-      toast(
-        `Filter ${newFieldFilters.length ? "applied" : "removed"} for ${field}`
-      );
     },
     [settings, updateChart]
   );
 
   const handleCellClick = useCallback(
-    (cell: PivotCell, rowKey: string, colKey: string) => {
+    (cell: PivotCell, rowKeys: RowKey[], colKey: CellKey) => {
       if (!cell.sourceRows) {
         return;
       }
@@ -97,37 +106,101 @@ export function PivotTable({
     []
   );
 
+  const isValueFiltered = useCallback(
+    (field: string, value: datum) => {
+      const currentFilters = settings.filters || [];
+      const fieldFilters = currentFilters.filter((f) => f.field === field);
+
+      // If no filters for this field, return false
+      if (fieldFilters.length === 0) {
+        return false;
+      }
+
+      // Check if the value matches any of the filters for this field
+      return fieldFilters.some((filter) => applyFilter(value, filter));
+    },
+    [settings.filters]
+  );
+
+  const isCellFiltered = useCallback(
+    (rowHeaders: PivotHeader[], cellKey: CellKey) => {
+      const currentFilters = settings.filters || [];
+
+      if (currentFilters.length === 0) {
+        return false;
+      }
+
+      // Get all row field filters
+      const rowFieldFilters = rowHeaders.map((header) => {
+        const fieldFilters = currentFilters.filter(
+          (f) => f.field === header.field
+        );
+        return {
+          header,
+          filters: fieldFilters,
+        };
+      });
+
+      // Check if any row header matches its field's filters
+      const hasRowFilters = rowFieldFilters.some((rf) => rf.filters.length > 0);
+      const rowMatches =
+        !hasRowFilters ||
+        rowFieldFilters.some(
+          ({ header, filters }) =>
+            filters.length > 0 &&
+            filters.some((filter) => applyFilter(header.value, filter))
+        );
+
+      // Get column filters
+      const columnFilters = currentFilters.filter(
+        (f) => f.field === cellKey.columnField
+      );
+
+      // Check if column matches its filters
+      const hasColumnFilters = columnFilters.length > 0;
+      const columnMatches =
+        !hasColumnFilters ||
+        columnFilters.some((filter) =>
+          applyFilter(cellKey.columnValue, filter)
+        );
+
+      // Cell is highlighted if both row and column conditions are met
+      return rowMatches && columnMatches;
+    },
+    [settings.filters]
+  );
+
   const renderHeader = useCallback(
     (header: PivotHeader) => {
+      const isFiltered = isValueFiltered(header.field, header.value);
       return (
         <th
           key={`${header.field}-${header.value}`}
-          colSpan={header.span * settings.valueFields.length}
+          colSpan={settings.valueFields.length}
           className={cn(
-            "border p-2 bg-muted/50",
-            header.depth === 0 && "font-semibold"
+            "border p-2",
+            header.depth === 0 && "font-semibold",
+            isFiltered ? "bg-yellow-100" : "bg-muted/50"
           )}
         >
-          <div className="flex items-center justify-between gap-2">
-            <span>{header.label}</span>
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
               className="h-6 w-6"
               onClick={() => handleFilterClick(header.field, header.value)}
             >
-              <Search className="h-4 w-4" />
+              <FilterIcon className="h-4 w-4" />
             </Button>
+            <span>{header.label}</span>
           </div>
         </th>
       );
     },
-    [handleFilterClick, settings.valueFields.length]
+    [handleFilterClick, settings.valueFields.length, isValueFiltered]
   );
 
   // Calculate the number of header rows needed
-  const headerDepth =
-    settings.columnFields.length + (settings.columnFields.length > 0 ? 1 : 0);
 
   return (
     <div
@@ -145,7 +218,7 @@ export function PivotTable({
                 return (
                   <th
                     key={field}
-                    rowSpan={headerDepth || 1}
+                    rowSpan={settings.columnField ? 2 : 1}
                     className={cn(
                       "border p-2 bg-muted/50 font-semibold sticky",
                       // Add z-index that decreases as we go right to ensure proper layering
@@ -163,7 +236,7 @@ export function PivotTable({
               })}
 
               {/* Column headers or value fields if no columns */}
-              {settings.columnFields.length === 0
+              {!settings.columnField
                 ? settings.valueFields.map((valueField) => (
                     <th
                       key={valueField.field}
@@ -176,40 +249,39 @@ export function PivotTable({
                 : pivotData.headers.map(renderHeader)}
             </tr>
 
-            {/* Value field headers when column fields exist */}
-            {settings.columnFields.length > 0 && (
+            {/* Value field headers when column field exists */}
+            {settings.columnField && (
               <tr>
-                {/* Add empty cells for row headers to maintain alignment */}
-
-                {pivotData.headers.flatMap((header: PivotHeader) =>
-                  Array(header.span)
-                    .fill(null)
-                    .map((_, i) =>
-                      settings.valueFields.map((valueField) => (
-                        <th
-                          key={`${header.field}-${header.value}-${valueField.field}-${i}`}
-                          className="border p-2 bg-muted/50"
-                        >
-                          {valueField.label ||
-                            `${valueField.field} (${valueField.aggregation})`}
-                        </th>
-                      ))
-                    )
+                {pivotData.headers.map((header) =>
+                  settings.valueFields.map((valueField) => (
+                    <th
+                      key={`${header.field}-${header.value}-${valueField.field}`}
+                      className="border p-2 bg-muted/50"
+                    >
+                      {valueField.label ||
+                        `${valueField.field} (${valueField.aggregation})`}
+                    </th>
+                  ))
                 )}
               </tr>
             )}
           </thead>
           <tbody>
             {pivotData.rows.map((row: PivotRow) => (
-              <tr key={row.key}>
+              <tr key={row.keys.map((k) => `${k.field}-${k.value}`).join(":")}>
                 {row.headers.map((header: PivotHeader, i) => {
                   // Calculate cumulative width of previous headers
                   const leftPosition = i * 150; // Using fixed width for consistency
+                  const isFiltered = isValueFiltered(
+                    header.field,
+                    header.value
+                  );
                   return (
                     <th
                       key={`${header.field}-${header.value}`}
                       className={cn(
-                        "border p-2 text-left font-normal sticky bg-white",
+                        "border p-2 text-left font-normal sticky",
+                        isFiltered ? "bg-yellow-100" : "bg-white",
                         // Add z-index that decreases as we go right to ensure proper layering
                         `z-[${20 - i}]`
                       )}
@@ -219,20 +291,33 @@ export function PivotTable({
                         maxWidth: "150px",
                       }}
                     >
-                      {header.label}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() =>
+                            handleFilterClick(header.field, header.value)
+                          }
+                        >
+                          <FilterIcon className="h-4 w-4" />
+                        </Button>
+                        <span>{header.label}</span>
+                      </div>
                     </th>
                   );
                 })}
                 {row.cells.map((cell: PivotCell) => (
                   <td
-                    key={cell.key}
+                    key={`${cell.key.columnField}-${cell.key.columnValue}${cell.key.valueField ? `-${cell.key.valueField}` : ""}`}
                     className={cn(
                       "border p-2 text-right",
-                      cell.sourceRows && "cursor-pointer hover:bg-muted/20"
+                      cell.sourceRows && "cursor-pointer hover:bg-muted/20",
+                      isCellFiltered(row.headers, cell.key) && "bg-yellow-50"
                     )}
                     onClick={() =>
                       cell.sourceRows &&
-                      handleCellClick(cell, row.key, cell.key)
+                      handleCellClick(cell, row.keys, cell.key)
                     }
                   >
                     {typeof cell.value === "number"

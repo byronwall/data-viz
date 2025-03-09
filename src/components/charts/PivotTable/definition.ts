@@ -3,7 +3,7 @@ import { ValueFilter } from "@/types/FilterTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { Table } from "lucide-react";
 
-import { applyFilter } from "@/hooks/useFilters";
+import { applyFilter } from "@/hooks/applyFilter";
 import { IdType } from "@/providers/DataLayerProvider";
 import { PivotTable } from "./PivotTable";
 import { PivotTableSettingsPanel } from "./PivotTableSettingsPanel";

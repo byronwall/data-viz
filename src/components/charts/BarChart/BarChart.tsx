@@ -1,5 +1,6 @@
 import { useColorScales } from "@/hooks/useColorScales";
-import { applyFilter, getAxisFilter } from "@/hooks/useFilters";
+import { getAxisFilter } from "@/hooks/getAxisFilter";
+import { applyFilter } from "@/hooks/applyFilter";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { BaseChartProps } from "@/types/ChartTypes";

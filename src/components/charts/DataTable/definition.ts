@@ -6,7 +6,7 @@ import { DataTable } from "./DataTable";
 import { DataTableSettingsPanel } from "./DataTableSettingsPanel";
 import { IdType } from "@/providers/DataLayerProvider";
 import { Filter, TextFilter } from "@/types/FilterTypes";
-import { applyFilter } from "@/hooks/useFilters";
+import { applyFilter } from "@/hooks/applyFilter";
 
 export interface DataTableSettings extends BaseChartSettings {
   type: "data-table";

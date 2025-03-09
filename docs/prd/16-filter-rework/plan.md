@@ -373,7 +373,7 @@ interface BarChartSettings extends BaseChartSettings {
 - [x] Update BarChartSettings
 
   - [x] Replace filterValues and filterRange with unified filters array
-  - [ ] Update bar chart component to use applyFilter
+  - [x] Update bar chart component to use applyFilter
   - [x] Update bar chart definition
 
 - [x] Update DataTableSettings

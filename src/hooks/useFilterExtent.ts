@@ -1,7 +1,7 @@
 import { ChartSettings } from "@/types/ChartTypes";
 import { ScaleLinear } from "d3-scale";
 import { useCallback, useMemo } from "react";
-import { getAxisFilter } from "./useFilters";
+import { getAxisFilter } from "./getAxisFilter";
 import { RangeFilter } from "@/types/FilterTypes";
 
 interface UseFilterExtentProps {

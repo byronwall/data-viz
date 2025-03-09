@@ -1,4 +1,4 @@
-import { Filter, RangeFilter, datum } from "@/types/FilterTypes";
+import { datum, Filter } from "@/types/FilterTypes";
 
 export const applyFilter = (value: datum, filter: Filter): boolean => {
   switch (filter.type) {
@@ -28,14 +28,4 @@ export const applyFilter = (value: datum, filter: Filter): boolean => {
   }
 
   return false;
-};
-
-// Chart-specific helpers
-export const getAxisFilter = (
-  filters: Filter[],
-  field: string
-): RangeFilter | undefined => {
-  return filters.find(
-    (f): f is RangeFilter => f.type === "range" && f.field === field
-  );
 };

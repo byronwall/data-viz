@@ -1,7 +1,7 @@
 import { BaseChartProps, RowChartSettings } from "@/types/ChartTypes";
 
 import { useColorScales } from "@/hooks/useColorScales";
-import { applyFilter } from "@/hooks/useFilters";
+import { applyFilter } from "@/hooks/applyFilter";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
 import { datum, Filter, ValueFilter } from "@/types/FilterTypes";

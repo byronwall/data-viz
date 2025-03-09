@@ -1,7 +1,7 @@
 import { BarChart } from "lucide-react";
 
 import { RowChart } from "@/components/charts/RowChart/RowChart";
-import { applyFilter } from "@/hooks/useFilters";
+import { applyFilter } from "@/hooks/applyFilter";
 import { IdType } from "@/providers/DataLayerProvider";
 import {
   ChartDefinition,

@@ -4,7 +4,8 @@ import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { ChartBarBig } from "lucide-react";
 import { BarChart } from "./BarChart";
 import { BarChartSettingsPanel } from "./BarChartSettingsPanel";
-import { applyFilter, getAxisFilter } from "@/hooks/useFilters";
+import { getAxisFilter } from "@/hooks/getAxisFilter";
+import { applyFilter } from "@/hooks/applyFilter";
 import { Filter, ValueFilter } from "@/types/FilterTypes";
 
 export interface BarChartSettings extends BaseChartSettings {

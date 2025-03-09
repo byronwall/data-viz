@@ -21,7 +21,6 @@ Will be updated when done...
 - Create a `HeatMap` that shows a matrix of values - default to counts
 - Create a `BoxPlot` that shows a box plot of the data
 - Need a `color legend` type that can be rendered
-- Need a `Markdown text` type that can be rendered
 
 ### Packaging and usages
 

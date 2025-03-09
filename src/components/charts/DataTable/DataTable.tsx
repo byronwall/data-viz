@@ -1,8 +1,9 @@
-import { BaseChartProps, DataTableSettings } from "@/types/ChartTypes";
+import { BaseChartProps } from "@/types/ChartTypes";
 import { DataTableBody } from "./DataTableBody";
 import { DataTableHeader } from "./DataTableHeader";
 import { DataTablePagination } from "./DataTablePagination";
 import { DataTableToolbar } from "./DataTableToolbar";
+import { DataTableSettings } from "./definition";
 
 interface DataTableProps extends BaseChartProps {
   settings: DataTableSettings;

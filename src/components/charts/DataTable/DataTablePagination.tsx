@@ -1,4 +1,3 @@
-import { DataTableSettings } from "@/types/ChartTypes";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -7,8 +6,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useDataLayer } from "@/providers/DataLayerProvider";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DataTableSettings } from "./definition";
 
 interface DataTablePaginationProps {
   settings: DataTableSettings;

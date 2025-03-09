@@ -1,8 +1,8 @@
-import { DataTableSettings } from "@/types/ChartTypes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download, Search } from "lucide-react";
 import { useDataLayer } from "@/providers/DataLayerProvider";
+import { DataTableSettings } from "./definition";
 
 interface DataTableToolbarProps {
   settings: DataTableSettings;

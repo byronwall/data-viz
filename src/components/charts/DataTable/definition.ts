@@ -2,11 +2,11 @@ import { BaseChartSettings, ChartDefinition, datum } from "@/types/ChartTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { Table } from "lucide-react";
 
+import { applyFilter } from "@/hooks/applyFilter";
+import { IdType } from "@/providers/DataLayerProvider";
+import { Filter } from "@/types/FilterTypes";
 import { DataTable } from "./DataTable";
 import { DataTableSettingsPanel } from "./DataTableSettingsPanel";
-import { IdType } from "@/providers/DataLayerProvider";
-import { Filter, TextFilter } from "@/types/FilterTypes";
-import { applyFilter } from "@/hooks/applyFilter";
 
 export interface DataTableSettings extends BaseChartSettings {
   type: "data-table";

@@ -8,10 +8,11 @@ import { markdownDefinition } from "@/components/charts/Markdown/definition";
 import {
   BaseChartSettings,
   ChartDefinition,
-  ChartType,
   ChartSettings,
 } from "@/types/ChartTypes";
 import { rowChartDefinition } from "../components/charts/RowChart/definition";
+
+type ChartType = string;
 
 export interface ChartRegistry {
   register<TSettings extends BaseChartSettings>(

@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { DataTableSettings } from "@/types/ChartTypes";
+import { Filter, TextFilter } from "@/types/FilterTypes";
 import { ChevronDown, ChevronUp, Filter as FilterIcon } from "lucide-react";
 import React, { useState } from "react";
 import { ColumnFilter } from "./components/ColumnFilter";
-import { Filter, TextFilter } from "@/types/FilterTypes";
+import { DataTableSettings } from "./definition";
 
 interface DataTableHeaderProps {
   settings: DataTableSettings;

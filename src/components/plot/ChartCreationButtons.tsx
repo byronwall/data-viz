@@ -5,12 +5,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CHART_TYPES } from "@/types/ChartTypes";
 import { Plus } from "lucide-react";
 import { useCreateCharts } from "@/hooks/useCreateCharts";
+import { chartRegistry } from "@/charts/registry";
 
 export function ChartCreationButtons() {
   const { createChart } = useCreateCharts();
+  const chartDefinitions = chartRegistry.getAll();
 
   return (
     <DropdownMenu>
@@ -21,16 +22,16 @@ export function ChartCreationButtons() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        {CHART_TYPES.map((chartType) => {
-          const Icon = chartType.icon;
+        {chartDefinitions.map((chartDef) => {
+          const Icon = chartDef.icon;
           return (
             <DropdownMenuItem
-              key={chartType.value}
-              onClick={() => createChart(chartType.value, "")}
+              key={chartDef.type}
+              onClick={() => createChart(chartDef.type, "")}
               className="flex items-center gap-2"
             >
               <Icon className="h-4 w-4" />
-              {chartType.label}
+              {chartDef.name}
             </DropdownMenuItem>
           );
         })}

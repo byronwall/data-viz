@@ -27,7 +27,7 @@ export function GlobalAlertDialog() {
           <AlertDialogCancel onClick={() => closeAlert(false)}>
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction onClick={() => closeAlert(true)}>
+          <AlertDialogAction onClick={() => closeAlert(true)} autoFocus>
             Continue
           </AlertDialogAction>
         </AlertDialogFooter>

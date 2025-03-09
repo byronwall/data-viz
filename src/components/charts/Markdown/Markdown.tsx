@@ -1,11 +1,9 @@
-import { BaseChartProps } from "@/types/ChartTypes";
 import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
+import { BaseChartProps } from "@/types/ChartTypes";
 import { MarkdownSettings } from "./definition";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { Save } from "lucide-react";
+import { useState } from "react";
 
 export const Markdown = ({
   settings,

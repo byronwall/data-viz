@@ -15,7 +15,7 @@ export const markdownDefinition: ChartDefinition<MarkdownSettings> = {
   icon: FileText,
 
   component: Markdown,
-  settingsPanel: null,
+  settingsPanel: () => null,
 
   createDefaultSettings: (layout) => ({
     ...DEFAULT_CHART_SETTINGS,

@@ -1,42 +1,14 @@
 import { IdType } from "@/providers/DataLayerProvider";
 import { Filter } from "./FilterTypes";
 
-import {
-  BarChart,
-  BarChartBig,
-  ScatterChart,
-  Table,
-  Box,
-  Info,
-  LucideIcon,
-  FileText,
-} from "lucide-react";
-import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
 import { BarChartSettings } from "@/components/charts/BarChart/definition";
+import { DataTableSettings } from "@/components/charts/DataTable/definition";
+import { MarkdownSettings } from "@/components/charts/Markdown/definition";
 import { PivotTableSettings } from "@/components/charts/PivotTable/definition";
 import { ScatterPlotSettings } from "@/components/charts/ScatterPlot/definition";
-import { DataTableSettings } from "@/components/charts/DataTable/definition";
 import { SummaryTableSettings } from "@/components/charts/SummaryTable/definition";
-import { MarkdownSettings } from "@/components/charts/Markdown/definition";
-
-export const CHART_TYPES = [
-  { value: "row", label: "Row Chart", icon: BarChartBig },
-  { value: "bar", label: "Bar Chart", icon: BarChart },
-  { value: "scatter", label: "Scatter Plot", icon: ScatterChart },
-  { value: "pivot", label: "Pivot Table", icon: Table },
-  { value: "3d-scatter", label: "3D Scatter", icon: Box },
-  { value: "summary", label: "Summary", icon: Info },
-  { value: "data-table", label: "Data Table", icon: Table },
-  { value: "markdown", label: "Markdown", icon: FileText },
-] as const;
-
-export type ChartType = (typeof CHART_TYPES)[number]["value"];
-
-export interface ChartTypeOption {
-  value: ChartType;
-  label: string;
-  icon: React.ElementType;
-}
+import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
+import { LucideIcon } from "lucide-react";
 
 export interface ChartLayout {
   x: number;
@@ -86,7 +58,7 @@ export interface MarginSettings {
 export interface BaseChartSettings {
   id: string;
   title: string;
-  type: ChartType;
+  type: string;
   field: string;
   layout: ChartLayout;
   colorScaleId: string | undefined;
@@ -141,14 +113,14 @@ export interface ChartDefinition<
   TSettings extends BaseChartSettings = BaseChartSettings,
 > {
   // Metadata
-  type: ChartType;
+  type: string;
   name: string;
   description: string;
   icon: LucideIcon;
 
   // Component References
   component: React.ComponentType<BaseChartProps<TSettings>>;
-  settingsPanel: React.ComponentType<ChartSettingsPanelProps<TSettings>> | null;
+  settingsPanel: React.ComponentType<ChartSettingsPanelProps<TSettings>>;
 
   // Settings Management
   createDefaultSettings: (layout: ChartLayout, field?: string) => TSettings;

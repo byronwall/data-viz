@@ -1,7 +1,8 @@
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { IdType, useDataLayer } from "@/providers/DataLayerProvider";
-import { DataTableSettings } from "@/types/ChartTypes";
+
 import { isTextFilter } from "@/types/FilterTypes";
+import { DataTableSettings } from "./definition";
 
 interface DataTableBodyProps {
   settings: DataTableSettings;

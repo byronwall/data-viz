@@ -180,8 +180,7 @@ export function PivotTable({
             isFiltered ? "bg-yellow-100" : "bg-muted/50"
           )}
         >
-          <div className="flex items-center justify-between gap-2">
-            <span>{header.label}</span>
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -190,6 +189,7 @@ export function PivotTable({
             >
               <FilterIcon className="h-4 w-4" />
             </Button>
+            <span>{header.label}</span>
           </div>
         </th>
       );
@@ -296,8 +296,7 @@ export function PivotTable({
                         maxWidth: "150px",
                       }}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span>{header.label}</span>
+                      <div className="flex items-center  gap-2">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -308,6 +307,7 @@ export function PivotTable({
                         >
                           <FilterIcon className="h-4 w-4" />
                         </Button>
+                        <span>{header.label}</span>
                       </div>
                     </th>
                   );

@@ -12,6 +12,10 @@ import {
 } from "lucide-react";
 import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
 import { BarChartSettings } from "@/components/charts/BarChart/definition";
+import { PivotTableSettings } from "@/components/charts/PivotTable/definition";
+import { ScatterPlotSettings } from "@/components/charts/ScatterPlot/definition";
+import { DataTableSettings } from "@/components/charts/DataTable/definition";
+import { SummaryTableSettings } from "@/components/charts/SummaryTable/definition";
 
 export const CHART_TYPES = [
   { value: "row", label: "Row Chart", icon: BarChartBig },
@@ -103,74 +107,13 @@ export interface RowChartSettings extends BaseChartSettings {
   maxRowHeight: number;
 }
 
-export interface ScatterChartSettings extends BaseChartSettings {
-  type: "scatter";
-  xField: string;
-  yField: string;
-}
-
-export interface PivotTableSettings extends BaseChartSettings {
-  type: "pivot";
-  rowFields: string[];
-  columnFields: string[];
-  valueFields: Array<{
-    field: string;
-    aggregation:
-      | "sum"
-      | "count"
-      | "avg"
-      | "min"
-      | "max"
-      | "median"
-      | "mode"
-      | "stddev"
-      | "variance"
-      | "countUnique"
-      | "singleValue";
-    formula?: string;
-    label?: string;
-  }>;
-  showTotals: {
-    row: boolean;
-    column: boolean;
-    grand: boolean;
-  };
-  dateBinning?: {
-    field: string;
-    type: "day" | "month" | "year";
-  };
-  rowFilterValues?: Record<string, Array<string | number>>;
-  columnFilterValues?: Record<string, Array<string | number>>;
-}
-
-export interface SummaryChartSettings extends BaseChartSettings {
-  type: "summary";
-  // Inherits all base settings
-  // No additional settings needed as this is a simple display
-}
-
-export interface DataTableSettings extends BaseChartSettings {
-  type: "data-table";
-  columns: Array<{
-    id: string;
-    field: string;
-    width?: number;
-  }>;
-  pageSize: number;
-  currentPage: number;
-  sortBy?: string;
-  sortDirection: "asc" | "desc";
-  globalSearch: string;
-  tableHeight: number;
-}
-
 export type ChartSettings =
   | RowChartSettings
   | BarChartSettings
-  | ScatterChartSettings
+  | ScatterPlotSettings
   | PivotTableSettings
   | ThreeDScatterSettings
-  | SummaryChartSettings
+  | SummaryTableSettings
   | DataTableSettings;
 
 export interface ChartSettingsPanelProps<

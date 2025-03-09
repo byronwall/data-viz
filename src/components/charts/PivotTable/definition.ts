@@ -11,7 +11,7 @@ import { PivotTableSettingsPanel } from "./PivotTableSettingsPanel";
 export interface PivotTableSettings extends BaseChartSettings {
   type: "pivot";
   rowFields: string[];
-  columnFields: string[];
+  columnField: string;
   valueFields: Array<{
     field: string;
     aggregation:
@@ -57,7 +57,7 @@ export const pivotTableDefinition: ChartDefinition<PivotTableSettings> = {
     layout,
     margin: {},
     rowFields: [],
-    columnFields: [],
+    columnField: "",
     valueFields: [{ field: "", aggregation: "count" }],
     showTotals: {
       row: true,
@@ -70,7 +70,7 @@ export const pivotTableDefinition: ChartDefinition<PivotTableSettings> = {
   validateSettings: (settings) => {
     return (
       settings.rowFields.length > 0 ||
-      settings.columnFields.length > 0 ||
+      settings.columnField !== "" ||
       settings.valueFields.length > 0
     );
   },
@@ -86,7 +86,7 @@ export const pivotTableDefinition: ChartDefinition<PivotTableSettings> = {
     );
     const columnFilters = settings.filters.filter(
       (f): f is ValueFilter =>
-        f.type === "value" && settings.columnFields.includes(f.field)
+        f.type === "value" && f.field === settings.columnField
     );
 
     const noMatchingFilters =

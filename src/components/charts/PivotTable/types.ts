@@ -15,33 +15,27 @@ export interface CellKey {
   valueField?: string;
 }
 
+export interface PivotCell {
+  key: CellKey;
+  value: datum;
+  rawValue: datum;
+  sourceRows?: any[];
+}
+
 export interface RowKey {
   field: string;
   value: datum;
-}
-
-export interface PivotCell {
-  key: CellKey;
-  value: number | string | null;
-  rawValue?: any;
-  sourceRows?: any[];
 }
 
 export interface PivotRow {
   keys: RowKey[];
   headers: PivotHeader[];
   cells: PivotCell[];
-  subtotal?: boolean;
 }
 
 export interface PivotTableData {
   headers: PivotHeader[];
   rows: PivotRow[];
-  totals?: {
-    row: Record<string, number | string>;
-    column: Record<string, number | string>;
-    grand: Record<string, number | string>;
-  };
 }
 
 export interface FilterState {

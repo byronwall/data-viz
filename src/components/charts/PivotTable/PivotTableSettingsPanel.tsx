@@ -4,6 +4,7 @@ import MultiSelect, { Option } from "@/components/ui/multi-select";
 import { ChartSettingsPanelProps } from "@/types/ChartTypes";
 import { PivotTableSettings } from "./definition";
 import { useColumnNames } from "./useColumnNames";
+import { FieldSelector } from "@/components/FieldSelector";
 
 const AGGREGATION_OPTIONS = [
   { label: "Sum", value: "sum" },
@@ -52,19 +53,12 @@ export function PivotTableSettingsPanel({
       </div>
 
       <div className="space-y-2">
-        <Label>Column Fields</Label>
         <div className="max-w-[400px]">
-          <MultiSelect
-            options={fieldOptions}
-            value={settings.columnFields.map((f) => ({
-              label: f,
-              value: f,
-            }))}
-            onChange={(values: Option[]) =>
-              onSettingsChange({
-                ...settings,
-                columnFields: values.map((v) => v.value),
-              })
+          <FieldSelector
+            label="Column Field"
+            value={settings.columnField}
+            onChange={(value) =>
+              onSettingsChange({ ...settings, columnField: value })
             }
           />
         </div>

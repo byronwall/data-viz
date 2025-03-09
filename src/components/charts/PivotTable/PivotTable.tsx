@@ -2,7 +2,7 @@ import { calculatePivotData } from "@/components/charts/PivotTable/utils/calcula
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDataLayer } from "@/providers/DataLayerProvider";
-import { BaseChartProps, PivotTableSettings } from "@/types/ChartTypes";
+import { BaseChartProps } from "@/types/ChartTypes";
 import { Filter, ValueFilter, datum } from "@/types/FilterTypes";
 import { Filter as FilterIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useGetLiveIds } from "../useGetLiveData";
 import { PivotCell, PivotHeader, PivotRow, CellKey, RowKey } from "./types";
 import { applyFilter } from "@/hooks/applyFilter";
+import { PivotTableSettings } from "./definition";
 
 type PivotTableProps = BaseChartProps & {
   settings: PivotTableSettings;
@@ -34,7 +35,7 @@ export function PivotTable({
     // Gather all required fields
     const allFields = new Set([
       ...settings.rowFields,
-      ...settings.columnFields,
+      settings.columnField,
       ...settings.valueFields.map((f) => f.field),
     ]);
 
@@ -175,7 +176,7 @@ export function PivotTable({
       return (
         <th
           key={`${header.field}-${header.value}`}
-          colSpan={header.span * settings.valueFields.length}
+          colSpan={settings.valueFields.length}
           className={cn(
             "border p-2",
             header.depth === 0 && "font-semibold",
@@ -200,8 +201,6 @@ export function PivotTable({
   );
 
   // Calculate the number of header rows needed
-  const headerDepth =
-    settings.columnFields.length + (settings.columnFields.length > 0 ? 1 : 0);
 
   return (
     <div
@@ -219,7 +218,7 @@ export function PivotTable({
                 return (
                   <th
                     key={field}
-                    rowSpan={headerDepth || 1}
+                    rowSpan={settings.columnField ? 2 : 1}
                     className={cn(
                       "border p-2 bg-muted/50 font-semibold sticky",
                       // Add z-index that decreases as we go right to ensure proper layering
@@ -237,7 +236,7 @@ export function PivotTable({
               })}
 
               {/* Column headers or value fields if no columns */}
-              {settings.columnFields.length === 0
+              {!settings.columnField
                 ? settings.valueFields.map((valueField) => (
                     <th
                       key={valueField.field}
@@ -250,25 +249,19 @@ export function PivotTable({
                 : pivotData.headers.map(renderHeader)}
             </tr>
 
-            {/* Value field headers when column fields exist */}
-            {settings.columnFields.length > 0 && (
+            {/* Value field headers when column field exists */}
+            {settings.columnField && (
               <tr>
-                {/* Add empty cells for row headers to maintain alignment */}
-
-                {pivotData.headers.flatMap((header: PivotHeader) =>
-                  Array(header.span)
-                    .fill(null)
-                    .map((_, i) =>
-                      settings.valueFields.map((valueField) => (
-                        <th
-                          key={`${header.field}-${header.value}-${valueField.field}-${i}`}
-                          className="border p-2 bg-muted/50"
-                        >
-                          {valueField.label ||
-                            `${valueField.field} (${valueField.aggregation})`}
-                        </th>
-                      ))
-                    )
+                {pivotData.headers.map((header) =>
+                  settings.valueFields.map((valueField) => (
+                    <th
+                      key={`${header.field}-${header.value}-${valueField.field}`}
+                      className="border p-2 bg-muted/50"
+                    >
+                      {valueField.label ||
+                        `${valueField.field} (${valueField.aggregation})`}
+                    </th>
+                  ))
                 )}
               </tr>
             )}

@@ -1,4 +1,6 @@
-export const categoricalChartSettings = {
+import { SavedDataStructure } from "@/types/SavedDataTypes";
+
+export const categoricalChartSettings: SavedDataStructure = {
   charts: [
     {
       title: "Row Chart: ",
@@ -44,7 +46,7 @@ export const categoricalChartSettings = {
       xGridLines: 5,
       yGridLines: 5,
       rowFields: ["Category", "Subcategory"],
-      columnFields: ["Rating"],
+      columnField: "Rating",
       valueFields: [{ field: "Category", aggregation: "count" }],
       showTotals: { row: false, column: false, grand: false },
       filters: [],

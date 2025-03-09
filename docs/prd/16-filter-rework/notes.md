@@ -1,9 +1,5 @@
 ## Filter rework notes
 
-### Pivot Table
-
-- Pivot table row header needs to use the raw value with type and not a string
-
 ### Related to Data Table
 
 - Should include option to filter only the component or to filter the entire crossfilter context

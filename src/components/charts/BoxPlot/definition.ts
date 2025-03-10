@@ -5,6 +5,7 @@ import { BoxPlot } from "./BoxPlot";
 import { BoxPlotSettingsPanel } from "./BoxPlotSettingsPanel";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { applyFilter } from "@/hooks/applyFilter";
+import { BoxPlotIcon } from "./BoxPlotIcon";
 
 export interface BoxPlotStyleSettings {
   boxFill: string;
@@ -36,7 +37,7 @@ export const boxPlotDefinition: ChartDefinition<BoxPlotSettings> = {
   type: "boxplot",
   name: "Box Plot",
   description: "Display distribution of values with quartiles and outliers",
-  icon: Box,
+  icon: BoxPlotIcon,
 
   component: BoxPlot,
   settingsPanel: BoxPlotSettingsPanel,

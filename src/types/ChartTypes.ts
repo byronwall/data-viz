@@ -118,7 +118,7 @@ export interface ChartDefinition<
   type: string;
   name: string;
   description: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
 
   // Component References
   component: React.ComponentType<BaseChartProps<TSettings>>;

@@ -44,7 +44,11 @@ export function BoxPlot({
   const liveData = useGetLiveData(settings, settings.field, facetIds);
 
   // Get color field data if specified
-  const colorFieldData = useGetColumnDataForIds(settings.colorField ?? "");
+  const colorFieldData = useGetLiveData(
+    settings,
+    settings.colorField,
+    facetIds
+  );
   const hasColorField = !!settings.colorField;
 
   // Chart dimensions
@@ -135,14 +139,21 @@ export function BoxPlot({
       );
       const autoBandwidth = 1.06 * stdDev * Math.pow(data.length, -0.2);
 
-      const bandwidth = settings.violinBandwidth ?? autoBandwidth;
+      const bandwidth = settings.autoBandwidth
+        ? autoBandwidth
+        : settings.violinBandwidth;
 
       return {
         group,
         kde: calculateKernelDensity(data, bandwidth),
       };
     });
-  }, [groupedData, settings.violinOverlay, settings.violinBandwidth]);
+  }, [
+    settings.violinOverlay,
+    settings.autoBandwidth,
+    settings.violinBandwidth,
+    groupedData,
+  ]);
 
   // Create scales
   const xScale = useMemo(() => {
@@ -493,25 +504,50 @@ export function BoxPlot({
                 {settings.violinOverlay && kde && (
                   <g>
                     <path
-                      d={createPath([
-                        [boxWidth / 2, yScale(kde[0][0])] as [number, number],
-                        ...kde.map(
-                          ([x, y]) =>
-                            [boxWidth / 2 + y * boxWidth * 0.4, yScale(x)] as [
-                              number,
-                              number,
-                            ]
-                        ),
-                        ...kde
-                          .reverse()
-                          .map(
-                            ([x, y]) =>
+                      d={createPath(
+                        settings.beeSwarmOverlay
+                          ? // If bee swarm is enabled, only show left half of violin
+                            [
+                              [boxWidth / 2, yScale(kde[0][0])] as [
+                                number,
+                                number,
+                              ],
+                              ...kde.map(
+                                ([x, y]) =>
+                                  [
+                                    boxWidth / 2 - y * boxWidth * 0.4,
+                                    yScale(x),
+                                  ] as [number, number]
+                              ),
                               [
-                                boxWidth / 2 - y * boxWidth * 0.4,
-                                yScale(x),
-                              ] as [number, number]
-                          ),
-                      ])}
+                                boxWidth / 2,
+                                yScale(kde[kde.length - 1][0]),
+                              ] as [number, number],
+                            ]
+                          : // Otherwise show full violin
+                            [
+                              [boxWidth / 2, yScale(kde[0][0])] as [
+                                number,
+                                number,
+                              ],
+                              ...kde.map(
+                                ([x, y]) =>
+                                  [
+                                    boxWidth / 2 + y * boxWidth * 0.4,
+                                    yScale(x),
+                                  ] as [number, number]
+                              ),
+                              ...kde
+                                .reverse()
+                                .map(
+                                  ([x, y]) =>
+                                    [
+                                      boxWidth / 2 - y * boxWidth * 0.4,
+                                      yScale(x),
+                                    ] as [number, number]
+                                ),
+                            ]
+                      )}
                       fill={boxColor}
                       fillOpacity={0.2}
                       stroke={boxColor}
@@ -524,9 +560,14 @@ export function BoxPlot({
                 {/* Bee swarm overlay */}
                 {settings.beeSwarmOverlay && beeSwarmPositions && (
                   <g>
-                    {beeSwarmPositions.map(([x, y]) => (
+                    {beeSwarmPositions.map(([x, y], i) => (
                       <circle
-                        cx={x}
+                        key={i}
+                        cx={
+                          settings.violinOverlay
+                            ? boxWidth / 2 + Math.abs(x)
+                            : boxWidth / 2 + x
+                        }
                         cy={yScale(y)}
                         r={2}
                         fill={boxColor}

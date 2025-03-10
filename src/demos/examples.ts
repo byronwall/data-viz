@@ -1,10 +1,11 @@
 import { demoSettings } from "@/demos/lorenz";
 import { boxPlotSettings } from "./boxPlotSettings";
 import { SavedDataStructure } from "@/types/SavedDataTypes";
-import { BarChart3, LucideIcon } from "lucide-react";
+import { BarChart3, LucideIcon, Palette } from "lucide-react";
 import { categoricalChartSettings } from "./categoricalChartSettings";
 import { basicNumbersSettings } from "./basicNumbersSettings";
 import { categoricalSmallSettings } from "./categoricalSmallSettings";
+import { colorLegendSettings } from "./colorLegendSettings";
 
 export interface ExampleData {
   id: string;
@@ -39,6 +40,14 @@ export const examples: ExampleData[] = [
     icon: BarChart3,
     data: "/data-viz/categorical_medium.csv",
     savedData: categoricalChartSettings,
+  },
+  {
+    id: "color-legend",
+    title: "Color Legend",
+    description: "Color Legend",
+    icon: Palette,
+    data: "/data-viz/categorical_medium.csv",
+    savedData: colorLegendSettings,
   },
   {
     id: "basic-numbers",

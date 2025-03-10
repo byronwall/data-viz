@@ -8,6 +8,7 @@ import { PivotTableSettings } from "@/components/charts/PivotTable/definition";
 import { ScatterPlotSettings } from "@/components/charts/ScatterPlot/definition";
 import { SummaryTableSettings } from "@/components/charts/SummaryTable/definition";
 import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
+import { BoxPlotSettings } from "@/components/charts/BoxPlot/definition";
 import { LucideIcon } from "lucide-react";
 
 export interface ChartLayout {
@@ -90,7 +91,8 @@ export type ChartSettings =
   | ThreeDScatterSettings
   | SummaryTableSettings
   | DataTableSettings
-  | MarkdownSettings;
+  | MarkdownSettings
+  | BoxPlotSettings;
 
 export interface ChartSettingsPanelProps<
   TSettings extends BaseChartSettings = BaseChartSettings,
@@ -116,7 +118,7 @@ export interface ChartDefinition<
   type: string;
   name: string;
   description: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
 
   // Component References
   component: React.ComponentType<BaseChartProps<TSettings>>;

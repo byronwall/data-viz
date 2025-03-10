@@ -22,3 +22,4 @@
 
 - When creating toasts, use `sonner` via `import { toast } from "sonner"` and `toast("Event has been created.")`. The relevant providers are in place.
 - For alert dialogs, use `useAlertStore` via `import { useAlertStore } from "@/stores/alertStore"`. DO NOT USE `confirm`. DO NOT import `AlertDialog`
+- Use the `NumericInputEnter` component for numeric inputs. DO NOT USE `input` with `type="number"`

@@ -14,13 +14,12 @@ Will be updated when done...
 
 ### Core data viz
 
-- Top level filter + steps = ability to quickly segment data and work on slices
-- Add a filter summary + filter controller
-- Improve handling of times stamps
-- Create a `LineChart` that favors plotting time series data with a line
 - Create a `HeatMap` that shows a matrix of values - default to counts
-- Create a `BoxPlot` that shows a box plot of the data
 - Need a `color legend` type that can be rendered
+- Create a `LineChart` that favors plotting time series data with a line
+- Improve handling of times stamps
+- Add a filter summary + filter controller
+- Top level filter + steps = ability to quickly segment data and work on slices
 
 ### Packaging and usages
 
@@ -111,3 +110,5 @@ Will be updated when done...
 - Lorenz bar chart for Run ID is missing a bar?
 - Pivot table needs supports for sorting and filtering
 - Remove the `ChartTypes` array - infer completely from the registry
+- Consider tracking the mouse pos on the scale? -- implement across all charts
+- Need an axis label for the x and y axis - this should be handled globally - the chart settings should be an override - pass in the field for each chart

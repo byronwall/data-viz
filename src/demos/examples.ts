@@ -1,4 +1,5 @@
 import { demoSettings } from "@/demos/lorenz";
+import { boxPlotSettings } from "./boxPlotSettings";
 import { SavedDataStructure } from "@/types/SavedDataTypes";
 import { BarChart3, LucideIcon } from "lucide-react";
 import { categoricalChartSettings } from "./categoricalChartSettings";
@@ -22,6 +23,14 @@ export const examples: ExampleData[] = [
     icon: BarChart3,
     data: "/data-viz/lorenz_3d_small.csv",
     savedData: demoSettings,
+  },
+  {
+    id: "box-plot",
+    title: "Box Plot",
+    description: "Box Plot",
+    icon: BarChart3,
+    data: "/data-viz/correlated_medium.csv",
+    savedData: boxPlotSettings,
   },
   {
     id: "categorical-charts",

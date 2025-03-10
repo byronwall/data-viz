@@ -111,3 +111,4 @@ Will be updated when done...
 - Lorenz bar chart for Run ID is missing a bar?
 - Pivot table needs supports for sorting and filtering
 - Remove the `ChartTypes` array - infer completely from the registry
+- Consider tracking the mouse pos on the scale? -- implement across all charts

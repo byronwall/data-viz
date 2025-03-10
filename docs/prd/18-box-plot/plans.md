@@ -7,6 +7,7 @@
 1. `BoxPlot.tsx` - Main component for rendering box plots and variants
 2. `BoxPlotSettingsPanel.tsx` - Settings panel component
 3. `definition.ts` - Type definitions and chart registration
+4. `boxPlotCalculations.ts` - Statistical calculations for quartiles, outliers, etc.
 
 ### Utilities
 
@@ -136,64 +137,140 @@ export function calculateBeeSwarmPositions(
 }
 ```
 
-## Status
+## Implementation Phases
 
-### Phase 1: Core Box Plot
+### Phase 1: Core Type Definitions and Chart Registry
 
-- [ ] Type Definitions
+- [x] Create interfaces in definition.ts
+  - [x] Define style settings
+  - [x] Set up chart registration
+- [x] Create chart definition
+- [x] Register with chart system
+- [x] Add to chart creation UI
+- [x] Add to chart registry in `src/charts/registry.ts`
+- [x] Ensure proper type integration with existing chart system
 
-  - [ ] Create interfaces in definition.ts
-  - [ ] Define style settings
-  - [ ] Set up chart registration
+### Phase 2: Statistical Functions
 
-- [ ] Statistical Functions
-  - [ ] Quartile calculations
-  - [ ] Whisker calculations
-  - [ ] Outlier detection
+- [x] Implement core statistical functions
+  - [x] Quartile calculations
+  - [x] Whisker calculations
+  - [x] Outlier detection
+- [ ] Add group-by functionality
+  - [ ] Modify `calculateBoxPlotStats` to handle grouped data
+  - [ ] Calculate statistics per group
+  - [ ] Test with sample data
+- [ ] Implement advanced statistical features
+  - [ ] KDE calculations for violin plots
+  - [ ] Point positioning algorithm for bee swarm
 
-### Phase 2: Base Implementation
+### Phase 3: Base Box Plot Implementation
 
-- [ ] BoxPlot Component
-  - [ ] Data processing
-  - [ ] Scale generation
-  - [ ] Box rendering
-  - [ ] Whisker rendering
-  - [ ] Outlier rendering
-  - [ ] Axis integration
-  - [ ] Tooltip support
+- [x] BoxPlot Component
+  - [x] Data processing
+  - [x] Scale generation
+  - [x] Box rendering
+  - [x] Whisker rendering
+  - [x] Outlier rendering
+  - [x] Axis integration
+  - [x] Tooltip support
+- [x] Add color field support
+  - [x] Group data by color field
+  - [x] Position multiple boxes
+  - [ ] Apply color scale
+  - [x] Handle axis scaling for multiple groups
 
-### Phase 3: Variants
+### Phase 4: Plot Variants
 
-- [ ] Violin Plot Overlay
+- [x] Violin Plot Overlay
+  - [x] KDE calculations
+  - [x] Violin shape rendering
+  - [x] Integration with base plot
+- [x] Bee Swarm Overlay
+  - [x] Point positioning algorithm
+  - [x] Point rendering
+  - [x] Integration with base plot
 
-  - [ ] KDE calculations
-  - [ ] Violin shape rendering
-  - [ ] Integration with base plot
+### Phase 5: Settings Panel and UI
 
-- [ ] Bee Swarm Overlay
-  - [ ] Point positioning algorithm
-  - [ ] Point rendering
-  - [ ] Integration with base plot
-
-### Phase 4: Settings Panel
-
-- [ ] BoxPlotSettingsPanel
-  - [ ] Basic field selection
-  - [ ] Whisker type selection
-  - [ ] Style controls
-  - [ ] Overlay toggles
+- [x] Basic Settings Panel
+  - [x] Basic field selection
+  - [x] Whisker type selection
+  - [x] Style controls
+  - [x] Overlay toggles
+- [ ] Advanced Settings
+  - [x] Add color field selection
+  - [x] Add color scale controls
+  - [x] Update existing controls for group support
+  - [x] Add advanced styling controls
+  - [x] Add tooltips with detailed statistics
 
 ## Current Progress
 
-- Initial plan created
-- Interface definitions drafted
+- [x] Core box plot functionality
+  - [x] Basic box plot rendering
+  - [x] Statistical calculations
+  - [x] Basic settings panel
+  - [x] Integration with faceting system
+  - [x] Filtering support
+  - [x] Group-by functionality
+  - [x] Tooltips with detailed statistics
 
-### Next Steps
+## Next Steps
 
-1. Implement type definitions and chart registration
-2. Create statistical calculation utilities
-3. Build base box plot component
-4. Add violin plot calculations and rendering
-5. Add bee swarm calculations and rendering
-6. Implement settings panel
-7. Add interaction support (tooltips, etc.)
+1. Add animations for transitions between different states
+2. Implement responsive design for different screen sizes
+3. Add export functionality for statistical data
+4. Add documentation and examples
+
+## Completed Features
+
+### Core Box Plot
+
+- [x] Basic box plot rendering with boxes, whiskers, and outliers
+- [x] Statistical calculations (quartiles, IQR, outliers)
+- [x] Customizable styles and colors
+- [x] Support for both single and grouped data
+
+### Settings Panel
+
+- [x] Basic settings panel with essential controls
+- [x] Color scheme selection
+- [x] Outlier visibility toggle
+- [x] Group-by field selection
+- [x] Overlay toggles (violin, bee swarm)
+
+### Faceting System Integration
+
+- [x] Integration with existing faceting system
+- [x] Support for faceted views
+- [x] Proper scaling and positioning in faceted layouts
+
+### Filtering Support
+
+- [x] Integration with existing filtering system
+- [x] Visual feedback for filtered data
+- [x] Proper handling of filtered groups
+
+### Group-by Functionality
+
+- [x] Support for grouping data by categorical fields
+- [x] Proper spacing and layout for grouped boxes
+- [x] Color coding for different groups
+
+### Overlays
+
+- [x] Violin Plot Overlay
+  - [x] KDE calculations
+  - [x] Violin shape rendering
+  - [x] Integration with base plot
+- [x] Bee Swarm Overlay
+  - [x] Point positioning algorithm
+  - [x] Point rendering
+  - [x] Integration with base plot
+
+### Tooltips
+
+- [x] Detailed statistical information
+- [x] Interactive hover states
+- [x] Support for all plot elements (box, whiskers, outliers, points)

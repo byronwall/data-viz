@@ -5,6 +5,7 @@ import { pivotTableDefinition } from "@/components/charts/PivotTable/definition"
 import { dataTableDefinition } from "@/components/charts/DataTable/definition";
 import { summaryTableDefinition } from "@/components/charts/SummaryTable/definition";
 import { markdownDefinition } from "@/components/charts/Markdown/definition";
+import { boxPlotDefinition } from "@/components/charts/BoxPlot/definition";
 import {
   BaseChartSettings,
   ChartDefinition,
@@ -90,4 +91,5 @@ export function registerAllCharts() {
   chartRegistry.register(dataTableDefinition);
   chartRegistry.register(summaryTableDefinition);
   chartRegistry.register(markdownDefinition);
+  chartRegistry.register(boxPlotDefinition);
 }

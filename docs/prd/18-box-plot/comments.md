@@ -1,16 +1,11 @@
 # Box Plot Implementation Comments
 
-- Need to have the filter use the color variable - could also consider a range filter on the y value with brushing?
-- Clicking on a box should filter by the color group (if grouped)
 - Need an axis label for the x and y axis - this should be handled globally - the chart settings should be an override
-- Need to actually color the rect by the color field
-- Violin and bee swarm do not work
-- Add a setting to display text on the boxes for the values (maybe at the bottom or top or in the box?)
-- Give control over sorting - sort by median, sort by x label
-- Consider a bandwidth setting for the violin plot
-- Bee swarm needs to do a random sample of points if more than 1000
-- Remove the tooltip from bee swarms - too many of them
-- Render bee swarms points on top of the boxes
+
+- Remove all console log calls
+- Filter clicking needs to be additive - clicking should toggle the group in the filter list
+- When the box plot has a filter, need to set the box color to a grey color if the current group does not match the `applyFilter` condition. Study the RowChart to see how this is done.
+- Implement the SVG icon below instead of the box one in the defs
 
 ## SVG icon
 

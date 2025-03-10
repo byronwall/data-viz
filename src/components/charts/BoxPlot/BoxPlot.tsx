@@ -1,27 +1,27 @@
-import { useColorScales } from "@/hooks/useColorScales";
-import { getRangeFilterForField } from "@/hooks/getAxisFilter";
-import { applyFilter } from "@/hooks/applyFilter";
-import { useDataLayer } from "@/providers/DataLayerProvider";
-import { useFacetAxis } from "@/providers/FacetAxisProvider";
-import { BaseChartProps } from "@/types/ChartTypes";
-import { ScaleLinear, scaleLinear, scaleBand } from "d3-scale";
-import { useCallback, useEffect, useMemo } from "react";
-import { BaseChart } from "../BaseChart";
-import { useGetColumnDataForIds } from "../useGetColumnData";
-import { useGetLiveData } from "../useGetLiveData";
-import { BoxPlotSettings } from "./definition";
-import {
-  calculateBoxPlotStats,
-  calculateKernelDensity,
-  calculateBeeSwarmPositions,
-} from "./boxPlotCalculations";
-import { Filter } from "@/types/FilterTypes";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { applyFilter } from "@/hooks/applyFilter";
+import { useColorScales } from "@/hooks/useColorScales";
+import { useDataLayer } from "@/providers/DataLayerProvider";
+import { useFacetAxis } from "@/providers/FacetAxisProvider";
+import { BaseChartProps } from "@/types/ChartTypes";
+import { Filter, datum } from "@/types/FilterTypes";
+import { ScaleLinear, scaleBand, scaleLinear } from "d3-scale";
+import natsort from "natsort";
+import { useCallback, useEffect, useMemo } from "react";
+import { BaseChart } from "../BaseChart";
+import { useGetColumnDataForIds } from "../useGetColumnData";
+import { useGetLiveData } from "../useGetLiveData";
+import {
+  calculateBeeSwarmPositions,
+  calculateBoxPlotStats,
+  calculateKernelDensity,
+} from "./boxPlotCalculations";
+import { BoxPlotSettings } from "./definition";
 
 const Y_SCALE_PADDING = 0.1; // 10% padding for whiskers
 const BOX_PADDING = 0.2; // Padding between boxes in a group
@@ -32,9 +32,6 @@ export function BoxPlot({
   height,
   facetIds,
 }: BaseChartProps<BoxPlotSettings>) {
-  console.log("BoxPlot render with settings:", settings);
-  console.log("Dimensions:", { width, height, facetIds });
-
   const updateChart = useDataLayer((s) => s.updateChart);
   const { getColorForValue } = useColorScales();
   const registerAxisLimits = useFacetAxis((s) => s.registerAxisLimits);
@@ -42,41 +39,23 @@ export function BoxPlot({
 
   // Get all data for axis limits calculation
   const allData = useGetColumnDataForIds(settings.field);
-  console.log("All data for field:", settings.field, allData);
 
   // Get filtered data for rendering
   const liveData = useGetLiveData(settings, settings.field, facetIds);
-  console.log("Live filtered data:", liveData);
 
   // Get color field data if specified
   const colorFieldData = useGetColumnDataForIds(settings.colorField ?? "");
-  console.log("Color field data:", settings.colorField, colorFieldData);
   const hasColorField = !!settings.colorField;
 
   // Chart dimensions
   const margin = { top: 20, right: 20, bottom: 30, left: 60 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
-  console.log("Chart dimensions:", { margin, innerWidth, innerHeight });
 
   // Group data by color field if specified
   const groupedData = useMemo(() => {
-    console.log("Grouping data with color field:", {
-      hasColorField,
-      colorField: settings.colorField,
-      colorFieldDataLength: colorFieldData?.length,
-      liveDataLength: liveData?.length,
-      liveDataSample: liveData?.slice(0, 5),
-      colorFieldSample: colorFieldData?.slice(0, 5),
-    });
-
     if (!hasColorField) {
       const validData = liveData.map(Number).filter((x) => !isNaN(x));
-      console.log("No color field, filtered data:", {
-        originalLength: liveData.length,
-        validLength: validData.length,
-        sample: validData.slice(0, 5),
-      });
 
       const result = [
         {
@@ -84,26 +63,20 @@ export function BoxPlot({
           data: validData,
         },
       ];
-      console.log("No color field, using single group:", result);
       return result;
     }
 
     const groups = new Map<string | number, number[]>();
-    let validCount = 0;
-    let invalidCount = 0;
-    let missingColorCount = 0;
 
     liveData.forEach((value, index) => {
       const colorValue = colorFieldData[index];
       const numValue = Number(value);
 
       if (colorValue === undefined || colorValue === null) {
-        missingColorCount++;
         return;
       }
 
       if (isNaN(numValue)) {
-        invalidCount++;
         return;
       }
 
@@ -112,20 +85,7 @@ export function BoxPlot({
           groups.set(colorValue, []);
         }
         groups.get(colorValue)?.push(numValue);
-        validCount++;
       }
-    });
-
-    console.log("Grouping stats:", {
-      totalRows: liveData.length,
-      validCount,
-      invalidCount,
-      missingColorCount,
-      uniqueGroups: groups.size,
-      groupSizes: Array.from(groups.entries()).map(([key, values]) => ({
-        group: key,
-        size: values.length,
-      })),
     });
 
     const result = Array.from(groups.entries()).map(([group, data]) => ({
@@ -136,12 +96,7 @@ export function BoxPlot({
     // If we have no valid groups but we do have data, fall back to single group
     if (result.length === 0 && liveData.length > 0) {
       const validData = liveData.map(Number).filter((x) => !isNaN(x));
-      console.log(
-        "No valid groups but have data, falling back to single group:",
-        {
-          validDataLength: validData.length,
-        }
-      );
+
       return [
         {
           group: "All Data",
@@ -150,18 +105,15 @@ export function BoxPlot({
       ];
     }
 
-    console.log("Grouped by color field:", result);
     return result;
-  }, [liveData, colorFieldData, hasColorField, settings.colorField]);
+  }, [liveData, colorFieldData, hasColorField]);
 
   // Calculate statistics for all groups
   const groupStats = useMemo(() => {
-    console.log("Calculating stats for groups:", groupedData);
     const stats = groupedData.map(({ group, data }) => ({
       group,
       stats: calculateBoxPlotStats(data, settings.whiskerType),
     }));
-    console.log("Calculated group statistics:", stats);
     return stats;
   }, [groupedData, settings.whiskerType]);
 
@@ -181,34 +133,38 @@ export function BoxPlot({
           0
         ) / data.length
       );
-      const bandwidth = 1.06 * stdDev * Math.pow(data.length, -0.2);
+      const autoBandwidth = 1.06 * stdDev * Math.pow(data.length, -0.2);
+
+      const bandwidth = settings.violinBandwidth ?? autoBandwidth;
 
       return {
         group,
         kde: calculateKernelDensity(data, bandwidth),
       };
     });
-  }, [groupedData, settings.violinOverlay]);
+  }, [groupedData, settings.violinOverlay, settings.violinBandwidth]);
 
   // Create scales
   const xScale = useMemo(() => {
     const groups = groupedData.map((g) => g.group?.toString() ?? "All Data");
-    console.log("Creating x scale with groups:", groups);
+
+    // Sort groups based on settings
+    const sortedGroups = [...groups].sort((a, b) => {
+      if (settings.sortBy === "median") {
+        const aStats = groupStats.find((g) => g.group?.toString() === a)?.stats;
+        const bStats = groupStats.find((g) => g.group?.toString() === b)?.stats;
+        return (bStats?.median ?? 0) - (aStats?.median ?? 0);
+      }
+      return natsort()(a, b);
+    });
 
     const scale = scaleBand()
-      .domain(groups)
+      .domain(sortedGroups)
       .range([0, innerWidth])
       .padding(BOX_PADDING);
 
-    console.log("X scale details:", {
-      groups,
-      domain: scale.domain(),
-      range: scale.range(),
-      bandwidth: scale.bandwidth(),
-      step: scale.step(),
-    });
     return scale;
-  }, [groupedData, innerWidth]);
+  }, [groupedData, innerWidth, settings.sortBy, groupStats]);
 
   // Create path generator for violin shapes
   const createPath = useCallback((points: [number, number][]) => {
@@ -229,14 +185,13 @@ export function BoxPlot({
     return groupedData.map(({ group, data }) => {
       return {
         group,
-        positions: calculateBeeSwarmPositions(data, xScale.bandwidth()),
+        positions: calculateBeeSwarmPositions(data, xScale.bandwidth(), 1000),
       };
     });
   }, [groupedData, settings.beeSwarmOverlay, xScale]);
 
   // Get global axis limits if in a facet
   const globalYLimits = facetIds ? getGlobalAxisLimits("y") : null;
-  console.log("Global Y limits:", globalYLimits);
 
   // Create y scale with synchronized limits if in a facet
   const yScale = useMemo(() => {
@@ -254,29 +209,13 @@ export function BoxPlot({
     const scale = scaleLinear()
       .domain([globalMin, globalMax])
       .range([innerHeight, 0]);
-    console.log("Y scale:", {
-      min,
-      max,
-      padding,
-      domain: scale.domain(),
-      range: scale.range(),
-    });
+
     return scale;
   }, [groupStats, innerHeight, globalYLimits]) as ScaleLinear<number, number>;
 
   // Register axis limits with the facet context
   useEffect(() => {
     if (facetIds && allData.length > 0) {
-      const allStats = groupStats.map((g) => g.stats);
-      const min = Math.min(...allStats.map((s) => s.whiskerLow));
-      const max = Math.max(...allStats.map((s) => s.whiskerHigh));
-
-      console.log("Registering axis limits:", {
-        min,
-        max,
-        yScaleDomain: yScale.domain(),
-      });
-
       registerAxisLimits(settings.id, "y", {
         type: "numerical",
         min: yScale.domain()[0],
@@ -303,13 +242,8 @@ export function BoxPlot({
     groupedData,
   ]);
 
-  const rangeFilter = getRangeFilterForField(settings.filters, settings.field);
-  const hasActiveFilter = !!rangeFilter;
-  console.log("Filter state:", { rangeFilter, hasActiveFilter });
-
   const handleBrushChange = useCallback(
     (extent: [[number, number], [number, number]] | null) => {
-      console.log("Brush change:", extent);
       if (!extent) {
         // Remove range filter for the field
         const newFilters = settings.filters.filter(
@@ -340,6 +274,76 @@ export function BoxPlot({
     [settings.id, settings.field, settings.filters, updateChart, yScale]
   );
 
+  const activeFilter = useMemo(() => {
+    return settings.filters.find(
+      (f: Filter) => f.field === settings.colorField
+    );
+  }, [settings.filters, settings.colorField]);
+
+  const handleBoxClick = useCallback(
+    (group: string | number) => {
+      if (!settings.colorField) {
+        return;
+      }
+
+      let newValues: datum[] = [];
+      if (activeFilter && activeFilter.type === "value") {
+        // If group is already in filter, remove it
+        if (activeFilter.values.includes(group)) {
+          newValues = activeFilter.values.filter((v) => v !== group);
+        } else {
+          // Add group to existing filter
+          newValues = [...activeFilter.values, group];
+        }
+      } else {
+        // Create new filter with just this group
+        newValues = [group];
+      }
+
+      // Create a new filter for the color field
+      const newFilters = settings.filters.filter(
+        (f: Filter) => f.field !== settings.colorField
+      );
+
+      if (newValues.length > 0) {
+        newFilters.push({
+          type: "value",
+          field: settings.colorField,
+          values: newValues,
+        });
+      }
+
+      updateChart(settings.id, { filters: newFilters });
+    },
+    [
+      settings.colorField,
+      settings.filters,
+      settings.id,
+      activeFilter,
+      updateChart,
+    ]
+  );
+
+  // Helper function to check if a group matches the current filter
+  const isGroupFiltered = useCallback(
+    (group: string | number) => {
+      if (!settings.colorField) {
+        return true;
+      }
+
+      if (
+        !activeFilter ||
+        activeFilter.type !== "value" ||
+        !activeFilter.values
+      ) {
+        return true;
+      }
+
+      return applyFilter(group, activeFilter);
+    },
+    [settings.colorField, activeFilter]
+  );
+
   return (
     <div style={{ width, height }}>
       <TooltipProvider>
@@ -353,21 +357,43 @@ export function BoxPlot({
           onBrushChange={handleBrushChange}
           settings={settings}
         >
-          {groupStats.map(({ group, stats }, groupIndex) => {
-            const boxColor = getColorForValue(
-              settings.colorScaleId,
-              settings.colorField ?? settings.field,
-              group?.toString() ?? settings.styles.boxFill
-            );
+          {/* Axis labels */}
+          {settings.xAxisLabel && (
+            <text
+              x={innerWidth / 2}
+              y={innerHeight + margin.bottom - 5}
+              textAnchor="middle"
+              className="text-sm fill-muted-foreground"
+            >
+              {settings.xAxisLabel}
+            </text>
+          )}
+          {settings.yAxisLabel && (
+            <text
+              x={-innerHeight / 2}
+              y={-margin.left + 15}
+              textAnchor="middle"
+              transform="rotate(-90)"
+              className="text-sm fill-muted-foreground"
+            >
+              {settings.yAxisLabel}
+            </text>
+          )}
+
+          {/* Main content */}
+          {groupStats.map(({ group, stats }) => {
+            const isFiltered = isGroupFiltered(group);
+            const boxColor = isFiltered
+              ? getColorForValue(
+                  settings.colorScaleId,
+                  group ?? settings.styles.boxFill
+                )
+              : "rgb(156 163 175)";
             const xPos = xScale(group?.toString() ?? "") ?? 0;
             const boxWidth = xScale.bandwidth();
 
             // Get KDE for this group if violin overlay is enabled
             const kde = groupKDEs?.find((g) => g.group === group)?.kde;
-
-            console.log("KDE for group:", group, kde);
-
-            const violinColor = hasActiveFilter ? "rgb(156 163 175)" : boxColor;
 
             // Get bee swarm positions for this group if enabled
             const beeSwarmPositions = groupBeeSwarmPositions?.find(
@@ -407,11 +433,7 @@ export function BoxPlot({
                       x2={boxWidth / 2}
                       y1={yScale(stats.whiskerHigh)}
                       y2={yScale(stats.whiskerLow)}
-                      stroke={
-                        hasActiveFilter
-                          ? "rgb(156 163 175)"
-                          : settings.styles.whiskerStroke
-                      }
+                      stroke={boxColor}
                       strokeWidth={settings.styles.whiskerStrokeWidth}
                     />
                   </TooltipTrigger>
@@ -426,9 +448,13 @@ export function BoxPlot({
                       y={yScale(stats.q3)}
                       width={boxWidth}
                       height={yScale(stats.q1) - yScale(stats.q3)}
-                      fill={hasActiveFilter ? "rgb(156 163 175)" : boxColor}
+                      fill={boxColor}
                       stroke={settings.styles.boxStroke}
                       strokeWidth={settings.styles.boxStrokeWidth}
+                      onClick={() => handleBoxClick(group)}
+                      style={{
+                        cursor: settings.colorField ? "pointer" : "default",
+                      }}
                     />
                   </TooltipTrigger>
                   <TooltipContent>{boxTooltipContent}</TooltipContent>
@@ -453,11 +479,7 @@ export function BoxPlot({
                           cx={boxWidth / 2}
                           cy={yScale(value)}
                           r={settings.styles.outlierSize}
-                          fill={
-                            hasActiveFilter
-                              ? "rgb(156 163 175)"
-                              : settings.styles.outlierFill
-                          }
+                          fill={boxColor}
                           stroke={settings.styles.outlierStroke}
                         />
                       </TooltipTrigger>
@@ -470,12 +492,9 @@ export function BoxPlot({
                 {/* Violin plot overlay */}
                 {settings.violinOverlay && kde && (
                   <g>
-                    {/* Violin plot */}
                     <path
                       d={createPath([
-                        // Start at the bottom
                         [boxWidth / 2, yScale(kde[0][0])] as [number, number],
-                        // Draw the right side up
                         ...kde.map(
                           ([x, y]) =>
                             [boxWidth / 2 + y * boxWidth * 0.4, yScale(x)] as [
@@ -483,7 +502,6 @@ export function BoxPlot({
                               number,
                             ]
                         ),
-                        // Draw the left side down
                         ...kde
                           .reverse()
                           .map(
@@ -494,9 +512,9 @@ export function BoxPlot({
                               ] as [number, number]
                           ),
                       ])}
-                      fill={violinColor}
+                      fill={boxColor}
                       fillOpacity={0.2}
-                      stroke={violinColor}
+                      stroke={boxColor}
                       strokeWidth={1}
                       pointerEvents="none"
                     />
@@ -506,12 +524,12 @@ export function BoxPlot({
                 {/* Bee swarm overlay */}
                 {settings.beeSwarmOverlay && beeSwarmPositions && (
                   <g>
-                    {beeSwarmPositions.map(([x, y], i) => (
+                    {beeSwarmPositions.map(([x, y]) => (
                       <circle
                         cx={x}
                         cy={yScale(y)}
                         r={2}
-                        fill={hasActiveFilter ? "rgb(156 163 175)" : boxColor}
+                        fill={boxColor}
                         fillOpacity={0.5}
                         stroke="none"
                         pointerEvents="none"

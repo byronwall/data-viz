@@ -27,6 +27,9 @@ export interface BoxPlotSettings extends BaseChartSettings {
   beeSwarmOverlay: boolean;
   styles: BoxPlotStyleSettings;
   filters: Filter[];
+  sortBy: "median" | "label";
+  violinBandwidth: number;
+  autoBandwidth: boolean;
 }
 
 export const boxPlotDefinition: ChartDefinition<BoxPlotSettings> = {
@@ -49,6 +52,9 @@ export const boxPlotDefinition: ChartDefinition<BoxPlotSettings> = {
     showOutliers: true,
     violinOverlay: false,
     beeSwarmOverlay: false,
+    sortBy: "label",
+    violinBandwidth: 0.3,
+    autoBandwidth: true,
     styles: {
       boxFill: "hsl(217.2 91.2% 59.8%)",
       boxStroke: "black",
@@ -79,10 +85,14 @@ export const boxPlotDefinition: ChartDefinition<BoxPlotSettings> = {
   },
 
   getFilterFunction: (settings, fieldGetter) => {
-    const dataHash = fieldGetter(settings.field);
+    if (!settings.colorField) {
+      return () => true;
+    }
+
+    const dataHash = fieldGetter(settings.colorField);
 
     const filter = settings.filters.find(
-      (f): f is Filter => f.field === settings.field
+      (f): f is Filter => f.field === settings.colorField
     );
 
     return (d) => {

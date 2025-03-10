@@ -214,6 +214,9 @@ importers:
       lucide-react:
         specifier: ^0.475.0
         version: 0.475.0(react@19.0.0)
+      natsort:
+        specifier: ^2.0.3
+        version: 2.0.3
       next-themes:
         specifier: ^0.4.4
         version: 0.4.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -317,6 +320,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.14
         version: 29.5.14
+      '@types/natsort':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@types/node':
         specifier: ^22.13.4
         version: 22.13.4
@@ -2038,6 +2044,10 @@ packages:
   '@types/mdurl@2.0.0':
     resolution: {integrity: sha512-RGdgjQUZba5p6QEFAVx2OGb8rQDL/cPRG7GiedRzMcJ1tYnUANBncjbSB1NRGwbvjcPeikRABz2nshyPk1bhWg==}
 
+  '@types/natsort@2.0.0':
+    resolution: {integrity: sha512-2FErLvLQ6sqz7UXGzj6EKNooBneqAe3+ZGtL+WEGQT1Kz0y0DLWloAXmjQ1u9AhHL/rJhvXj8h+ADgAVje+zGA==}
+    deprecated: This is a stub types definition. natsort provides its own type definitions, so you do not need this installed.
+
   '@types/node@22.13.4':
     resolution: {integrity: sha512-ywP2X0DYtX3y08eFVx5fNIw7/uIv8hYUKgXoK8oayJlLnKcRfEYCxWMVE1XagUdVtCJlZT1AU4LXEABW+L1Peg==}
 
@@ -3127,6 +3137,9 @@ packages:
     resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+
+  natsort@2.0.3:
+    resolution: {integrity: sha512-fuzhAiXcdNAIg2f5kqFOAABvX+uDoJvZs6DvCgioPf7FRAMHsw6G4kH7GFjSZ31yNFkNJuuOIilE8jl0JkavVQ==}
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
@@ -5576,6 +5589,10 @@ snapshots:
 
   '@types/mdurl@2.0.0': {}
 
+  '@types/natsort@2.0.0':
+    dependencies:
+      natsort: 2.0.3
+
   '@types/node@22.13.4':
     dependencies:
       undici-types: 6.20.0
@@ -6701,6 +6718,8 @@ snapshots:
       stylis: 4.3.6
 
   nanoid@3.3.8: {}
+
+  natsort@2.0.3: {}
 
   natural-compare@1.4.0: {}
 

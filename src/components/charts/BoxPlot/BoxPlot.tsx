@@ -415,6 +415,8 @@ export function BoxPlot({
             const boxTooltipContent = (
               <div className="space-y-1">
                 <p className="font-medium">{group?.toString() ?? "All Data"}</p>
+                <p>Total Points: {stats.totalCount}</p>
+                <p>Outliers: {stats.outliers.length}</p>
                 <p>Q1: {stats.q1.toFixed(2)}</p>
                 <p>Median: {stats.median.toFixed(2)}</p>
                 <p>Q3: {stats.q3.toFixed(2)}</p>

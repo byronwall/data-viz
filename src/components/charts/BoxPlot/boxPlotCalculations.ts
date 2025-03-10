@@ -8,6 +8,7 @@ export interface BoxPlotStats {
   whiskerLow: number;
   whiskerHigh: number;
   outliers: number[];
+  totalCount: number;
 }
 
 function getQuartile(sortedData: number[], q: number): number {
@@ -34,6 +35,7 @@ export function calculateBoxPlotStats(
       whiskerLow: 0,
       whiskerHigh: 0,
       outliers: [],
+      totalCount: 0,
     };
   }
 
@@ -92,6 +94,7 @@ export function calculateBoxPlotStats(
     whiskerLow,
     whiskerHigh,
     outliers,
+    totalCount: data.length,
   };
 }
 

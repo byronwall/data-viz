@@ -14,12 +14,11 @@ Will be updated when done...
 
 ### Core data viz
 
-- Create a `HeatMap` that shows a matrix of values - default to counts
 - Need a `color legend` type that can be rendered
 - Create a `LineChart` that favors plotting time series data with a line
 - Improve handling of times stamps
 - Add a filter summary + filter controller
-- Top level filter + steps = ability to quickly segment data and work on slices
+- Top level filter + steps = ability to quickly segment data and work on slices -- almost like a `slice` comp
 
 ### Packaging and usages
 

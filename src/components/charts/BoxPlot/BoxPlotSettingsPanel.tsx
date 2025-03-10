@@ -1,18 +1,15 @@
+import { ComboBox } from "@/components/ComboBox";
+import { FieldSelector } from "@/components/FieldSelector";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useColorScales } from "@/hooks/useColorScales";
 import { ChartSettingsPanelProps } from "@/types/ChartTypes";
 import { BoxPlotSettings } from "./definition";
-import { Label } from "@/components/ui/label";
-import { ComboBox } from "@/components/ComboBox";
-import { useDataLayer } from "@/providers/DataLayerProvider";
-import { Switch } from "@/components/ui/switch";
-import { FieldSelector } from "@/components/FieldSelector";
-import { useColorScales } from "@/hooks/useColorScales";
 
 export function BoxPlotSettingsPanel({
   settings,
   onSettingsChange,
 }: ChartSettingsPanelProps<BoxPlotSettings>) {
-  const getColumns = useDataLayer((s) => s.getColumnNames);
-  const columns = getColumns();
   const { getOrCreateScaleForField } = useColorScales();
 
   return (
@@ -23,6 +20,22 @@ export function BoxPlotSettingsPanel({
           label=""
           value={settings.field}
           onChange={(value) => onSettingsChange({ ...settings, field: value })}
+        />
+      </div>
+
+      <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+        <Label htmlFor="colorField">Color Field</Label>
+        <FieldSelector
+          label=""
+          value={settings.colorField ?? ""}
+          allowClear
+          onChange={(value) =>
+            onSettingsChange({
+              ...settings,
+              colorField: value || undefined,
+              colorScaleId: value ? getOrCreateScaleForField(value) : undefined,
+            })
+          }
         />
       </div>
 
@@ -122,22 +135,6 @@ export function BoxPlotSettingsPanel({
           checked={settings.beeSwarmOverlay}
           onCheckedChange={(checked) =>
             onSettingsChange({ ...settings, beeSwarmOverlay: checked })
-          }
-        />
-      </div>
-
-      <div className="grid grid-cols-[120px_1fr] items-center gap-4">
-        <Label htmlFor="colorField">Color Field</Label>
-        <FieldSelector
-          label=""
-          value={settings.colorField ?? ""}
-          allowClear
-          onChange={(value) =>
-            onSettingsChange({
-              ...settings,
-              colorField: value || undefined,
-              colorScaleId: value ? getOrCreateScaleForField(value) : undefined,
-            })
           }
         />
       </div>

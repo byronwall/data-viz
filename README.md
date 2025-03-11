@@ -14,11 +14,11 @@ Will be updated when done...
 
 ### Core data viz
 
-- Need a `color legend` type that can be rendered
 - Create a `LineChart` that favors plotting time series data with a line
 - Improve handling of times stamps
 - Add a filter summary + filter controller
 - Top level filter + steps = ability to quickly segment data and work on slices -- almost like a `slice` comp
+- Do all the `Random` items below
 
 ### Packaging and usages
 
@@ -41,6 +41,7 @@ Will be updated when done...
 - Create a SPLOM comp that renders scatter plot matrices
 - Add a UMAP or TSNE comp that shows clusters from embeddings
 - Global color themes
+- `Tree map` view
 
 ## Small problems
 
@@ -102,12 +103,23 @@ Will be updated when done...
 - Show filter as a row below the header - add option to change type
 - Add a popover for quick access to advanced filtering options
 
+## Color scales
+
+- Color fields should use a `ColorSelector` that is based on existing fields and user defined color scales
+- Allow user to convert or create an ordinal scale from a numeric field
+
 ### Random
 
+- Lorenz bar chart for Run ID is missing a bar?
 - Animate the `update charts` button - make it smaller too
 - Row chart min and max bar sizes don't seem to be working
-- Lorenz bar chart for Run ID is missing a bar?
 - Pivot table needs supports for sorting and filtering
 - Remove the `ChartTypes` array - infer completely from the registry
 - Consider tracking the mouse pos on the scale? -- implement across all charts
 - Need an axis label for the x and y axis - this should be handled globally - the chart settings should be an override - pass in the field for each chart
+- Sort the fields by name in the FieldSelector
+- Sort the `add chart` menu by chart name
+- Add ability to track the mouse position in the chart on the axes - give a small red line
+- Add support for reading and processing parquet files
+- Add support for reading and processing json files
+- Add support for reading and processing xlsx files

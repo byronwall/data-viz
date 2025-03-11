@@ -187,27 +187,49 @@ Settings UI for configuring:
 
 ## Current Progress
 
-All core functionality is implemented with basic features working. Recent updates have identified several areas needing enhancement:
-
-1. ✅ Series settings have been expanded with full control over line and point appearance
-2. ✅ UI components have been standardized with MultiSelect for series selection
-3. ✅ Right axis support has been added for series
-4. ⏳ Legend and color assignment needs fixing
-5. ⏳ Axis settings need reorganization
+- Series settings have been expanded with full control over line and point appearance
+- UI components have been standardized with MultiSelect for series selection
+- Right axis support has been added for series
+- Legend rendering has been improved with better styling and consistent colors
+- Color assignment has been fixed with a memoized color map
+- Series settings are organized in a grid layout
 
 ### Next Steps
 
 1. ✅ Implement SeriesSettings interface and component
 2. ✅ Update series selector to use MultiSelect
 3. ✅ Add right axis support
-4. [ ] Fix legend rendering and color assignment
-5. [ ] Reorganize axis settings and gridline controls
-6. [ ] Test all new features with various data configurations
-7. [ ] Add error handling for edge cases
+4. ✅ Fix legend rendering and color assignment
+5. [ ] Move gridline settings to axis tab
+6. [ ] Create unified axis settings across chart types
+7. [ ] Test all features with various data configurations
+8. [ ] Add error handling for edge cases
 
-### Dependencies
+### Phase 7: Axis Settings Reorganization
 
-- MultiSelect component (existing)
-- Current axis settings implementation
-- Color scale system
-- Settings panel architecture
+- [ ] Create new AxisSettings component
+
+  - [ ] Support for left and right y-axis
+  - [ ] Grid line controls
+  - [ ] Scale type selection
+  - [ ] Label customization
+  - [ ] Tick formatting
+
+- [ ] Update LineChartSettingsPanel
+  - [ ] Move grid settings to axis tab
+  - [ ] Integrate new AxisSettings component
+  - [ ] Update UI layout for better organization
+
+### Phase 8: Testing and Refinement
+
+- [ ] Test with various data configurations
+
+  - [ ] Multiple series
+  - [ ] Different axis configurations
+  - [ ] Different style settings
+  - [ ] Edge cases (empty data, single point, etc.)
+
+- [ ] Error handling
+  - [ ] Invalid data formats
+  - [ ] Missing required fields
+  - [ ] Scale boundary cases

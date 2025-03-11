@@ -1,12 +1,3 @@
-import { type FC, useMemo } from "react";
-import { type BaseChartProps } from "@/types/ChartTypes";
-import { type LineChartSettings } from "./definition";
-import { BaseChart } from "../BaseChart";
-import { type DatumObject, useDataLayer } from "@/providers/DataLayerProvider";
-import { scaleLinear } from "d3-scale";
-import { line, curveLinear, curveMonotoneX, curveStepAfter } from "d3-shape";
-import { extent } from "d3-array";
-import { useColorScales } from "@/hooks/useColorScales";
 import {
   Tooltip,
   TooltipContent,
@@ -14,6 +5,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { type DatumObject, useDataLayer } from "@/providers/DataLayerProvider";
+import { type BaseChartProps } from "@/types/ChartTypes";
+import { extent } from "d3-array";
+import { scaleLinear } from "d3-scale";
+import { curveLinear, curveMonotoneX, curveStepAfter, line } from "d3-shape";
+import { type FC, useEffect, useMemo } from "react";
+import { BaseChart } from "../BaseChart";
+import { type LineChartSettings } from "./definition";
 
 const curveTypes = {
   linear: curveLinear,
@@ -25,13 +24,122 @@ type CurveType = keyof typeof curveTypes;
 
 type DataPoint = DatumObject;
 
+// Define color palettes
+const COLOR_PALETTES = {
+  default: [
+    "#2563eb", // blue-600
+    "#dc2626", // red-600
+    "#16a34a", // green-600
+    "#9333ea", // purple-600
+    "#ea580c", // orange-600
+    "#0891b2", // cyan-600
+    "#4f46e5", // indigo-600
+    "#be123c", // rose-600
+    "#ca8a04", // yellow-600
+    "#059669", // emerald-600
+  ],
+  cool: [
+    "#0ea5e9", // sky-500
+    "#06b6d4", // cyan-500
+    "#3b82f6", // blue-500
+    "#6366f1", // indigo-500
+    "#8b5cf6", // violet-500
+    "#0284c7", // sky-600
+    "#0891b2", // cyan-600
+    "#2563eb", // blue-600
+    "#4f46e5", // indigo-600
+    "#7c3aed", // violet-600
+  ],
+  warm: [
+    "#ef4444", // red-500
+    "#f97316", // orange-500
+    "#f59e0b", // amber-500
+    "#eab308", // yellow-500
+    "#84cc16", // lime-500
+    "#dc2626", // red-600
+    "#ea580c", // orange-600
+    "#d97706", // amber-600
+    "#ca8a04", // yellow-600
+    "#65a30d", // lime-600
+  ],
+} as const;
+
+const getRandomHslColor = () => {
+  const hue = Math.floor(Math.random() * 360);
+  return `hsl(${hue}, 50%, 50%)`;
+};
+
+const defaultSeriesSettings = {
+  showPoints: false,
+  pointSize: 4,
+  pointOpacity: 1,
+  lineWidth: 2,
+  lineOpacity: 0.8,
+  lineStyle: "solid",
+  useRightAxis: false,
+} as const;
+
 export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
   settings,
   width,
   height,
 }) => {
   const data = useDataLayer<DataPoint, DataPoint[]>((state) => state.data);
-  const { getColorForValue } = useColorScales();
+  const updateChart = useDataLayer((state) => state.updateChart);
+
+  // Ensure consistent color assignment for series
+  const seriesColors = useMemo(() => {
+    const colors: Record<string, string> = {};
+    const palette = COLOR_PALETTES.default;
+
+    settings.seriesField.forEach((field, index) => {
+      const existingColor = settings.seriesSettings[field]?.lineColor;
+      // Only assign new colors if the existing color is undefined or "default"
+      if (!existingColor || existingColor === "default") {
+        colors[field] =
+          index < palette.length ? palette[index] : getRandomHslColor();
+      } else {
+        colors[field] = existingColor;
+      }
+    });
+    return colors;
+  }, [settings.seriesField, settings.seriesSettings]);
+
+  // Store assigned colors back into settings using updateChart
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      const newSeriesSettings = { ...settings.seriesSettings };
+      let hasChanges = false;
+
+      settings.seriesField.forEach((field) => {
+        if (!newSeriesSettings[field]) {
+          newSeriesSettings[field] = { ...defaultSeriesSettings };
+          hasChanges = true;
+        }
+
+        // Only update if color is undefined or "default"
+        if (
+          !newSeriesSettings[field]?.lineColor ||
+          newSeriesSettings[field]?.lineColor === "default"
+        ) {
+          newSeriesSettings[field]!.lineColor = seriesColors[field];
+          hasChanges = true;
+        }
+      });
+
+      if (hasChanges) {
+        updateChart(settings.id, {
+          seriesSettings: newSeriesSettings,
+        });
+      }
+    });
+  }, [
+    seriesColors,
+    settings.id,
+    settings.seriesField,
+    settings.seriesSettings,
+    updateChart,
+  ]);
 
   // Group data by series if seriesField is specified
   const seriesData = useMemo(() => {
@@ -137,65 +245,31 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
 
       return {
         name: series.name,
-        color:
-          seriesSettings.lineColor ??
-          getColorForValue(settings.colorScaleId, series.name),
+        color: seriesColors[series.name],
         lineStyle: seriesSettings.lineStyle,
       };
     });
-
-    const legendStyle: React.CSSProperties = {
-      display: "flex",
-      gap: "1rem",
-      fontSize: "0.875rem",
-      alignItems: "center",
-    };
-
-    const legendPosition: React.CSSProperties = {
-      position: "absolute",
-      ...(settings.legendPosition === "top" && {
-        top: 0,
-        left: margin.left,
-        right: margin.right,
-      }),
-      ...(settings.legendPosition === "bottom" && {
-        bottom: 0,
-        left: margin.left,
-        right: margin.right,
-      }),
-      ...(settings.legendPosition === "left" && {
-        left: 0,
-        top: margin.top,
-        bottom: margin.bottom,
-        width: 100,
-      }),
-      ...(settings.legendPosition === "right" && {
-        right: 0,
-        top: margin.top,
-        bottom: margin.bottom,
-        width: 100,
-      }),
-    };
 
     const isVertical =
       settings.legendPosition === "left" || settings.legendPosition === "right";
 
     return (
       <div
-        style={{
-          ...legendPosition,
-          ...legendStyle,
-          flexDirection: isVertical ? "column" : "row",
-          justifyContent: "center",
-        }}
+        className={cn(
+          "absolute flex gap-4 text-sm items-center",
+          isVertical ? "flex-col" : "flex-row",
+          settings.legendPosition === "top" && "top-0 left-[60px] right-[60px]",
+          settings.legendPosition === "bottom" &&
+            "bottom-0 left-[60px] right-[60px]",
+          settings.legendPosition === "left" &&
+            "left-0 top-[20px] bottom-[30px] w-[100px]",
+          settings.legendPosition === "right" &&
+            "right-0 top-[20px] bottom-[30px] w-[100px]"
+        )}
       >
         {legendItems.map((item) => (
-          <div
-            key={item.name}
-            className="flex items-center gap-2"
-            style={{ color: "currentColor" }}
-          >
-            <svg width="20" height="2">
+          <div key={item.name} className="flex items-center gap-2">
+            <svg width="20" height="2" className="flex-shrink-0">
               <line
                 x1="0"
                 y1="1"
@@ -212,7 +286,9 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
                 }
               />
             </svg>
-            <span className="text-sm text-muted-foreground">{item.name}</span>
+            <span className="text-sm text-muted-foreground truncate">
+              {item.name}
+            </span>
           </div>
         ))}
       </div>
@@ -300,15 +376,14 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
                 useRightAxis: false,
               };
 
+              const seriesColor = seriesColors[series.name];
+
               return (
                 <g key={series.name}>
                   <path
                     d={lineGenerator(series.data) || undefined}
                     fill="none"
-                    stroke={
-                      seriesSettings.lineColor ??
-                      getColorForValue(settings.colorScaleId, series.name)
-                    }
+                    stroke={seriesColor}
                     strokeWidth={seriesSettings.lineWidth}
                     strokeOpacity={seriesSettings.lineOpacity}
                     strokeDasharray={
@@ -331,13 +406,7 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
                                 : leftYScale(Number(d[series.name]))
                             }
                             r={seriesSettings.pointSize}
-                            fill={
-                              seriesSettings.lineColor ??
-                              getColorForValue(
-                                settings.colorScaleId,
-                                series.name
-                              )
-                            }
+                            fill={seriesColor}
                             fillOpacity={seriesSettings.pointOpacity}
                           />
                         </TooltipTrigger>

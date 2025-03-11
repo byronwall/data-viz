@@ -40,17 +40,8 @@ export const lineChartSettings: SavedDataStructure = {
       xGridLines: 5,
       yGridLines: 5,
       xField: "ID",
-      seriesField: ["Value", "Squared", "Square Root", "Natural Log"],
+      seriesField: ["Squared", "Square Root", "Natural Log"],
       seriesSettings: {
-        Value: {
-          showPoints: false,
-          pointSize: 4,
-          pointOpacity: 1,
-          lineWidth: 2,
-          lineOpacity: 0.8,
-          lineStyle: "solid",
-          useRightAxis: false,
-        },
         Squared: {
           showPoints: false,
           pointSize: 4,
@@ -59,6 +50,7 @@ export const lineChartSettings: SavedDataStructure = {
           lineOpacity: 0.8,
           lineStyle: "solid",
           useRightAxis: true,
+          lineColor: "#dc2626",
         },
         "Square Root": {
           showPoints: false,
@@ -68,6 +60,7 @@ export const lineChartSettings: SavedDataStructure = {
           lineOpacity: 0.8,
           lineStyle: "solid",
           useRightAxis: false,
+          lineColor: "#16a34a",
         },
         "Natural Log": {
           showPoints: false,
@@ -77,6 +70,7 @@ export const lineChartSettings: SavedDataStructure = {
           lineOpacity: 0.8,
           lineStyle: "solid",
           useRightAxis: false,
+          lineColor: "#9333ea",
         },
       },
       styles: { curveType: "linear" },
@@ -96,8 +90,8 @@ export const lineChartSettings: SavedDataStructure = {
   metadata: {
     name: "Untitled",
     version: 1,
-    createdAt: "2025-03-11T02:29:25.186Z",
-    modifiedAt: "2025-03-11T02:29:25.187Z",
+    createdAt: "2025-03-11T02:45:21.432Z",
+    modifiedAt: "2025-03-11T02:45:21.432Z",
   },
   colorScales: [],
 };

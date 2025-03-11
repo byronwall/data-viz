@@ -97,9 +97,10 @@ export const LineChartSettingsPanel: FC<
       </Card>
 
       <Tabs defaultValue="general">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="series">Series</TabsTrigger>
+          <TabsTrigger value="axis">Axis</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -127,26 +128,6 @@ export const LineChartSettingsPanel: FC<
                       updateStyles({ curveType: option?.value ?? "linear" })
                     }
                     optionToString={(option) => option.label}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label>Show X Grid</Label>
-                  <Switch
-                    checked={settings.showXGrid}
-                    onCheckedChange={(checked) =>
-                      updateSettings({ showXGrid: checked })
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label>Show Y Grid</Label>
-                  <Switch
-                    checked={settings.showYGrid}
-                    onCheckedChange={(checked) =>
-                      updateSettings({ showYGrid: checked })
-                    }
                   />
                 </div>
 
@@ -207,6 +188,48 @@ export const LineChartSettingsPanel: FC<
               />
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="axis">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="font-medium">Grid Lines</Label>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Show X Grid</Label>
+                      <Switch
+                        checked={settings.showXGrid}
+                        onCheckedChange={(checked) =>
+                          updateSettings({ showXGrid: checked })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label>Show Y Grid</Label>
+                      <Switch
+                        checked={settings.showYGrid}
+                        onCheckedChange={(checked) =>
+                          updateSettings({ showYGrid: checked })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label className="font-medium">Axis Settings</Label>
+                  <div className="text-sm text-muted-foreground">
+                    Additional axis settings coming soon...
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

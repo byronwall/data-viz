@@ -127,3 +127,4 @@ Will be updated when done...
 - Random scatter plot fails to render on the basic numbers example
 - Creating a blank scatter plot fails with length error
 - Grid line settings should move to the axis tab and be available on a variety of chart types
+- Plot margins are ignored on the LineChart - check to see if this is true for other charts

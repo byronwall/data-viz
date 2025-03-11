@@ -19,6 +19,7 @@ import {
 import { useGetLiveData } from "../useGetLiveData";
 import { type LineChartSettings } from "./definition";
 import { ArrowRight } from "lucide-react";
+import { reduceDataPoints, type DataPoint } from "@/lib/chartUtils";
 
 const curveTypes = {
   linear: curveLinear,
@@ -79,15 +80,47 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
     facetIds
   );
 
-  // Convert data to numbers for d3
+  const margin = { top: 20, right: 60, bottom: 30, left: 60 };
 
+  // Adjust margins based on legend position
+  if (settings.showLegend) {
+    switch (settings.legendPosition) {
+      case "top":
+        margin.top += 40;
+        break;
+      case "bottom":
+        margin.bottom += 40;
+        break;
+      case "right":
+        margin.right += 120;
+        break;
+      case "left":
+        margin.left += 120;
+        break;
+    }
+  }
+
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
+
+  // Convert data to numbers for d3
   const processedLiveSeriesData = useMemo(() => {
-    return settings.seriesField.map((field) => ({
-      name: field,
-      data:
-        liveSeriesData[field]?.map((d) => (d != null ? Number(d) : 0)) ?? [],
-    }));
-  }, [settings.seriesField, liveSeriesData]);
+    return settings.seriesField.map((field) => {
+      const data =
+        liveSeriesData[field]?.map((d, i) => ({
+          x: Number(liveXData[i] ?? 0),
+          y: d != null ? Number(d) : 0,
+        })) ?? [];
+
+      // Reduce the data points based on chart width
+      const reducedData = reduceDataPoints(data, innerWidth);
+
+      return {
+        name: field,
+        data: reducedData,
+      };
+    });
+  }, [settings.seriesField, liveSeriesData, liveXData, innerWidth]);
 
   // Ensure consistent color assignment for series with better distribution
   const seriesColors = useMemo(() => {
@@ -166,29 +199,6 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
     return null;
   }
 
-  const margin = { top: 20, right: 60, bottom: 30, left: 60 };
-
-  // Adjust margins based on legend position
-  if (settings.showLegend) {
-    switch (settings.legendPosition) {
-      case "top":
-        margin.top += 40;
-        break;
-      case "bottom":
-        margin.bottom += 40;
-        break;
-      case "right":
-        margin.right += 120;
-        break;
-      case "left":
-        margin.left += 120;
-        break;
-    }
-  }
-
-  const innerWidth = width - margin.left - margin.right;
-  const innerHeight = height - margin.top - margin.bottom;
-
   // Process data and create scales
   const xExtent = extent(allXData.map((d) => (d != null ? Number(d) : 0))) as [
     number,
@@ -204,11 +214,11 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
   );
 
   const leftYExtent = extent(
-    leftAxisSeries.flatMap((series) => series.data)
+    leftAxisSeries.flatMap((series) => series.data.map((d) => d.y))
   ) as [number, number];
 
   const rightYExtent = extent(
-    rightAxisSeries.flatMap((series) => series.data)
+    rightAxisSeries.flatMap((series) => series.data.map((d) => d.y))
   ) as [number, number];
 
   const xScale = scaleLinear().domain(xExtent).range([0, innerWidth]).nice();
@@ -223,12 +233,12 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
 
   // Create line generator with dynamic y-accessor
   const createLineGenerator = (yField: string) =>
-    line<number>()
-      .x((_, i) => xScale(Number(liveXData[i] ?? 0)))
+    line<(typeof processedLiveSeriesData)[0]["data"][0]>()
+      .x((d) => xScale(d.x))
       .y((d) =>
         settings.seriesSettings[yField]?.useRightAxis
-          ? rightYScale(d)
-          : leftYScale(d)
+          ? rightYScale(d.y)
+          : leftYScale(d.y)
       )
       .curve(curveTypes[settings.styles.curveType as CurveType]);
 
@@ -435,11 +445,11 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
                       <Tooltip key={j}>
                         <TooltipTrigger asChild>
                           <circle
-                            cx={xScale(Number(liveXData[j]))}
+                            cx={xScale(d.x)}
                             cy={
                               seriesSettings.useRightAxis
-                                ? rightYScale(d)
-                                : leftYScale(d)
+                                ? rightYScale(d.y)
+                                : leftYScale(d.y)
                             }
                             r={seriesSettings.pointSize}
                             fill={seriesColor}
@@ -450,10 +460,10 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
                           <div className="space-y-1">
                             <div className="font-medium">{series.name}</div>
                             <div>
-                              {settings.xField}: {liveXData[j]}
+                              {settings.xField}: {d.x}
                             </div>
                             <div>
-                              {series.name}: {d}
+                              {series.name}: {d.y}
                             </div>
                           </div>
                         </TooltipContent>

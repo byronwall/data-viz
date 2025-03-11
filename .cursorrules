@@ -23,3 +23,5 @@
 - When creating toasts, use `sonner` via `import { toast } from "sonner"` and `toast("Event has been created.")`. The relevant providers are in place.
 - For alert dialogs, use `useAlertStore` via `import { useAlertStore } from "@/stores/alertStore"`. DO NOT USE `confirm`. DO NOT import `AlertDialog`
 - Use the `NumericInputEnter` component for numeric inputs. DO NOT USE `input` with `type="number"`
+- Use the `ComboBox` component for dropdowns. DO NOT use `Select` components.
+- When adding settings with a label, prefer the 2 column layout with the label on the left and the component on the right.

@@ -6,6 +6,7 @@ import { categoricalChartSettings } from "./categoricalChartSettings";
 import { basicNumbersSettings } from "./basicNumbersSettings";
 import { categoricalSmallSettings } from "./categoricalSmallSettings";
 import { colorLegendSettings } from "./colorLegendSettings";
+import { lineChartSettings } from "./lineChartSettings";
 
 export interface ExampleData {
   id: string;
@@ -56,6 +57,14 @@ export const examples: ExampleData[] = [
     icon: BarChart3,
     data: "/data-viz/basic_numbers_medium.csv",
     savedData: basicNumbersSettings,
+  },
+  {
+    id: "line-chart",
+    title: "Line Chart",
+    description: "Line Chart",
+    icon: BarChart3,
+    data: "/data-viz/basic_numbers_medium.csv",
+    savedData: lineChartSettings,
   },
   {
     id: "tables",

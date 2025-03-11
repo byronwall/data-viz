@@ -148,6 +148,9 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^2.11.5
         version: 2.11.5
+      '@types/d3-array':
+        specifier: ^3.2.1
+        version: 3.2.1
       '@types/d3-scale':
         specifier: ^4.0.9
         version: 4.0.9
@@ -178,6 +181,9 @@ importers:
       csv-writer:
         specifier: ^1.6.0
         version: 1.6.0
+      d3-array:
+        specifier: ^3.2.4
+        version: 3.2.4
       d3-axis:
         specifier: ^3.0.0
         version: 3.0.0

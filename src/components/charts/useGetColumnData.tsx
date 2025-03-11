@@ -32,3 +32,33 @@ export function useGetColumnDataForIds(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nonce, field, getColumnData, ids]);
 }
+
+export function useGetColumnDataForMultipleIds(
+  fields: string[] | undefined,
+  ids?: IdType[]
+) {
+  const getColumnData = useDataLayer((s) => s.getColumnData);
+  const nonce = useDataLayer((s) => s.nonce);
+
+  return useMemo(() => {
+    if (!fields) {
+      return {};
+    }
+
+    const result: Record<string, any[]> = {};
+
+    for (const field of fields) {
+      const data = getColumnData(field);
+
+      if (!ids) {
+        result[field] = Object.values(data);
+      } else {
+        result[field] = ids.map((id) => data[id]);
+      }
+    }
+
+    return result;
+    // include the nonce since it tracks updates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nonce, fields, getColumnData, ids]);
+}

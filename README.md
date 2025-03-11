@@ -108,6 +108,14 @@ Will be updated when done...
 - Color fields should use a `ColorSelector` that is based on existing fields and user defined color scales
 - Allow user to convert or create an ordinal scale from a numeric field
 
+## Line chart - future ideas
+
+- Zoom and pan support
+- Allow creating a sub-chart by brushing a region - create the new chart below the current one with new axes
+- Brush selection for time range
+- Multiple y-axes support - start with a right axis - will expand in the future to allow multiple y-axes
+- Crosshair on hover
+
 ### Random
 
 - Lorenz bar chart for Run ID is missing a bar?

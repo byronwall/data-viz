@@ -1,5 +1,4 @@
 import { FieldSelector } from "@/components/FieldSelector";
-import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -45,133 +44,115 @@ export const LineChartSettingsPanel: FC<
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <FieldSelector
-                label="X Field"
-                value={settings.xField}
-                onChange={(value) => updateSettings({ xField: value })}
-              />
-            </div>
+      <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+        <Label>X Field</Label>
+        <FieldSelector
+          label=""
+          value={settings.xField}
+          onChange={(value) => updateSettings({ xField: value })}
+        />
 
-            <div className="space-y-2">
-              <Label>Series Fields</Label>
-              <MultiSelect
-                options={availableFields.map((f) => ({
-                  label: f,
-                  value: f,
-                }))}
-                value={settings.seriesField.map((f) => ({
-                  label: f,
-                  value: f,
-                }))}
-                onChange={(values: Option[]) => {
-                  const newSeriesFields = values.map((v) => v.value);
-                  const newSeriesSettings = { ...settings.seriesSettings };
+        <Label>Series Fields</Label>
+        <MultiSelect
+          options={availableFields.map((f) => ({
+            label: f,
+            value: f,
+          }))}
+          value={settings.seriesField.map((f) => ({
+            label: f,
+            value: f,
+          }))}
+          onChange={(values: Option[]) => {
+            const newSeriesFields = values.map((v) => v.value);
+            const newSeriesSettings = { ...settings.seriesSettings };
 
-                  // Add default settings for new series
-                  newSeriesFields.forEach((field) => {
-                    if (!newSeriesSettings[field]) {
-                      newSeriesSettings[field] = { ...DEFAULT_SERIES_SETTINGS };
-                    }
-                  });
+            // Add default settings for new series
+            newSeriesFields.forEach((field) => {
+              if (!newSeriesSettings[field]) {
+                newSeriesSettings[field] = { ...DEFAULT_SERIES_SETTINGS };
+              }
+            });
 
-                  // Remove settings for removed series
-                  Object.keys(newSeriesSettings).forEach((field) => {
-                    if (!newSeriesFields.includes(field)) {
-                      delete newSeriesSettings[field];
-                    }
-                  });
+            // Remove settings for removed series
+            Object.keys(newSeriesSettings).forEach((field) => {
+              if (!newSeriesFields.includes(field)) {
+                delete newSeriesSettings[field];
+              }
+            });
 
-                  updateSettings({
-                    seriesField: newSeriesFields,
-                    seriesSettings: newSeriesSettings,
-                  });
-                }}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            updateSettings({
+              seriesField: newSeriesFields,
+              seriesSettings: newSeriesSettings,
+            });
+          }}
+        />
+      </div>
+
+      <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+        <Label>Line Style</Label>
+        <ComboBox
+          value={{
+            label:
+              settings.styles.curveType === "linear"
+                ? "Linear"
+                : settings.styles.curveType === "monotoneX"
+                  ? "Smooth"
+                  : "Step",
+            value: settings.styles.curveType,
+          }}
+          options={[
+            { label: "Linear", value: "linear" as const },
+            { label: "Smooth", value: "monotoneX" as const },
+            { label: "Step", value: "step" as const },
+          ]}
+          onChange={(option) =>
+            updateStyles({ curveType: option?.value ?? "linear" })
+          }
+          optionToString={(option) => option.label}
+        />
+
+        <Label>Show Legend</Label>
+        <div className="flex items-center">
+          <Switch
+            checked={settings.showLegend}
+            onCheckedChange={(checked) =>
+              updateSettings({ showLegend: checked })
+            }
+          />
+        </div>
+
+        {settings.showLegend && (
+          <>
+            <Label>Legend Position</Label>
+            <ComboBox
+              value={{
+                label:
+                  settings.legendPosition.charAt(0).toUpperCase() +
+                  settings.legendPosition.slice(1),
+                value: settings.legendPosition,
+              }}
+              options={[
+                { label: "Top", value: "top" as const },
+                { label: "Right", value: "right" as const },
+                { label: "Bottom", value: "bottom" as const },
+                { label: "Left", value: "left" as const },
+              ]}
+              onChange={(option) =>
+                updateSettings({
+                  legendPosition: option?.value ?? "top",
+                })
+              }
+              optionToString={(option) => option.label}
+            />
+          </>
+        )}
+      </div>
 
       <Tabs defaultValue="general">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="series">Series</TabsTrigger>
           <TabsTrigger value="axis">Axis</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="general">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Line Style</Label>
-                  <ComboBox
-                    value={{
-                      label:
-                        settings.styles.curveType === "linear"
-                          ? "Linear"
-                          : settings.styles.curveType === "monotoneX"
-                            ? "Smooth"
-                            : "Step",
-                      value: settings.styles.curveType,
-                    }}
-                    options={[
-                      { label: "Linear", value: "linear" as const },
-                      { label: "Smooth", value: "monotoneX" as const },
-                      { label: "Step", value: "step" as const },
-                    ]}
-                    onChange={(option) =>
-                      updateStyles({ curveType: option?.value ?? "linear" })
-                    }
-                    optionToString={(option) => option.label}
-                  />
-                </div>
-
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <Label>Show Legend</Label>
-                  <Switch
-                    checked={settings.showLegend}
-                    onCheckedChange={(checked) =>
-                      updateSettings({ showLegend: checked })
-                    }
-                  />
-                </div>
-
-                {settings.showLegend && (
-                  <div className="space-y-2">
-                    <Label>Legend Position</Label>
-                    <ComboBox
-                      value={{
-                        label:
-                          settings.legendPosition.charAt(0).toUpperCase() +
-                          settings.legendPosition.slice(1),
-                        value: settings.legendPosition,
-                      }}
-                      options={[
-                        { label: "Top", value: "top" as const },
-                        { label: "Right", value: "right" as const },
-                        { label: "Bottom", value: "bottom" as const },
-                        { label: "Left", value: "left" as const },
-                      ]}
-                      onChange={(option) =>
-                        updateSettings({
-                          legendPosition: option?.value ?? "top",
-                        })
-                      }
-                      optionToString={(option) => option.label}
-                    />
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="series">
           <div className="space-y-4">
@@ -191,45 +172,30 @@ export const LineChartSettingsPanel: FC<
         </TabsContent>
 
         <TabsContent value="axis">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="font-medium">Grid Lines</Label>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label>Show X Grid</Label>
-                      <Switch
-                        checked={settings.showXGrid}
-                        onCheckedChange={(checked) =>
-                          updateSettings({ showXGrid: checked })
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <Label>Show Y Grid</Label>
-                      <Switch
-                        checked={settings.showYGrid}
-                        onCheckedChange={(checked) =>
-                          updateSettings({ showYGrid: checked })
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <Label className="font-medium">Axis Settings</Label>
-                  <div className="text-sm text-muted-foreground">
-                    Additional axis settings coming soon...
-                  </div>
-                </div>
+          <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+            <Label className="font-medium">Grid Lines</Label>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.showXGrid}
+                  onCheckedChange={(checked) =>
+                    updateSettings({ showXGrid: checked })
+                  }
+                />
+                <Label>Show X Grid</Label>
               </div>
-            </CardContent>
-          </Card>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={settings.showYGrid}
+                  onCheckedChange={(checked) =>
+                    updateSettings({ showYGrid: checked })
+                  }
+                />
+                <Label>Show Y Grid</Label>
+              </div>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

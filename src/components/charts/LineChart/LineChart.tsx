@@ -18,6 +18,7 @@ import {
 } from "../useGetColumnData";
 import { useGetLiveData } from "../useGetLiveData";
 import { type LineChartSettings } from "./definition";
+import { ArrowRight } from "lucide-react";
 
 const curveTypes = {
   linear: curveLinear,
@@ -252,8 +253,24 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
         name: series.name,
         color: seriesColors[series.name],
         lineStyle: seriesSettings.lineStyle,
+        useRightAxis: seriesSettings.useRightAxis,
       };
     });
+
+    const handleAxisToggle = (seriesName: string) => {
+      const currentSettings = settings.seriesSettings[seriesName] ?? {
+        ...defaultSeriesSettings,
+      };
+      updateChart(settings.id, {
+        seriesSettings: {
+          ...settings.seriesSettings,
+          [seriesName]: {
+            ...currentSettings,
+            useRightAxis: !currentSettings.useRightAxis,
+          },
+        },
+      });
+    };
 
     const isVertical =
       settings.legendPosition === "left" || settings.legendPosition === "right";
@@ -274,26 +291,40 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
       >
         {legendItems.map((item) => (
           <div key={item.name} className="flex items-center gap-2">
-            <svg width="20" height="2" className="flex-shrink-0">
-              <line
-                x1="0"
-                y1="1"
-                x2="20"
-                y2="1"
-                stroke={item.color}
-                strokeWidth="2"
-                strokeDasharray={
-                  item.lineStyle === "dashed"
-                    ? "4,4"
-                    : item.lineStyle === "dotted"
-                      ? "2,2"
-                      : undefined
-                }
-              />
-            </svg>
-            <span className="text-sm text-muted-foreground truncate">
-              {item.name}
-            </span>
+            <div
+              className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-accent/50"
+              style={{
+                border: `1px solid ${item.color}`,
+              }}
+              onClick={() => handleAxisToggle(item.name)}
+            >
+              <svg width="20" height="2" className="flex-shrink-0">
+                <line
+                  x1="0"
+                  y1="1"
+                  x2="20"
+                  y2="1"
+                  stroke={item.color}
+                  strokeWidth="2"
+                  strokeDasharray={
+                    item.lineStyle === "dashed"
+                      ? "4,4"
+                      : item.lineStyle === "dotted"
+                        ? "2,2"
+                        : undefined
+                  }
+                />
+              </svg>
+              <span className="text-sm text-muted-foreground truncate">
+                {item.name}
+              </span>
+              {item.useRightAxis && (
+                <ArrowRight
+                  className="h-3 w-3 text-muted-foreground"
+                  style={{ color: item.color }}
+                />
+              )}
+            </div>
           </div>
         ))}
       </div>

@@ -126,3 +126,4 @@ Will be updated when done...
 - Bar chart nearly always breaks when a different chart is filtered
 - Random scatter plot fails to render on the basic numbers example
 - Creating a blank scatter plot fails with length error
+- Grid line settings should move to the axis tab and be available on a variety of chart types

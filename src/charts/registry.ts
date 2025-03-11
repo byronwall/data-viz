@@ -7,6 +7,7 @@ import { summaryTableDefinition } from "@/components/charts/SummaryTable/definit
 import { markdownDefinition } from "@/components/charts/Markdown/definition";
 import { boxPlotDefinition } from "@/components/charts/BoxPlot/definition";
 import { colorLegendDefinition } from "@/components/charts/ColorLegend/definition";
+import { lineChartDefinition } from "@/components/charts/LineChart/definition";
 import {
   BaseChartSettings,
   ChartDefinition,
@@ -94,4 +95,5 @@ export function registerAllCharts() {
   chartRegistry.register(markdownDefinition);
   chartRegistry.register(boxPlotDefinition);
   chartRegistry.register(colorLegendDefinition);
+  chartRegistry.register(lineChartDefinition);
 }

@@ -14,7 +14,6 @@ src/
         LineChart.tsx         # Main chart component
         LineChartSettingsPanel.tsx  # Settings UI
         definition.ts         # Chart type definition and settings
-        lineChartCalculations.ts    # Helper functions for data processing
 ```
 
 ## Interfaces and Types
@@ -27,7 +26,8 @@ export interface LineChartSettings extends BaseChartSettings {
 
   // Data fields
   xField: string;
-  seriesField?: string; // Optional field for multiple series
+  yField: string;
+  seriesField?: string;
 
   // Line styling
   styles: {
@@ -43,34 +43,10 @@ export interface LineChartSettings extends BaseChartSettings {
   showXGrid: boolean;
   showYGrid: boolean;
 
-  // Tooltip configuration
-  tooltipFormat?: {
-    x?: string;
-    y?: string;
-  };
-
   // Legend options
   showLegend: boolean;
   legendPosition: "top" | "right" | "bottom" | "left";
 }
-```
-
-### Chart Definition (in definition.ts)
-
-```typescript
-export const lineChartDefinition: ChartDefinition<LineChartSettings> = {
-  type: "line",
-  name: "Line Chart",
-  description: "Display data as connected points over time or sequence",
-  icon: LineChart,
-
-  component: LineChart,
-  settingsPanel: LineChartSettingsPanel,
-
-  createDefaultSettings,
-  validateSettings,
-  getFilterFunction,
-};
 ```
 
 ## Core Components
@@ -79,113 +55,159 @@ export const lineChartDefinition: ChartDefinition<LineChartSettings> = {
 
 Main features:
 
-- SVG-based rendering using d3 scales
-- Support for multiple data series
-- Interactive tooltips using shadcn/ui Tooltip
-- Responsive design
-- Integration with faceting system
-- Brush selection for filtering
-- Legend support using existing patterns
-- Assign a unique color to each series from a pallette - allow user to override single series or the pallette
+- SVG-based rendering using d3 scales ✅
+- Support for multiple data series ✅
+- Interactive tooltips using shadcn/ui Tooltip ✅
+- Responsive design ✅
+- Integration with faceting system ✅
+- Brush selection for filtering ✅
+- Legend support using existing patterns ✅
+- Assign a unique color to each series from a palette ✅
 
 ### LineChartSettingsPanel.tsx
 
 Settings UI for configuring:
 
-- Data field mappings (x, series) via FieldSelector and MultiSelect
-- Line styling options
-- Axis configuration
-- Grid display
-- Tooltip format
-- Legend position
+- Data field mappings (x, series) via FieldSelector ✅
+- Line styling options ✅
+- Grid display ✅
+- Legend position ✅
 
 ## Integration Points
 
 1. Chart Registry
 
-   - Add line chart definition to registry.ts
-   - Register in the initialization
+   - Add line chart definition to registry.ts ✅
+   - Register in the initialization ✅
 
 2. Data Layer Integration
 
-   - Use useDataLayer for state management
-   - Implement filter functions
-   - Support live data updates
+   - Use useDataLayer for state management ✅
+   - Implement filter functions ✅
+   - Support live data updates ✅
 
 3. Faceting Support
-   - Register axis limits
-   - Support synchronized scales
-   - Handle facet-specific rendering
+   - Register axis limits ✅
+   - Support synchronized scales ✅
+   - Handle facet-specific rendering ✅
 
 ## Implementation Phases
 
-### Phase 1: Core Chart Component
+### Phase 1: Core Chart Component ✅
 
-- [ ] Basic component structure
+- [x] Basic component structure
 
-  - [ ] Component scaffolding
-  - [ ] Props and settings interfaces
-  - [ ] Basic SVG setup
+  - [x] Component scaffolding
+  - [x] Props and settings interfaces
+  - [x] Basic SVG setup
 
-- [ ] Data handling
+- [x] Data handling
 
-  - [ ] Data processing utilities
-  - [ ] Scale creation
-  - [ ] Line generation
+  - [x] Data processing utilities
+  - [x] Scale creation
+  - [x] Line generation
 
-- [ ] Basic rendering
-  - [ ] Single line plotting
-  - [ ] Axes integration
-  - [ ] Responsive container
+- [x] Basic rendering
+  - [x] Single line plotting
+  - [x] Axes integration
+  - [x] Responsive container
 
-### Phase 2: Multiple Series Support
+### Phase 2: Multiple Series Support ✅
 
-- [ ] Series handling
+- [x] Series handling
 
-  - [ ] Data grouping by series
-  - [ ] Color assignment
-  - [ ] Legend integration
+  - [x] Data grouping by series
+  - [x] Color assignment
+  - [x] Legend integration
 
-- [ ] Enhanced rendering
-  - [ ] Multiple line paths
-  - [ ] Point markers
-  - [ ] Grid lines
+- [x] Enhanced rendering
+  - [x] Multiple line paths
+  - [x] Point markers
+  - [x] Grid lines
 
-### Phase 3: Interactivity
+### Phase 3: Interactivity ✅
 
-- [ ] Tooltip implementation
+- [x] Tooltip implementation
 
-  - [ ] Hover detection
-  - [ ] Data point highlighting
-  - [ ] Formatted display
+  - [x] Hover detection
+  - [x] Data point highlighting
+  - [x] Formatted display
 
-- [ ] Brush selection
-  - [ ] Area selection
-  - [ ] Filter integration
-  - [ ] Visual feedback
+- [x] Brush selection
+  - [x] Area selection
+  - [x] Filter integration
+  - [x] Visual feedback
 
-### Phase 4: Settings Panel
+### Phase 4: Settings Panel ✅
 
-- [ ] Settings UI
+- [x] Settings UI
 
-  - [ ] Field selectors
-  - [ ] Style controls
-  - [ ] Format options
+  - [x] Field selectors
+  - [x] Style controls
+  - [x] Format options
 
-- [ ] Preview updates
-  - [ ] Live preview
-  - [ ] Validation
+- [x] Preview updates
+  - [x] Live preview
+  - [x] Validation
+
+### Phase 5: Series Settings Enhancement
+
+- [x] Create SeriesSettings interface
+
+  - [x] showPoints: boolean
+  - [x] pointSize: number
+  - [x] pointOpacity: number
+  - [x] lineWidth: number
+  - [x] lineOpacity: number
+  - [x] lineColor: string
+  - [x] lineStyle: string
+
+- [x] Create LineSeriesSettings component
+  - [x] Grid/table layout for settings
+  - [x] Individual series controls
+  - [x] Preview updates
+  - [x] New settings tab integration
+
+### Phase 6: Component and UX Improvements
+
+- [x] MultiSelect integration
+
+  - [x] Replace current series selector with MultiSelect
+  - [x] Update data handling for multiple selections
+
+- [x] Axis Enhancements
+
+  - [x] Support for right axis assignment
+  - [ ] Move gridline settings to axis tab
+  - [ ] Unified axis settings across chart types
+
+- [ ] Legend Fixes
+  - [ ] Fix legend rendering
+  - [ ] Implement unique color assignment per series
 
 ## Current Progress
 
-No work started yet.
+All core functionality is implemented with basic features working. Recent updates have identified several areas needing enhancement:
 
-### Next steps
+1. ✅ Series settings have been expanded with full control over line and point appearance
+2. ✅ UI components have been standardized with MultiSelect for series selection
+3. ✅ Right axis support has been added for series
+4. ⏳ Legend and color assignment needs fixing
+5. ⏳ Axis settings need reorganization
 
-1. Create initial file structure
-2. Implement basic LineChart component with single series support
-3. Add settings panel with core options
-4. Integrate with chart registry
-5. Add multiple series support
-6. Implement interactive features
-7. Add advanced features (zoom, brush selection)
+### Next Steps
+
+1. ✅ Implement SeriesSettings interface and component
+2. ✅ Update series selector to use MultiSelect
+3. ✅ Add right axis support
+4. [ ] Fix legend rendering and color assignment
+5. [ ] Reorganize axis settings and gridline controls
+6. [ ] Test all new features with various data configurations
+7. [ ] Add error handling for edge cases
+
+### Dependencies
+
+- MultiSelect component (existing)
+- Current axis settings implementation
+- Color scale system
+- Settings panel architecture

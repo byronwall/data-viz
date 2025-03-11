@@ -10,6 +10,7 @@ import { SummaryTableSettings } from "@/components/charts/SummaryTable/definitio
 import { ThreeDScatterSettings } from "@/components/charts/ThreeDScatter/types";
 import { BoxPlotSettings } from "@/components/charts/BoxPlot/definition";
 import { LucideIcon } from "lucide-react";
+import { LineChartSettings } from "@/components/charts/LineChart/definition";
 
 export interface ChartLayout {
   x: number;
@@ -92,7 +93,8 @@ export type ChartSettings =
   | SummaryTableSettings
   | DataTableSettings
   | MarkdownSettings
-  | BoxPlotSettings;
+  | BoxPlotSettings
+  | LineChartSettings;
 
 export interface ChartSettingsPanelProps<
   TSettings extends BaseChartSettings = BaseChartSettings,

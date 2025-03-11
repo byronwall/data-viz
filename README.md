@@ -14,7 +14,7 @@ Will be updated when done...
 
 ### Core data viz
 
-- Create a `LineChart` that favors plotting time series data with a line
+- Axis related settings and renderings - really need control over axes, labelling automatically, etc
 - Improve handling of times stamps
 - Add a filter summary + filter controller
 - Top level filter + steps = ability to quickly segment data and work on slices -- almost like a `slice` comp
@@ -125,7 +125,7 @@ Will be updated when done...
 - Remove the `ChartTypes` array - infer completely from the registry
 - Consider tracking the mouse pos on the scale? -- implement across all charts
 - Need an axis label for the x and y axis - this should be handled globally - the chart settings should be an override - pass in the field for each chart
-- Sort the fields by name in the FieldSelector
+- Sort the fields by name in the `FieldSelector`
 - Sort the `add chart` menu by chart name
 - Add ability to track the mouse position in the chart on the axes - give a small red line
 - Add support for reading and processing parquet files

@@ -74,7 +74,7 @@ export const LineChartSettingsPanel: FC<
                   // Add default settings for new series
                   newSeriesFields.forEach((field) => {
                     if (!newSeriesSettings[field]) {
-                      newSeriesSettings[field] = DEFAULT_SERIES_SETTINGS;
+                      newSeriesSettings[field] = { ...DEFAULT_SERIES_SETTINGS };
                     }
                   });
 

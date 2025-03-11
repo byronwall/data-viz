@@ -5,13 +5,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { type DatumObject, useDataLayer } from "@/providers/DataLayerProvider";
+import { useDataLayer } from "@/providers/DataLayerProvider";
 import { type BaseChartProps } from "@/types/ChartTypes";
 import { extent } from "d3-array";
 import { scaleLinear } from "d3-scale";
 import { curveLinear, curveMonotoneX, curveStepAfter, line } from "d3-shape";
 import { type FC, useEffect, useMemo } from "react";
 import { BaseChart } from "../BaseChart";
+import {
+  useGetColumnDataForIds,
+  useGetColumnDataForMultipleIds,
+} from "../useGetColumnData";
+import { useGetLiveData } from "../useGetLiveData";
 import { type LineChartSettings } from "./definition";
 
 const curveTypes = {
@@ -22,45 +27,19 @@ const curveTypes = {
 
 type CurveType = keyof typeof curveTypes;
 
-type DataPoint = DatumObject;
-
 // Define color palettes
 const COLOR_PALETTES = {
   default: [
     "#2563eb", // blue-600
     "#dc2626", // red-600
-    "#16a34a", // green-600
     "#9333ea", // purple-600
     "#ea580c", // orange-600
     "#0891b2", // cyan-600
     "#4f46e5", // indigo-600
     "#be123c", // rose-600
     "#ca8a04", // yellow-600
+    "#16a34a", // green-600
     "#059669", // emerald-600
-  ],
-  cool: [
-    "#0ea5e9", // sky-500
-    "#06b6d4", // cyan-500
-    "#3b82f6", // blue-500
-    "#6366f1", // indigo-500
-    "#8b5cf6", // violet-500
-    "#0284c7", // sky-600
-    "#0891b2", // cyan-600
-    "#2563eb", // blue-600
-    "#4f46e5", // indigo-600
-    "#7c3aed", // violet-600
-  ],
-  warm: [
-    "#ef4444", // red-500
-    "#f97316", // orange-500
-    "#f59e0b", // amber-500
-    "#eab308", // yellow-500
-    "#84cc16", // lime-500
-    "#dc2626", // red-600
-    "#ea580c", // orange-600
-    "#d97706", // amber-600
-    "#ca8a04", // yellow-600
-    "#65a30d", // lime-600
   ],
 } as const;
 
@@ -83,28 +62,66 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
   settings,
   width,
   height,
+  facetIds,
 }) => {
-  const data = useDataLayer<DataPoint, DataPoint[]>((state) => state.data);
   const updateChart = useDataLayer((state) => state.updateChart);
+
+  // Get all data for axis limits calculation
+  const allXData = useGetColumnDataForIds(settings.xField);
+
+  // Get filtered data for rendering
+  const liveXData = useGetLiveData(settings, settings.xField, facetIds);
+
+  // Get all series data using the new hook
+  const liveSeriesData = useGetColumnDataForMultipleIds(
+    settings.seriesField,
+    facetIds
+  );
+
+  // Convert data to numbers for d3
+
+  const processedLiveSeriesData = useMemo(() => {
+    return settings.seriesField.map((field) => ({
+      name: field,
+      data:
+        liveSeriesData[field]?.map((d) => (d != null ? Number(d) : 0)) ?? [],
+    }));
+  }, [settings.seriesField, liveSeriesData]);
 
   // Ensure consistent color assignment for series with better distribution
   const seriesColors = useMemo(() => {
     const colors: Record<string, string> = {};
     const palette = COLOR_PALETTES.default;
-    const paletteLength = palette.length;
 
-    settings.seriesField.forEach((field, index) => {
+    // First pass - keep existing colors and track which palette colors are used
+    const usedPaletteColors = new Set<string>();
+    settings.seriesField.forEach((field) => {
       const existingColor = settings.seriesSettings[field]?.lineColor;
-      // Only assign new colors if the existing color is undefined or "default"
-      if (!existingColor || existingColor === "#000000") {
-        // Rotate through palette with step size for better distribution
-        const colorIndex = index % paletteLength;
-        colors[field] = palette[colorIndex] ?? getRandomHslColor();
-        console.log("colorIndex", colorIndex, colors[field]);
-      } else {
+      if (existingColor && existingColor !== "#000000") {
         colors[field] = existingColor;
+        if ((palette as readonly string[]).includes(existingColor)) {
+          usedPaletteColors.add(existingColor);
+        }
       }
     });
+
+    // Get unused palette colors
+    const unusedPaletteColors = (palette as readonly string[]).filter(
+      (color) => !usedPaletteColors.has(color)
+    );
+
+    // Second pass - assign colors to series that need them
+    // splice off the first color from the unused palette colors
+    settings.seriesField.forEach((field) => {
+      const nextColor = unusedPaletteColors.shift();
+      if (colors[field]) {
+        return;
+      }
+
+      // Use an unused palette color
+      colors[field] = nextColor ?? getRandomHslColor();
+    });
+
     return colors;
   }, [settings.seriesField, settings.seriesSettings]);
 
@@ -131,7 +148,6 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
       });
 
       if (hasChanges) {
-        console.log("hasChanges", newSeriesSettings);
         updateChart(settings.id, {
           seriesSettings: newSeriesSettings,
         });
@@ -145,19 +161,7 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
     updateChart,
   ]);
 
-  // Group data by series if seriesField is specified
-  const seriesData = useMemo(() => {
-    if (!data || data.length === 0) {
-      return [];
-    }
-
-    return settings.seriesField.map((field) => ({
-      name: field,
-      data: data.filter((d) => d[field] != null),
-    }));
-  }, [data, settings.seriesField]);
-
-  if (!data || data.length === 0 || seriesData.length === 0) {
+  if (processedLiveSeriesData.length === 0) {
     return null;
   }
 
@@ -185,28 +189,25 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
   const innerHeight = height - margin.top - margin.bottom;
 
   // Process data and create scales
-  const xExtent = extent(data, (d: DataPoint) =>
-    Number(d[settings.xField])
-  ) as [number, number];
+  const xExtent = extent(allXData.map((d) => (d != null ? Number(d) : 0))) as [
+    number,
+    number,
+  ];
 
   // Calculate y extent across all series
-  const leftAxisSeries = seriesData.filter(
+  const leftAxisSeries = processedLiveSeriesData.filter(
     (series) => !settings.seriesSettings[series.name]?.useRightAxis
   );
-  const rightAxisSeries = seriesData.filter(
+  const rightAxisSeries = processedLiveSeriesData.filter(
     (series) => settings.seriesSettings[series.name]?.useRightAxis
   );
 
   const leftYExtent = extent(
-    leftAxisSeries.flatMap((series) =>
-      series.data.map((d) => Number(d[series.name]))
-    )
+    leftAxisSeries.flatMap((series) => series.data)
   ) as [number, number];
 
   const rightYExtent = extent(
-    rightAxisSeries.flatMap((series) =>
-      series.data.map((d) => Number(d[series.name]))
-    )
+    rightAxisSeries.flatMap((series) => series.data)
   ) as [number, number];
 
   const xScale = scaleLinear().domain(xExtent).range([0, innerWidth]).nice();
@@ -221,12 +222,12 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
 
   // Create line generator with dynamic y-accessor
   const createLineGenerator = (yField: string) =>
-    line<DataPoint>()
-      .x((d) => xScale(Number(d[settings.xField])))
+    line<number>()
+      .x((_, i) => xScale(Number(liveXData[i] ?? 0)))
       .y((d) =>
         settings.seriesSettings[yField]?.useRightAxis
-          ? rightYScale(Number(d[yField]))
-          : leftYScale(Number(d[yField]))
+          ? rightYScale(d)
+          : leftYScale(d)
       )
       .curve(curveTypes[settings.styles.curveType as CurveType]);
 
@@ -236,7 +237,7 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
       return null;
     }
 
-    const legendItems = seriesData.map((series) => {
+    const legendItems = processedLiveSeriesData.map((series) => {
       const seriesSettings = settings.seriesSettings[series.name] ?? {
         showPoints: false,
         pointSize: 4,
@@ -368,7 +369,7 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
             )}
 
             {/* Lines */}
-            {seriesData.map((series) => {
+            {processedLiveSeriesData.map((series) => {
               const lineGenerator = createLineGenerator(series.name);
               const seriesSettings = settings.seriesSettings[series.name] ?? {
                 showPoints: false,
@@ -403,11 +404,11 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
                       <Tooltip key={j}>
                         <TooltipTrigger asChild>
                           <circle
-                            cx={xScale(Number(d[settings.xField]))}
+                            cx={xScale(Number(liveXData[j]))}
                             cy={
                               seriesSettings.useRightAxis
-                                ? rightYScale(Number(d[series.name]))
-                                : leftYScale(Number(d[series.name]))
+                                ? rightYScale(d)
+                                : leftYScale(d)
                             }
                             r={seriesSettings.pointSize}
                             fill={seriesColor}
@@ -418,10 +419,10 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
                           <div className="space-y-1">
                             <div className="font-medium">{series.name}</div>
                             <div>
-                              {settings.xField}: {d[settings.xField]}
+                              {settings.xField}: {liveXData[j]}
                             </div>
                             <div>
-                              {series.name}: {d[series.name]}
+                              {series.name}: {d}
                             </div>
                           </div>
                         </TooltipContent>

@@ -87,17 +87,20 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
   const data = useDataLayer<DataPoint, DataPoint[]>((state) => state.data);
   const updateChart = useDataLayer((state) => state.updateChart);
 
-  // Ensure consistent color assignment for series
+  // Ensure consistent color assignment for series with better distribution
   const seriesColors = useMemo(() => {
     const colors: Record<string, string> = {};
     const palette = COLOR_PALETTES.default;
+    const paletteLength = palette.length;
 
     settings.seriesField.forEach((field, index) => {
       const existingColor = settings.seriesSettings[field]?.lineColor;
       // Only assign new colors if the existing color is undefined or "default"
-      if (!existingColor || existingColor === "default") {
-        colors[field] =
-          index < palette.length ? palette[index] : getRandomHslColor();
+      if (!existingColor || existingColor === "#000000") {
+        // Rotate through palette with step size for better distribution
+        const colorIndex = index % paletteLength;
+        colors[field] = palette[colorIndex] ?? getRandomHslColor();
+        console.log("colorIndex", colorIndex, colors[field]);
       } else {
         colors[field] = existingColor;
       }
@@ -128,6 +131,7 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
       });
 
       if (hasChanges) {
+        console.log("hasChanges", newSeriesSettings);
         updateChart(settings.id, {
           seriesSettings: newSeriesSettings,
         });

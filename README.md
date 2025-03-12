@@ -184,6 +184,7 @@ They include:
 - FIFA 24 player data, via <https://www.kaggle.com/datasets/nyagami/fc-24-players-database-and-stats-from-easports?resource=download>
 - World Bank population data, via <https://data.worldbank.org/indicator/SP.POP.TOTL>
   - Data converted from wide to long format
+- NBA Stats, via <https://www.basketball-reference.com/leagues/NBA_2024_totals.html>
 
 ## Inspiration
 

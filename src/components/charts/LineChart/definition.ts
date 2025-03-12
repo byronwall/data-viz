@@ -96,11 +96,6 @@ export const lineChartDefinition: ChartDefinition<LineChartSettings> = {
     return settings.xField !== "" && settings.seriesField.length > 0;
   },
   getFilterFunction: (settings: LineChartSettings) => {
-    return (row: any) => {
-      return (
-        row[settings.xField] != null &&
-        settings.seriesField.every((field) => row[field] != null)
-      );
-    };
+    return (d: number) => true;
   },
 };

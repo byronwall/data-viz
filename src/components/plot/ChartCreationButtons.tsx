@@ -11,7 +11,9 @@ import { chartRegistry } from "@/charts/registry";
 
 export function ChartCreationButtons() {
   const { createChart } = useCreateCharts();
-  const chartDefinitions = chartRegistry.getAll();
+  const chartDefinitions = chartRegistry
+    .getAll()
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <DropdownMenu>

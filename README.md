@@ -175,6 +175,16 @@ This centralized approach ensures:
 - ESLint - Code linting
 - Prettier - Code formatting
 
+## Samples Datasets
+
+There are a couple of sample datasets in the `src/demos/examples.ts` file.
+
+They include:
+
+- FIFA 24 player data, via <https://www.kaggle.com/datasets/nyagami/fc-24-players-database-and-stats-from-easports?resource=download>
+- World Bank population data, via <https://data.worldbank.org/indicator/SP.POP.TOTL>
+  - Data converted from wide to long format
+
 ## Inspiration
 
 This tool was heavily inspired by [DC.js](https://dc-js.github.io/dc.js/) and [Crossfilter](https://github.com/crossfilter/crossfilter).

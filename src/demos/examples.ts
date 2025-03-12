@@ -1,12 +1,14 @@
 import { demoSettings } from "@/demos/lorenz";
 import { boxPlotSettings } from "./boxPlotSettings";
 import { SavedDataStructure } from "@/types/SavedDataTypes";
-import { BarChart3, LucideIcon, Palette } from "lucide-react";
+import { BarChart3, Gamepad2, Globe, LucideIcon, Palette } from "lucide-react";
 import { categoricalChartSettings } from "./categoricalChartSettings";
 import { basicNumbersSettings } from "./basicNumbersSettings";
 import { categoricalSmallSettings } from "./categoricalSmallSettings";
 import { colorLegendSettings } from "./colorLegendSettings";
 import { lineChartSettings } from "./lineChartSettings";
+import { fifaSettings } from "./fifaSettings";
+import { worldBankPopulationSettings } from "./worldBankPopulationSettings";
 
 export interface ExampleData {
   id: string;
@@ -73,5 +75,21 @@ export const examples: ExampleData[] = [
     icon: BarChart3,
     data: "/data-viz/categorical_small.csv",
     savedData: categoricalSmallSettings,
+  },
+  {
+    id: "fifa",
+    title: "Fifa",
+    description: "EA SPORTS FC 24 FULL PLAYERS DATABASE AND STATS",
+    icon: Gamepad2,
+    data: "/data-viz/all_fc_24_players.csv",
+    savedData: fifaSettings,
+  },
+  {
+    id: "world-bank-population",
+    title: "World Bank Population",
+    description: "World Bank Population",
+    icon: Globe,
+    data: "/data-viz/world_bank_population.csv",
+    savedData: worldBankPopulationSettings,
   },
 ];

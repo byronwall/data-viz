@@ -88,8 +88,16 @@ export function BaseChart({
         {brush.renderBrush}
 
         {/* Axes */}
-        <XAxis scale={xScale} transform={`translate(0,${innerHeight})`} />
-        <YAxis scale={yScale} transform="translate(0,0)" />
+        <XAxis
+          scale={xScale}
+          transform={`translate(0,${innerHeight})`}
+          axisLabel={settings.xAxisLabel}
+        />
+        <YAxis
+          scale={yScale}
+          transform="translate(0,0)"
+          axisLabel={settings.yAxisLabel}
+        />
       </g>
     </svg>
   );

@@ -8,6 +8,7 @@ interface AxisProps {
   className?: string;
   tickCount?: number;
   showGridLines?: boolean;
+  axisLabel?: string;
 }
 
 export function XAxis({
@@ -15,6 +16,7 @@ export function XAxis({
   transform,
   tickCount = 5,
   showGridLines = false,
+  axisLabel,
 }: AxisProps) {
   // Helper function to get ticks
   const getTicks = () => {
@@ -75,6 +77,18 @@ export function XAxis({
           </g>
         );
       })}
+
+      {/* Axis label */}
+      {axisLabel && (
+        <text
+          x={range[0] + axisLength / 2}
+          y={30}
+          textAnchor="middle"
+          className="fill-muted-foreground text-sm font-medium"
+        >
+          {axisLabel}
+        </text>
+      )}
     </g>
   );
 }
@@ -84,6 +98,7 @@ export function YAxis({
   transform,
   tickCount = 5,
   showGridLines = false,
+  axisLabel,
 }: AxisProps) {
   // Helper function to get ticks
   const getTicks = () => {
@@ -145,6 +160,19 @@ export function YAxis({
           </g>
         );
       })}
+
+      {/* Axis label */}
+      {axisLabel && (
+        <text
+          x={-(range[1] + (range[0] - range[1]) / 2)}
+          y={0}
+          textAnchor="middle"
+          transform="rotate(-90)"
+          className="fill-muted-foreground text-sm font-medium"
+        >
+          {axisLabel}
+        </text>
+      )}
     </g>
   );
 }

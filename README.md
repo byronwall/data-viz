@@ -137,3 +137,46 @@ This centralized approach ensures:
 - Type safety across the application
 - Easy addition of new chart types
 - Maintainable chart management
+
+## Technologies Used
+
+### Core Technologies
+
+- React 19 - Modern UI framework
+- TypeScript - Type-safe development
+- Vite - Build tool and development server
+- pnpm - Fast, disk space efficient package manager
+
+### UI and Styling
+
+- Tailwind CSS - Utility-first CSS framework
+- shadcn/ui - High-quality React components built on Radix UI
+- Lucide React - Beautiful and consistent icons
+- Framer Motion - Animation library
+- Sonner - Toast notifications
+- React Grid Layout - Responsive grid layout system
+
+### Data Visualization
+
+- D3.js - Low-level visualization primitives
+- Three.js - 3D graphics library
+- Crossfilter - Fast multidimensional filtering
+
+### State Management and Data Handling
+
+- Zustand - Simple state management
+- Zod - Schema validation and parsing
+- Immer - Immutable state updates
+- Papa Parse - CSV parsing
+
+### Development Tools
+
+- Vitest - Unit testing framework
+- ESLint - Code linting
+- Prettier - Code formatting
+
+## Inspiration
+
+This tool was heavily inspired by [DC.js](https://dc-js.github.io/dc.js/) and [Crossfilter](https://github.com/crossfilter/crossfilter).
+
+My goal is to built a system that allows for user configurable data analysis.

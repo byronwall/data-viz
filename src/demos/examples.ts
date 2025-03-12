@@ -53,14 +53,7 @@ export const examples: ExampleData[] = [
     data: "/data-viz/categorical_medium.csv",
     savedData: colorLegendSettings,
   },
-  {
-    id: "basic-numbers",
-    title: "Basic Numbers",
-    description: "Basic numbers",
-    icon: BarChart3,
-    data: "/data-viz/basic_numbers_medium.csv",
-    savedData: basicNumbersSettings,
-  },
+
   {
     id: "line-chart",
     title: "Line Chart",

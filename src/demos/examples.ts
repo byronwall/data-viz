@@ -9,6 +9,7 @@ import { colorLegendSettings } from "./colorLegendSettings";
 import { lineChartSettings } from "./lineChartSettings";
 import { fifaSettings } from "./fifaSettings";
 import { worldBankPopulationSettings } from "./worldBankPopulationSettings";
+import { nbaStatsSettings } from "./nbaStatsSettings";
 
 export interface ExampleData {
   id: string;
@@ -91,5 +92,14 @@ export const examples: ExampleData[] = [
     icon: Globe,
     data: "/data-viz/world_bank_population.csv",
     savedData: worldBankPopulationSettings,
+  },
+  // NBA Stats
+  {
+    id: "nba-stats",
+    title: "NBA Stats",
+    description: "NBA Stats",
+    icon: BarChart3,
+    data: "/data-viz/nba_stats.csv",
+    savedData: nbaStatsSettings,
   },
 ];

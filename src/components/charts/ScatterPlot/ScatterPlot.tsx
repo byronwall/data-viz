@@ -42,11 +42,6 @@ export function ScatterPlot({
   const xValues = xData.map(Number);
   const yValues = yData.map(Number);
 
-  // Validate array lengths
-  if (xValues.length !== yValues.length) {
-    throw new Error("X and Y arrays must have the same length");
-  }
-
   // Calculate data bounds from ALL data (not just filtered data)
   const xMin = Math.min(...(allXData as number[]));
   const xMax = Math.max(...(allXData as number[]));

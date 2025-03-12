@@ -6,133 +6,134 @@ Tool for exploratory and interactive data analysis.
 
 ## Features
 
-Will be updated when done...
+### Chart Types
 
-## Major work remaining
+#### Data Tables
 
-- Calc engine - around 50% done - add more functions, including special ones
+- **Data Table**: Interactive data table with sorting, filtering, and pagination
+- **Pivot Table**: Interactive pivot table for data analysis with row/column aggregations and totals
+- **Summary Table**: Display summary statistics for your data
 
-### Core data viz
+#### Basic Charts
 
-- Axis related settings and renderings - really need control over axes, labelling automatically, etc
-- Improve handling of times stamps
-- Add a filter summary + filter controller
-- Top level filter + steps = ability to quickly segment data and work on slices -- almost like a `slice` comp
-- Do all the `Random` items below
+- **Bar Chart**: Display data as vertical bars with automatic binning for numerical data
+- **Row Chart**: Horizontal bar chart showing values by category
+- **Line Chart**: Display data as connected points over time or sequence with multiple series support
+- **Scatter Plot**: Display data as points in a 2D space
+- **Box Plot**: Display distribution of values with quartiles and outliers, with optional violin and bee swarm overlays
 
-### Packaging and usages
+#### Advanced Visualizations
 
-- Export the core data viewer as a component to be installed elsewhere
-- Allow the comp to export the current config so it can be brought into code easily
-- Split out the chart components, so that the charting portion can be rented on its own with just data as props make it so that users can use it without needing all of the cross filter machinery still show a setting button that way they can self configure the chart
+- **3D Scatter Plot**: Display data as points in a 3D space with interactive camera controls
 
-### Docs and help
+#### Documentation and Annotations
 
-- Write up the motivation for the project
-- Create a full doc site with helper images
-- Create some videos showing usage
+- **Color Legend**: Display and manage color scales used in visualizations
+- **Markdown**: Rich text content editor for documentation and annotations
 
-## Nice to haves
+### Common Features Across Charts
 
-- Add GPS maps + data display
-  - Figure out how to do chloropleth maps
-- Add supporting for multiple data sources and relationships
-- Add data isolation + "fork" modes - create tabbed interfaces for these
-- Create a SPLOM comp that renders scatter plot matrices
-- Add a UMAP or TSNE comp that shows clusters from embeddings
-- Global color themes
-- `Tree map` view
+- Interactive brushing and filtering
+- Faceted views with synchronized axes
+- Color scale management
+- Customizable axes and grid lines
+- Responsive layouts
+- Tooltips and hover interactions
+- Export capabilities
 
-## Small problems
+### Data Analysis Features
 
-### Chart Visualization and Rendering
+- Real-time filtering and updates
+- Multiple aggregation methods
+- Date binning and formatting
+- Statistical computations
+- Dynamic data loading
+- Cross-chart filtering
 
-- Scatter plot needs to allow new drag filter on off-click if already brushed
-- Charts are all missing consistent gridlines
-- Clicking on a numerical bar chart should filter by the width of the bar
-- Bar chart needs a bunch of visual tweaks
-  - Give option to render label on top of bar (instead of to left; affects the axis def)
-  - Set a max length on that label
-  - Allow ordering by label
-  - Allow keeping 0 count items in display to avoid layout shift when filtering
-  - Click on `others` to double height of chart
-- Scatter points need to render on top of gridlines
-- Do not attempt to render points and bars that are not visible due to axis limits
-- Decide if it is worth allowing the y categories to be globally shared in Row charts w/ facets
-- Row chart should give a warning about missing field instead of rendering undefined - maybe give a drop down immediately
-- Row chart should allow clicking anywhere on bar or label to filter - use pointer cursor - give a visual indicator of the filter in case base is small (bold + funnel)
-- Put the `clear all filters` button in the main toolbar - make it icon only
+### User Interface
 
-### Data Display and Formatting
+- Modern, responsive design using Tailwind CSS
+- Customizable layouts and chart sizes
+- Dark/light theme support
+- Intuitive controls and settings panels
 
-- Bools should be shown as `true`/`false` not `1`/`0`
-- Verify that null detection is working correctly
-- Need to build chart title from data fields
+### Calculations
 
-### Summary and Pivot Table
+- Can create new columns based on existing columns
 
-- Debounce the slider on the summary table to prevent too many re-renders
-- Show the total row count somewhere on the summary table
-- Add filtering to the summary table
-- Pivot table - implement filtering and sorting
-- Summary table causes a render with each column? Do them all in one shot if possible - check time and then RAF to continue
-- Need to wire up the "details" view for the pivot table
-- Integrate the data summary info into the field chooser drop downs - show icon for field (maybe a count, etc)
+## Component Structure
 
-### Calculations and Filtering
+![](docs/component_structure.svg)
 
-- Calculation def should describe the available fields created by the calc - default is just producing the calc name - regression would generate estimate, residual, etc. need to declare in advance so drop down menus show what is possible
-- A `Region` calc that allows building a 2D mapping and creating regions of assignment
-- "Filter to calc" - convert a filter to a calc that segments the data
-- Conditional formatting - allow for background regions to appear in charts if some condition is met?
+## Chart Creation Process
 
-### Settings and Configuration
+The application uses a centralized chart registry system to manage all available chart types. This makes it easy to add new charts by registering them in a single location. Each chart is defined by implementing the `ChartDefinition` interface:
 
-- Need to implement the full suite of control for axis limits - scatter defaults to all available global data
-- Settings that need wired up:
-  - Label title overrides
-  - Grid lines - tick counts
-  - Axis limits
-  - Need to hide certain axis settings that cannot be easily changed
+```typescript
+interface ChartDefinition<TSettings> {
+  // Metadata
+  type: string; // Unique identifier for the chart type
+  name: string; // Display name
+  description: string; // Chart description
+  icon: React.ComponentType; // Icon component for the chart
 
-### Related to Data Table
+  // Core Components
+  component: React.ComponentType; // The main chart component
+  settingsPanel: React.ComponentType; // Settings panel for the chart
 
-- Should include option to filter only the component or to filter the entire crossfilter context
-- Global search seems to not work - does it search all fields? or just those involved in the display
-- Add highlighter when using the global search or other filters
-- Show filter as a row below the header - add option to change type
-- Add a popover for quick access to advanced filtering options
+  // Settings Management
+  createDefaultSettings: (layout, field?) => TSettings; // Creates default settings
+  validateSettings: (settings) => boolean; // Validates settings
+  getFilterFunction: (settings, fieldGetter) => Function; // Creates filter function
+}
+```
 
-## Color scales
+### Registry System
 
-- Color fields should use a `ColorSelector` that is based on existing fields and user defined color scales
-- Allow user to convert or create an ordinal scale from a numeric field
+The chart registry (`registry.ts`) serves as a central hub for:
 
-## Line chart - future ideas
+- Registering new chart types
+- Retrieving chart definitions
+- Managing chart type validation
+- Providing type safety for chart settings
 
-- Zoom and pan support
-- Allow creating a sub-chart by brushing a region - create the new chart below the current one with new axes
-- Brush selection for time range
-- Multiple y-axes support - start with a right axis - will expand in the future to allow multiple y-axes
-- Crosshair on hover
+### Key Consumers of the Registry
 
-### Random
+1. **Chart Creation UI** (`ChartCreationButtons.tsx`)
 
-- Lorenz bar chart for Run ID is missing a bar?
-- Animate the `update charts` button - make it smaller too
-- Row chart min and max bar sizes don't seem to be working
-- Pivot table needs supports for sorting and filtering
-- Remove the `ChartTypes` array - infer completely from the registry
-- Consider tracking the mouse pos on the scale? -- implement across all charts
-- Need an axis label for the x and y axis - this should be handled globally - the chart settings should be an override - pass in the field for each chart
-- Sort the fields by name in the `FieldSelector`
-- Sort the `add chart` menu by chart name
-- Add ability to track the mouse position in the chart on the axes - give a small red line
-- Add support for reading and processing parquet files
-- Add support for reading and processing json files
-- Add support for reading and processing xlsx files
-- Bar chart nearly always breaks when a different chart is filtered
-- Random scatter plot fails to render on the basic numbers example
-- Creating a blank scatter plot fails with length error
-- Grid line settings should move to the axis tab and be available on a variety of chart types
-- Plot margins are ignored on the LineChart - check to see if this is true for other charts
+   - Uses registry to display available chart types
+   - Handles chart creation workflow
+
+2. **Chart Rendering** (`ChartRenderer.tsx`)
+
+   - Retrieves chart components for rendering
+   - Manages chart-specific settings
+
+3. **Settings Management** (`MainSettingsTab.tsx`)
+
+   - Handles chart configuration
+   - Provides settings UI based on chart type
+
+4. **Data Layer** (`DataLayerProvider.tsx`)
+
+   - Manages data filtering and updates
+   - Uses chart definitions for data processing
+
+5. **Application Initialization** (`main.tsx`)
+   - Registers all available charts on startup
+
+### Adding New Charts
+
+To add a new chart type:
+
+1. Create chart component and settings panel
+2. Define chart settings interface
+3. Implement `ChartDefinition` interface
+4. Register chart in `registerAllCharts()`
+
+This centralized approach ensures:
+
+- Consistent chart implementation
+- Type safety across the application
+- Easy addition of new chart types
+- Maintainable chart management

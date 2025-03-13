@@ -1,20 +1,21 @@
-import { useColorScales } from "@/hooks/useColorScales";
-import { getRangeFilterForField } from "@/hooks/getAxisFilter";
 import { applyFilter } from "@/hooks/applyFilter";
+import { getRangeFilterForField } from "@/hooks/getAxisFilter";
+import { useColorScales } from "@/hooks/useColorScales";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { useFacetAxis } from "@/providers/FacetAxisProvider";
-import { BaseChartProps, ScatterChartSettings } from "@/types/ChartTypes";
+import { BaseChartProps } from "@/types/ChartTypes";
 import { ScaleLinear, scaleLinear } from "d3-scale";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { BaseChart } from "../BaseChart";
 import { useGetColumnDataForIds } from "../useGetColumnData";
 import { useGetLiveData } from "../useGetLiveData";
+import { ScatterPlotSettings } from "./definition";
 
 // Configurable constant for axis buffer (10%)
 const AXIS_BUFFER_PERCENTAGE = 0.1;
 
 interface ScatterPlotProps extends BaseChartProps {
-  settings: ScatterChartSettings;
+  settings: ScatterPlotSettings;
 }
 
 export function ScatterPlot({
@@ -173,14 +174,9 @@ export function ScatterPlot({
       const x = xScale(xValues[i]);
       const y = yScale(yValues[i]);
 
-      // Apply both x and y filters
-      let isFiltered = true;
-      if (xFilter) {
-        isFiltered = applyFilter(xValues[i], xFilter);
-      }
-      if (yFilter) {
-        isFiltered = applyFilter(yValues[i], yFilter);
-      }
+      const isFiltered =
+        (!xFilter || applyFilter(xValues[i], xFilter)) &&
+        (!yFilter || applyFilter(yValues[i], yFilter));
 
       ctx.fillStyle =
         (xFilter || yFilter) && !isFiltered

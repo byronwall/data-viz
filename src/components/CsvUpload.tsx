@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import type { DatumObject } from "@/providers/DataLayerProvider";
 import { parseCsvData } from "@/utils/csvParser";
+import { parseJsonData } from "@/utils/jsonParser";
 import { Plus, Upload } from "lucide-react";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
@@ -16,11 +17,20 @@ export function CsvUpload({ compact = false, onImport }: CsvUploadProps) {
     async (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
       try {
-        const data = await parseCsvData(file);
+        let data: DatumObject[];
+        if (file.name.toLowerCase().endsWith(".csv")) {
+          data = await parseCsvData(file);
+        } else if (file.name.toLowerCase().endsWith(".json")) {
+          data = await parseJsonData(file);
+        } else {
+          throw new Error("Unsupported file type");
+        }
         onImport?.(data, file.name);
       } catch (error) {
-        console.error("Error parsing CSV:", error);
-        toast.error("Failed to parse CSV file");
+        console.error("Error parsing file:", error);
+        toast.error(
+          `Failed to parse ${file.name.toLowerCase().endsWith(".csv") ? "CSV" : "JSON"} file`
+        );
       }
     },
     [onImport]
@@ -30,6 +40,7 @@ export function CsvUpload({ compact = false, onImport }: CsvUploadProps) {
     onDrop,
     accept: {
       "text/csv": [".csv"],
+      "application/json": [".json"],
     },
     multiple: false,
   });

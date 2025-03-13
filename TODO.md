@@ -119,7 +119,6 @@
 - Sort the `add chart` menu by chart name
 - Add ability to track the mouse position in the chart on the axes - give a small red line
 - Add support for reading and processing parquet files
-- Add support for reading and processing json files
 - Add support for reading and processing xlsx files
 - Bar chart nearly always breaks when a different chart is filtered
 - Random scatter plot fails to render on the basic numbers example

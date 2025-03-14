@@ -1,0 +1,76 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+deleted file mode 100644
+index 973370f4ab45e756815cee6106f68346be992762..0000000000000000000000000000000000000000
+diff --git a/dist/use-custom-compare.esm.js b/dist/use-custom-compare.esm.js
+index 4fbf06756f5c2119e128f427f696ca6b5f83d2b2..49108cdb4f8e0382df68cbca4155926cf03cf74c 100644
+--- a/dist/use-custom-compare.esm.js
++++ b/dist/use-custom-compare.esm.js
+@@ -26,30 +26,21 @@ function useCustomCompareMemoize(deps, depsAreEqual) {
+ }
+ 
+ function useCustomCompareEffect(effect, deps, depsAreEqual) {
+-    if (process.env.NODE_ENV !== 'production') {
+-        checkDeps(deps, depsAreEqual, 'useCustomCompareEffect');
+-    }
+     useEffect(effect, useCustomCompareMemoize(deps, depsAreEqual));
+ }
+ 
+ function useCustomCompareLayoutEffect(effect, deps, depsAreEqual) {
+-    if (process.env.NODE_ENV !== 'production') {
+-        checkDeps(deps, depsAreEqual, 'useCustomCompareLayoutEffect');
+-    }
++    
+     useLayoutEffect(effect, useCustomCompareMemoize(deps, depsAreEqual));
+ }
+ 
+ function useCustomCompareCallback(callback, deps, depsEqual) {
+-    if (process.env.NODE_ENV !== 'production') {
+-        checkDeps(deps, depsEqual, 'useCustomCompareCallback');
+-    }
++    
+     return useCallback(callback, useCustomCompareMemoize(deps, depsEqual));
+ }
+ 
+ function useCustomCompareMemo(factory, deps, depsAreEqual) {
+-    if (process.env.NODE_ENV !== 'production') {
+-        checkDeps(deps, depsAreEqual, 'useCustomCompareMemo');
+-    }
++    
+     return useMemo(factory, useCustomCompareMemoize(deps, depsAreEqual));
+ }
+ 
+diff --git a/dist/use-custom-compare.js b/dist/use-custom-compare.js
+index 0b5600629de517697739e30aecc0f9095a754f85..b8f47c671dcc029ac609af20a05a7bad65fafeb3 100644
+--- a/dist/use-custom-compare.js
++++ b/dist/use-custom-compare.js
+@@ -30,30 +30,18 @@ function useCustomCompareMemoize(deps, depsAreEqual) {
+ }
+ 
+ function useCustomCompareEffect(effect, deps, depsAreEqual) {
+-    if (process.env.NODE_ENV !== 'production') {
+-        checkDeps(deps, depsAreEqual, 'useCustomCompareEffect');
+-    }
+     react.useEffect(effect, useCustomCompareMemoize(deps, depsAreEqual));
+ }
+ 
+ function useCustomCompareLayoutEffect(effect, deps, depsAreEqual) {
+-    if (process.env.NODE_ENV !== 'production') {
+-        checkDeps(deps, depsAreEqual, 'useCustomCompareLayoutEffect');
+-    }
+     react.useLayoutEffect(effect, useCustomCompareMemoize(deps, depsAreEqual));
+ }
+ 
+ function useCustomCompareCallback(callback, deps, depsEqual) {
+-    if (process.env.NODE_ENV !== 'production') {
+-        checkDeps(deps, depsEqual, 'useCustomCompareCallback');
+-    }
+     return react.useCallback(callback, useCustomCompareMemoize(deps, depsEqual));
+ }
+ 
+ function useCustomCompareMemo(factory, deps, depsAreEqual) {
+-    if (process.env.NODE_ENV !== 'production') {
+-        checkDeps(deps, depsAreEqual, 'useCustomCompareMemo');
+-    }
+     return react.useMemo(factory, useCustomCompareMemoize(deps, depsAreEqual));
+ }
+ 

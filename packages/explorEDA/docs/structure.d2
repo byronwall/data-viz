@@ -1,0 +1,145 @@
+# External data sources
+User_Supplied_Data: {
+  label: "User Supplied Data\nRaw data for visualization"
+  style: {
+    fill: "#e2e8f0" # slate-200
+    stroke: "#475569" # slate-600
+  }
+}
+
+Chart_Definitions: {
+  label: "Chart Definitions\nConfiguration for charts"
+  style: {
+    fill: "#e2e8f0" # slate-200
+    stroke: "#475569" # slate-600
+  }
+}
+
+# Main application structure
+DataLayerProvider: {
+  label: "DataLayerProvider\nManages data state"
+  style: {
+    fill: "#bfdbfe" # blue-200
+  }
+
+  useDataLayer: {
+    label: "useDataLayer\nZustand store for data management"
+    shape: page
+    style: {
+      fill: "#93c5fd" # blue-300
+      stroke: "#1d4ed8" # blue-700
+    }
+  }
+
+  CrossfilterWrapper: {
+    label: "CrossfilterWrapper\nManages data filtering across charts"
+    shape: page
+    style: {
+      fill: "#93c5fd" # blue-300
+      stroke: "#1d4ed8" # blue-700
+    }
+  }
+
+  PlotManager: {
+    label: "PlotManager\nOrchestrates charts"
+    style: {
+      fill: "#bbf7d0" # green-200
+    }
+
+    ChartGridLayout: {
+      label: "ChartGridLayout\nManages chart layout"
+      style: {
+        fill: "#fecaca" # red-200
+      }
+
+      PlotChartPanel: {
+        label: "PlotChartPanel\nIndividual chart container"
+        style: {
+          fill: "#fbcfe8" # pink-200
+        }
+
+        FacetAxisProvider: {
+          label: "FacetAxisProvider\nManages axis scaling"
+          style: {
+            fill: "#a5f3fc" # cyan-200
+          }
+
+          ChartRenderer: {
+            label: "ChartRenderer\nHandles chart type selection"
+            style: {
+              fill: "#ddd6fe" # violet-200
+            }
+
+            ScatterPlot: {
+              label: "ScatterPlot\nRenders scatter plots"
+              style: {
+                fill: "#fed7aa" # orange-200
+                stroke: blue
+              }
+            }
+          }
+
+          FacetContainer: {
+            label: "FacetContainer\nManages faceted views"
+            style: {
+              fill: "#fef08a" # yellow-200
+            }
+
+            FacetWrapLayout: {
+              label: "FacetWrapLayout\nArranges faceted charts"
+              style: {
+                fill: "#d1fae5" # green-100
+              }
+
+              ChartRenderer: {
+                label: "ChartRenderer\nHandles faceted chart rendering"
+                style: {
+                  fill: "#ddd6fe" # violet-200
+                }
+
+                ScatterPlot_1: {
+                  label: "ScatterPlot\nRenders scatter plots"
+                  style: {
+                    fill: "#fed7aa" # orange-200
+                    stroke: blue
+                  }
+                }
+                ScatterPlot_2: {
+                  label: "ScatterPlot\nRenders scatter plots"
+                  style: {
+                    fill: "#fed7aa" # orange-200
+                    stroke: blue
+                  }
+                }
+                ScatterPlot_3: {
+                  label: "ScatterPlot\nRenders scatter plots"
+                  style: {
+                    fill: "#fed7aa" # orange-200
+                    stroke: blue
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# Component relationships
+User_Supplied_Data -> DataLayerProvider: "provides raw data"
+Chart_Definitions -> DataLayerProvider: "configures charts"
+DataLayerProvider -> DataLayerProvider.PlotManager: "provides data"
+DataLayerProvider.useDataLayer -> DataLayerProvider.PlotManager: "manages state"
+DataLayerProvider.useDataLayer -> DataLayerProvider.CrossfilterWrapper: "provides data"
+DataLayerProvider.CrossfilterWrapper -> DataLayerProvider.PlotManager: "provides filtered data"
+DataLayerProvider.PlotManager.ChartGridLayout -> DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel: "renders"
+DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel -> DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel.FacetAxisProvider: "configures"
+DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel.FacetAxisProvider -> DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel.FacetAxisProvider.ChartRenderer: "provides scale"
+DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel.FacetAxisProvider -> DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel.FacetAxisProvider.FacetContainer: "provides scale"
+DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel.FacetAxisProvider.FacetContainer -> DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel.FacetAxisProvider.FacetContainer.FacetWrapLayout: "manages layout"
+DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel.FacetAxisProvider.FacetContainer.FacetWrapLayout -> DataLayerProvider.PlotManager.ChartGridLayout.PlotChartPanel.FacetAxisProvider.FacetContainer.FacetWrapLayout.ChartRenderer: "renders charts"
+
+# Styling
+direction: down

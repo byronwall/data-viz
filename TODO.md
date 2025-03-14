@@ -2,6 +2,16 @@
 
 - Calc engine - around 50% done - add more functions, including special ones
 
+## Remaining work for monorepo split
+
+- Move the main and LandingPage into the `demo` package
+- Figure out exports for the `explorEDA` package
+- Add deps to the `demo` package
+- Add `tsup` to bundle the `explorEDA` package
+- Publish the packages to pnpm
+
+Steps: <https://turbo.build/repo/docs/guides/publishing-libraries>
+
 ### Core data viz
 
 - Axis related settings and renderings - really need control over axes, labelling automatically, etc

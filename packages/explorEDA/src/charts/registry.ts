@@ -33,7 +33,8 @@ export class ChartRegistryImpl implements ChartRegistry {
     definition: ChartDefinition<TSettings>
   ): void {
     if (this.definitions.has(definition.type)) {
-      throw new Error(`Chart type ${definition.type} is already registered`);
+      console.error(`Chart type ${definition.type} is already registered`);
+      return;
     }
     this.definitions.set(
       definition.type,

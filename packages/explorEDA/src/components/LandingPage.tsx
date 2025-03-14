@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ExampleData, examples } from "@/demos/examples";
 import type { DatumObject } from "@/providers/DataLayerProvider";
-import { DataLayerProvider } from "@/providers/DataLayerProvider";
 import { parseCsvData } from "@/utils/csvParser";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
@@ -10,7 +9,7 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { CsvUpload } from "./CsvUpload";
 import { ExampleSelector } from "./ExampleSelector";
-import { PlotManager } from "./PlotManager";
+import { ExplorEda } from "./ExplorEda";
 
 export function LandingPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -137,12 +136,11 @@ export function LandingPage() {
               exit={{ opacity: 0, y: -20 }}
               className="w-full"
             >
-              <DataLayerProvider
-                data={isCsvMode ? csvData : exampleData}
-                savedData={isCsvMode ? undefined : example?.savedData}
-              >
-                <PlotManager />
-              </DataLayerProvider>
+              {isCsvMode ? (
+                <ExplorEda data={csvData} savedData={undefined} />
+              ) : (
+                <ExplorEda data={exampleData} savedData={example?.savedData} />
+              )}
             </motion.div>
           )}
         </AnimatePresence>

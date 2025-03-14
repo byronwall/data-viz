@@ -24,6 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 
-generated_samples/*
+**/generated_samples/*
 
 coverage/*

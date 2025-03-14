@@ -2,7 +2,7 @@
 
 Tool for exploratory and interactive data analysis.
 
-![](docs/main-image.png)
+![](packages/explorEDA/docs/main-image.png)
 
 ## Features
 

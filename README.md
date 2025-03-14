@@ -1,4 +1,4 @@
-# Data Viz
+# explorEDA
 
 Tool for exploratory and interactive data analysis.
 

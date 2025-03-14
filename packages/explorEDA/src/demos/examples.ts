@@ -25,7 +25,7 @@ export const examples: ExampleData[] = [
     title: "Lorenz w/ 3D",
     description: "Lorenz attractor in 3D",
     icon: BarChart3,
-    data: "/data-viz/lorenz_3d_small.csv",
+    data: "/explorEDA/lorenz_3d_small.csv",
     savedData: demoSettings,
   },
   {
@@ -33,7 +33,7 @@ export const examples: ExampleData[] = [
     title: "Box Plot",
     description: "Box Plot",
     icon: BarChart3,
-    data: "/data-viz/correlated_medium.csv",
+    data: "/explorEDA/correlated_medium.csv",
     savedData: boxPlotSettings,
   },
   {
@@ -41,7 +41,7 @@ export const examples: ExampleData[] = [
     title: "Pivot + Categorical Charts",
     description: "Pivot + Categorical charts",
     icon: BarChart3,
-    data: "/data-viz/categorical_medium.csv",
+    data: "/explorEDA/categorical_medium.csv",
     savedData: categoricalChartSettings,
   },
   {
@@ -49,7 +49,7 @@ export const examples: ExampleData[] = [
     title: "Color Legend",
     description: "Color Legend",
     icon: Palette,
-    data: "/data-viz/categorical_medium.csv",
+    data: "/explorEDA/categorical_medium.csv",
     savedData: colorLegendSettings,
   },
 
@@ -58,7 +58,7 @@ export const examples: ExampleData[] = [
     title: "Line Chart",
     description: "Line Chart",
     icon: BarChart3,
-    data: "/data-viz/basic_numbers_medium.csv",
+    data: "/explorEDA/basic_numbers_medium.csv",
     savedData: lineChartSettings,
   },
   {
@@ -66,7 +66,7 @@ export const examples: ExampleData[] = [
     title: "Summary Table + Data Table",
     description: "Summary Table + Data Table",
     icon: BarChart3,
-    data: "/data-viz/categorical_small.csv",
+    data: "/explorEDA/categorical_small.csv",
     savedData: categoricalSmallSettings,
   },
   {
@@ -74,7 +74,7 @@ export const examples: ExampleData[] = [
     title: "Fifa",
     description: "EA SPORTS FC 24 FULL PLAYERS DATABASE AND STATS",
     icon: Gamepad2,
-    data: "/data-viz/all_fc_24_players.csv",
+    data: "/explorEDA/all_fc_24_players.csv",
     savedData: fifaSettings,
   },
   {
@@ -82,7 +82,7 @@ export const examples: ExampleData[] = [
     title: "World Bank Population",
     description: "World Bank Population",
     icon: Globe,
-    data: "/data-viz/world_bank_population.csv",
+    data: "/explorEDA/world_bank_population.csv",
     savedData: worldBankPopulationSettings,
   },
 
@@ -91,7 +91,7 @@ export const examples: ExampleData[] = [
     title: "NBA Stats",
     description: "NBA Stats",
     icon: BarChart3,
-    data: "/data-viz/nba_stats.csv",
+    data: "/explorEDA/nba_stats.csv",
     savedData: nbaStatsSettings,
   },
 ];

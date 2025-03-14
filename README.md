@@ -63,7 +63,7 @@ Tool for exploratory and interactive data analysis.
 
 ## Component Structure
 
-![](docs/component_structure.svg)
+![](packages/explorEDA/docs/component_structure.svg)
 
 ## Chart Creation Process
 

@@ -1,15 +1,14 @@
 import { demoSettings } from "@/demos/lorenz";
-import { boxPlotSettings } from "./boxPlotSettings";
 import { SavedDataStructure } from "@/types/SavedDataTypes";
 import { BarChart3, Gamepad2, Globe, LucideIcon, Palette } from "lucide-react";
+import { boxPlotSettings } from "./boxPlotSettings";
 import { categoricalChartSettings } from "./categoricalChartSettings";
-import { basicNumbersSettings } from "./basicNumbersSettings";
 import { categoricalSmallSettings } from "./categoricalSmallSettings";
 import { colorLegendSettings } from "./colorLegendSettings";
-import { lineChartSettings } from "./lineChartSettings";
 import { fifaSettings } from "./fifaSettings";
-import { worldBankPopulationSettings } from "./worldBankPopulationSettings";
+import { lineChartSettings } from "./lineChartSettings";
 import { nbaStatsSettings } from "./nbaStatsSettings";
+import { worldBankPopulationSettings } from "./worldBankPopulationSettings";
 
 export interface ExampleData {
   id: string;
@@ -86,7 +85,7 @@ export const examples: ExampleData[] = [
     data: "/data-viz/world_bank_population.csv",
     savedData: worldBankPopulationSettings,
   },
-  // NBA Stats
+
   {
     id: "nba-stats",
     title: "NBA Stats",

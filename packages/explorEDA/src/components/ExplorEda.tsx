@@ -19,9 +19,11 @@ export function ExplorEda({
 }) {
   return (
     <DataLayerProvider data={data} savedData={savedData}>
-      <PlotManager />
-      <GlobalAlertDialog />
-      <Toaster />
+      <div className="bg-background text-foreground">
+        <PlotManager />
+        <GlobalAlertDialog />
+        <Toaster />
+      </div>
     </DataLayerProvider>
   );
 }

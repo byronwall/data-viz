@@ -12,6 +12,17 @@
     "prettier": "prettier --write ./src",
     "eslint": "eslint ."
   },
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/ExplorEda.d.ts",
+      "require": "./dist/ExplorEda.cjs",
+      "import": "./dist/ExplorEda.js"
+    }
+  },
   "main": "./dist/ExplorEda.cjs",
   "module": "./dist/ExplorEda.js",
   "types": "./dist/ExplorEda.d.ts",

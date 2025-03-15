@@ -6,6 +6,8 @@ import { registerAllCharts } from "@/charts/registry";
 import { Toaster } from "./ui/sonner";
 import { GlobalAlertDialog } from "./GlobalAlertDialog";
 
+import "../index.css";
+
 registerAllCharts();
 
 export function ExplorEda({
@@ -17,9 +19,9 @@ export function ExplorEda({
 }) {
   return (
     <DataLayerProvider data={data} savedData={savedData}>
+      <PlotManager />
       <GlobalAlertDialog />
       <Toaster />
-      <PlotManager />
     </DataLayerProvider>
   );
 }

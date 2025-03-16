@@ -1,5 +1,13 @@
 # demo
 
+## 0.0.4
+
+### Patch Changes
+
+- 817ad1b: Force name to be all lowercase
+- Updated dependencies [817ad1b]
+  - @byronwallrus/exploreda@0.0.4
+
 ## 0.0.3
 
 ### Patch Changes

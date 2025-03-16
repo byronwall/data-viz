@@ -9,7 +9,7 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { CsvUpload } from "./CsvUpload";
 import { ExampleSelector } from "./ExampleSelector";
-import { ExplorEda } from "@byronwallrus/exploreda";
+import { ExplorEda } from "exploreda";
 
 export type DatumObject = {
   [key: string]: string | number | boolean | undefined;

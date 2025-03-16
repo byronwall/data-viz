@@ -1,5 +1,11 @@
 # @repo/explorEDA
 
+## 0.0.4
+
+### Patch Changes
+
+- 817ad1b: Force name to be all lowercase
+
 ## 0.0.3
 
 ### Patch Changes

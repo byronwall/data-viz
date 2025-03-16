@@ -32,7 +32,7 @@ importers:
 
   apps/demo:
     dependencies:
-      '@byronwallrus/explorEDA':
+      '@byronwallrus/exploreda':
         specifier: workspace:*
         version: link:../../packages/explorEDA
       '@radix-ui/react-slot':

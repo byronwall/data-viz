@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { LandingPage } from "./LandingPage.tsx";
 
-// import "./index.css";
 import "@repo/explorEDA/dist/ExplorEda.css";
+import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

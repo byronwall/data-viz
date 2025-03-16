@@ -92,7 +92,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground ">
       <div className="flex flex-col items-center p-8 gap-8">
         {hasData && (
           <Button
@@ -112,7 +112,7 @@ export function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="w-full max-w-4xl"
+              className="w-full max-w-3xl mx-auto"
             >
               <h1 className="text-3xl font-bold mb-8 text-center">
                 Data Visualization Examples
@@ -138,7 +138,7 @@ export function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="w-full relative"
+              className="w-full max-w-[1200px] mx-auto"
             >
               {isCsvMode ? (
                 <ExplorEda data={csvData} savedData={undefined} />

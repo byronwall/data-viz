@@ -20,20 +20,18 @@ export function Markdown({
   const updateChart = useDataLayer((s) => s.updateChart);
 
   return (
-    <div style={{ width, height }} className="flex flex-col">
-      <div className="flex-1 overflow-auto">
-        <EditorProvider
-          slotBefore={<MenuBar />}
-          extensions={extensions}
-          content={settings.content}
-          onUpdate={(value) => {
-            updateChart(settings.id, {
-              ...settings,
-              content: value.editor.getHTML(),
-            });
-          }}
-        />
-      </div>
+    <div style={{ width, height }} className="flex flex-col overflow-auto p-1">
+      <EditorProvider
+        slotBefore={<MenuBar />}
+        extensions={extensions}
+        content={settings.content}
+        onUpdate={(value) => {
+          updateChart(settings.id, {
+            ...settings,
+            content: value.editor.getHTML(),
+          });
+        }}
+      />
     </div>
   );
 }

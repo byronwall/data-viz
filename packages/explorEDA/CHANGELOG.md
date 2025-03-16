@@ -1,5 +1,11 @@
 # @repo/explorEDA
 
+## 0.0.5
+
+### Patch Changes
+
+- 80fc10a: Change name one last time - drop the @byronwallrus
+
 ## 0.0.4
 
 ### Patch Changes

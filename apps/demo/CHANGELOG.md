@@ -1,5 +1,13 @@
 # demo
 
+## 0.0.5
+
+### Patch Changes
+
+- 80fc10a: Change name one last time - drop the @byronwallrus
+- Updated dependencies [80fc10a]
+  - exploreda@0.0.5
+
 ## 0.0.4
 
 ### Patch Changes

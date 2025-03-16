@@ -1,15 +1,10 @@
-import {
-  BaseChartSettings,
-  ChartDefinition,
-  Filter,
-  datum,
-} from "@/types/ChartTypes";
+import { BaseChartSettings, ChartDefinition, datum } from "@/types/ChartTypes";
 import { DEFAULT_CHART_SETTINGS } from "@/utils/defaultSettings";
 import { Info } from "lucide-react";
 
+import { IdType } from "@/providers/DataLayerProvider";
 import { SummaryTable } from "./SummaryTable";
 import { SummaryTableSettingsPanel } from "./SummaryTableSettingsPanel";
-import { IdType } from "@/providers/DataLayerProvider";
 
 export interface SummaryTableSettings extends BaseChartSettings {
   type: "summary";

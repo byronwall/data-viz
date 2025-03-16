@@ -447,7 +447,7 @@ const createDataLayerStore = <T extends DatumObject>(
       }
 
       if (columnCache[field]) {
-        return columnCache[field];
+        return columnCache[field] as Record<string, datum>;
       }
 
       const calculation = calculations.find(
@@ -456,7 +456,7 @@ const createDataLayerStore = <T extends DatumObject>(
 
       if (calculation) {
         if (calcColumnCache[field]) {
-          return calcColumnCache[field];
+          return calcColumnCache[field] as Record<string, datum>;
         }
 
         // Otherwise, calculate the column data

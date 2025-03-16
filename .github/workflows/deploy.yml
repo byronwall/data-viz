@@ -52,7 +52,7 @@ jobs:
         run: pnpm install
 
       - name: Build
-        working-directory: packages/explorEDA
+        working-directory: apps/demo
         run: pnpm build
 
       - name: Setup Pages
@@ -61,7 +61,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: packages/explorEDA/dist
+          path: apps/demo/dist
 
       - name: Deploy to GitHub Pages
         id: deployment

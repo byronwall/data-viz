@@ -21,7 +21,8 @@
       "types": "./dist/ExplorEda.d.ts",
       "require": "./dist/ExplorEda.cjs",
       "import": "./dist/ExplorEda.js"
-    }
+    },
+    "./dist/ExplorEda.css": "./dist/ExplorEda.css"
   },
   "main": "./dist/ExplorEda.cjs",
   "module": "./dist/ExplorEda.js",

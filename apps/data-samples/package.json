@@ -1,4 +1,6 @@
 {
     "name": "data-samples",
-    "description": "Quick CLI to generate data samples for the demo"
+    "description": "Quick CLI to generate data samples for the demo",
+    "private": true,
+    "version": "0.0.1"
 }

@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
-import { LandingPage } from "./LandingPage.tsx";
+import { LandingPage } from "./LandingPage";
 
 import "exploreda/dist/ExplorEda.css";
 import "./index.css";

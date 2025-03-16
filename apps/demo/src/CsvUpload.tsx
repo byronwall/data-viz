@@ -17,6 +17,12 @@ export function CsvUpload({ compact = false, onImport }: CsvUploadProps) {
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
+
+      if (!file) {
+        toast.error("No file selected");
+        return;
+      }
+
       try {
         let data: DatumObject[];
         if (file.name.toLowerCase().endsWith(".csv")) {

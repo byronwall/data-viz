@@ -52,8 +52,7 @@ jobs:
         run: pnpm install
 
       - name: Build
-        working-directory: apps/demo
-        run: pnpm build
+        run: pnpm turbo build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

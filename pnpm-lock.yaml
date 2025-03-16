@@ -21,7 +21,14 @@ importers:
         specifier: ~5.4.5
         version: 5.4.5
 
-  apps/data-samples: {}
+  apps/data-samples:
+    dependencies:
+      commander:
+        specifier: ^13.1.0
+        version: 13.1.0
+      csv-writer:
+        specifier: ^1.6.0
+        version: 1.6.0
 
   apps/demo:
     dependencies:
@@ -164,8 +171,6 @@ importers:
       vitest:
         specifier: ^3.0.7
         version: 3.0.8(@types/node@22.13.10)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.29.2)
-
-  apps/docs: {}
 
   packages/explorEDA:
     dependencies:
@@ -328,15 +333,9 @@ importers:
       cmdk:
         specifier: 1.0.0
         version: 1.0.0(@types/react-dom@19.0.4(@types/react@19.0.10))(@types/react@19.0.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      commander:
-        specifier: ^13.1.0
-        version: 13.1.0
       crossfilter2:
         specifier: ^1.5.4
         version: 1.5.4
-      csv-writer:
-        specifier: ^1.6.0
-        version: 1.6.0
       d3-array:
         specifier: ^3.2.4
         version: 3.2.4

@@ -2,5 +2,9 @@
     "name": "data-samples",
     "description": "Quick CLI to generate data samples for the demo",
     "private": true,
-    "version": "0.0.1"
+    "version": "0.0.1",
+    "dependencies": {
+        "commander": "^13.1.0",
+        "csv-writer": "^1.6.0"
+    }
 }

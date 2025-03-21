@@ -9,7 +9,7 @@ export const boxPlotSettings: SavedDataStructure = {
       layout: { x: 0, y: 0, w: 6, h: 5 },
       xAxis: { scaleType: "linear", grid: false, min: 0, max: 100 },
       yAxis: { scaleType: "linear", grid: false, min: 0, max: 100 },
-      margin: {},
+      margin: { top: 5, right: 5, bottom: 5, left: 5 },
       facet: { enabled: false, type: "wrap", rowVariable: "", columnCount: 2 },
       xAxisLabel: "",
       yAxisLabel: "",
@@ -17,6 +17,8 @@ export const boxPlotSettings: SavedDataStructure = {
       yGridLines: 5,
       filters: [],
       id: "2d71ef50-9f8f-4435-8577-99d84a24e28e",
+      colorScaleId: undefined,
+      colorField: undefined,
     },
     {
       title: "Bar Chart",
@@ -25,7 +27,7 @@ export const boxPlotSettings: SavedDataStructure = {
       layout: { x: 6, y: 4, w: 6, h: 4 },
       xAxis: { scaleType: "linear", grid: false, min: 0, max: 100 },
       yAxis: { scaleType: "linear", grid: false, min: 0, max: 100 },
-      margin: {},
+      margin: { top: 20, right: 20, bottom: 30, left: 60 },
       facet: { enabled: false, type: "wrap", rowVariable: "", columnCount: 2 },
       xAxisLabel: "",
       yAxisLabel: "",
@@ -34,6 +36,8 @@ export const boxPlotSettings: SavedDataStructure = {
       filters: [],
       id: "003dc550-7e3d-4eb4-8c8d-7dccd1b52c87",
       binCount: 10,
+      colorScaleId: undefined,
+      colorField: undefined,
     },
     {
       title: "Box Plot",
@@ -42,7 +46,7 @@ export const boxPlotSettings: SavedDataStructure = {
       layout: { x: 6, y: 0, w: 6, h: 4 },
       xAxis: { scaleType: "linear", grid: false, min: 0, max: 100 },
       yAxis: { scaleType: "linear", grid: false, min: 0, max: 100 },
-      margin: { top: 20, right: 20, bottom: 20, left: 20 },
+      margin: { top: 20, right: 20, bottom: 30, left: 60 },
       facet: { enabled: false, type: "wrap", rowVariable: "", columnCount: 2 },
       colorScaleId: "0867bff2-86d3-48ff-9ef4-353575e0b156",
       colorField: "Mood Index",
@@ -83,8 +87,8 @@ export const boxPlotSettings: SavedDataStructure = {
   metadata: {
     name: "Untitled",
     version: 1,
-    createdAt: "2025-03-10T02:34:01.062Z",
-    modifiedAt: "2025-03-10T02:34:01.062Z",
+    createdAt: "2025-03-21T03:34:35.533Z",
+    modifiedAt: "2025-03-21T03:34:35.533Z",
   },
   colorScales: [
     {

@@ -4,16 +4,16 @@ import {
   AxisSettings,
   BaseChartSettings,
   ChartSettings,
-  DataTableSettings,
   MarginSettings,
-  PivotTableSettings,
   RowChartSettings,
-  ScatterChartSettings,
-  SummaryChartSettings,
   WrapFacetSettings,
 } from "@/types/ChartTypes";
 import { Vector3 } from "three";
 import { Filter } from "@/types/FilterTypes";
+import { DataTableSettings } from "@/components/charts/DataTable/definition";
+import { PivotTableSettings } from "@/components/charts/PivotTable/definition";
+import { ScatterPlotSettings } from "@/components/charts/ScatterPlot/definition";
+import { SummaryTableSettings } from "@/components/charts/SummaryTable/definition";
 
 export const DEFAULT_AXIS_SETTINGS: AxisSettings = {
   scaleType: "linear",
@@ -58,7 +58,7 @@ export const DEFAULT_PIVOT_SETTINGS: Omit<PivotTableSettings, "id"> = {
   ...DEFAULT_CHART_SETTINGS,
   type: "pivot",
   rowFields: [],
-  columnFields: [],
+  columnField: "",
   valueFields: [],
   showTotals: { row: false, column: false, grand: false },
 };
@@ -71,7 +71,7 @@ export const DEFAULT_ROW_SETTINGS: Omit<RowChartSettings, "id"> = {
   filters: [],
 };
 
-export const DEFAULT_SCATTER_SETTINGS: Omit<ScatterChartSettings, "id"> = {
+export const DEFAULT_SCATTER_SETTINGS: Omit<ScatterPlotSettings, "id"> = {
   ...DEFAULT_CHART_SETTINGS,
   type: "scatter",
   xField: "",
@@ -98,7 +98,7 @@ export const DEFAULT_3D_SCATTER_SETTINGS: Omit<ThreeDScatterSettings, "id"> = {
   zAxis: { ...DEFAULT_AXIS_SETTINGS, zoomLevel: 1 },
 };
 
-export const DEFAULT_SUMMARY_SETTINGS: Omit<SummaryChartSettings, "id"> = {
+export const DEFAULT_SUMMARY_SETTINGS: Omit<SummaryTableSettings, "id"> = {
   ...DEFAULT_CHART_SETTINGS,
   type: "summary",
   title: "Data Summary",

@@ -1,5 +1,12 @@
 # @repo/explorEDA
 
+## 0.0.6
+
+### Patch Changes
+
+- 1a33bdb: Bring back the TipTap editor without the extra cruft
+- cbe70b7: Improve styles on components and start to wire up better padding and margins
+
 ## 0.0.5
 
 ### Patch Changes

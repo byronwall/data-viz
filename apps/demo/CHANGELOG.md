@@ -1,5 +1,13 @@
 # demo
 
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [1a33bdb]
+- Updated dependencies [cbe70b7]
+  - exploreda@0.0.6
+
 ## 0.0.5
 
 ### Patch Changes

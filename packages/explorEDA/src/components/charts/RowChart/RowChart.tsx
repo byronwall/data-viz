@@ -56,7 +56,7 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
   };
 
   // Chart dimensions
-  const margin = { top: 20, right: 40, bottom: 30, left: 100 };
+  const margin = settings.margin;
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
@@ -160,7 +160,6 @@ export function RowChart({ settings, width, height, facetIds }: RowChartProps) {
       <BaseChart
         width={width}
         height={height}
-        margin={margin}
         xScale={xScale}
         yScale={yScale}
         settings={settings}

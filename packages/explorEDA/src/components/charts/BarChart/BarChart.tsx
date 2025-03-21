@@ -46,7 +46,7 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
   const getGlobalAxisLimits = useFacetAxis((s) => s.getGlobalAxisLimits);
 
   // Chart dimensions
-  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const margin = settings.margin;
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
@@ -315,7 +315,6 @@ export function BarChart({ settings, width, height, facetIds }: BarChartProps) {
       <BaseChart
         width={width}
         height={height}
-        margin={margin}
         xScale={xScale}
         yScale={yScale}
         brushingMode={isBandScale ? "none" : "horizontal"}

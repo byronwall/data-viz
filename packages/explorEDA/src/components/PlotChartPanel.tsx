@@ -37,13 +37,17 @@ export function PlotChartPanel({
     }
   };
 
+  // shrink the panel by 8px on each side to account for the border
+  const widthWithPadding = width - 8;
+  const heightWithPadding = height - 8;
+
   return (
     <div
-      className="bg-card border rounded-lg"
-      style={{ width: width, height: height }}
+      className="bg-card border rounded-lg flex flex-col overflow-hidden m-1"
+      style={{ width: widthWithPadding, height: heightWithPadding }}
     >
       <div
-        className="flex items-center justify-between select-none"
+        className="flex items-center justify-between select-none px-2"
         style={{ height: 24 }}
       >
         <div className="drag-handle cursor-move flex items-center gap-2">
@@ -76,20 +80,19 @@ export function PlotChartPanel({
           </Button>
         </div>
       </div>
-      <div>
+      <div className="flex-1">
         <FacetAxisProvider>
           {settings.facet?.enabled ? (
             <FacetContainer
               settings={settings}
               width={width - 32}
-              height={height - 56}
+              height={height - 36}
             />
           ) : (
             <ChartRenderer
               settings={settings}
               width={width - 32}
-              height={height - 56}
-              facetIds={undefined}
+              height={height - 36}
             />
           )}
         </FacetAxisProvider>

@@ -204,7 +204,7 @@ export function PivotTable({
 
   return (
     <div
-      className={cn("w-full h-full border rounded-md flex flex-col")}
+      className={cn("w-full h-full border rounded-md flex flex-col p-4")}
       style={{ height }}
     >
       <div className="overflow-auto flex-1">

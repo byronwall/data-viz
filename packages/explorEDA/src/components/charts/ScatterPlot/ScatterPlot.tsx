@@ -165,7 +165,7 @@ export function ScatterPlot({
     ctx.clearRect(0, 0, width, height);
 
     // Draw points using the same scales as BaseChart
-    ctx.translate(60, 20); // Match the margin from BaseChart
+    ctx.translate(settings.margin.left, settings.margin.top);
 
     const xFilter = getRangeFilterForField(settings.filters, settings.xField);
     const yFilter = getRangeFilterForField(settings.filters, settings.yField);

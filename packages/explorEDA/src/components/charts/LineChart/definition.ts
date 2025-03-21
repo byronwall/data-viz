@@ -75,7 +75,7 @@ export const lineChartDefinition: ChartDefinition<LineChartSettings> = {
     },
     xAxis: {},
     yAxis: {},
-    margin: {},
+    margin: { top: 20, right: 60, bottom: 30, left: 60 },
     filters: [],
     xAxisLabel: "",
     yAxisLabel: "",

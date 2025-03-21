@@ -1,4 +1,4 @@
-import { SavedDataStructure } from "@/types/SavedDataTypes";
+import { SavedDataStructure } from "exploreda";
 
 export const demoSettings: SavedDataStructure = {
   charts: [
@@ -123,6 +123,8 @@ export const demoSettings: SavedDataStructure = {
       yGridLines: 5,
       filters: [],
       id: "0b02a715-10b4-4cc8-bd23-e59c6d54b6b7",
+      colorField: "",
+      colorScaleId: undefined,
       content:
         '<h1 class="heading-node">Lorenz Attractor Demo</h1><p class="text-node"><span>This shows using a 2D scatter alongside 3D scatters to show the development of several slightly different Lorenz attractors.  The 3D scatters show facetting on the </span><code class="inline" spellcheck="false">Run ID</code> or coloring on it (and putting all points together).</p><p class="text-node"><span>To have some fun:</span></p><ul class="list-node"><li><p class="text-node">Drag a box around the 2D scatter chart and watch all the 3D charts update</p></li><li><p class="text-node"><span>Drag the 3D facet to change the view, wait 1s and watch all the other 3D views synchronize!</span></p></li></ul>',
     },

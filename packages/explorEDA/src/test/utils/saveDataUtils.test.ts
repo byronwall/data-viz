@@ -5,7 +5,7 @@ import {
   validateSavedData,
   migrateDataVersion,
 } from "@/utils/saveDataUtils";
-import { SavedDataStructure } from "@/types/SavedDataTypes";
+import { SavedDataStructure } from "@/types/SavedDataStructure";
 
 describe("saveDataUtils", () => {
   const mockValidData: SavedDataStructure = {

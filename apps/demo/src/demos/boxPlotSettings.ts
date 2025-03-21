@@ -1,4 +1,4 @@
-import { SavedDataStructure } from "@/types/SavedDataTypes";
+import { SavedDataStructure } from "exploreda";
 
 export const boxPlotSettings: SavedDataStructure = {
   charts: [

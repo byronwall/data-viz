@@ -1,35 +1,30 @@
 ## Major work remaining
 
-- Calc engine - around 50% done - add more functions, including special ones
-
-## Remaining work for monorepo split
-
-- Move the main and LandingPage into the `demo` package
-- Figure out exports for the `explorEDA` package
-- Add deps to the `demo` package
-- Add `tsup` to bundle the `explorEDA` package
-- Publish the packages to pnpm
-
-Steps: <https://turbo.build/repo/docs/guides/publishing-libraries>
-
 ### Core data viz
 
 - Axis related settings and renderings - really need control over axes, labelling automatically, etc
 - Improve handling of times stamps
 - Add a filter summary + filter controller
 - Top level filter + steps = ability to quickly segment data and work on slices -- almost like a `slice` comp
-- Do all the `Random` items below
+
+### Annoying visual problems
+
+- Get full alignment between the react grid handles, background grid, and the panel borders
+- Need to add just a bit of padding between the various containers - not too much, but enough to keep the content from hitting the edge of the panel
+
+### Axis and margins
+
+- Need to come up with default margins for each chart type - ensure these are switched when the chart is created or type is switched
 
 ### Packaging and usages
 
-- Export the core data viewer as a component to be installed elsewhere
-- Allow the comp to export the current config so it can be brought into code easily
 - Split out the chart components, so that the charting portion can be rented on its own with just data as props make it so that users can use it without needing all of the cross filter machinery still show a setting button that way they can self configure the chart
 
 ### Docs and help
 
+- Add a README to the `explorEDA` package so that it appears in the npm page
 - Write up the motivation for the project
-- Create a full doc site with helper images
+- Create a full doc site with helper images - add to the demo site somehow
 - Create some videos showing usage
 
 ## Nice to haves

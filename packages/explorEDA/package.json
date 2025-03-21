@@ -29,7 +29,8 @@
       "require": "./dist/ExplorEda.cjs",
       "import": "./dist/ExplorEda.js"
     },
-    "./dist/ExplorEda.css": "./dist/ExplorEda.css"
+    "./dist/ExplorEda.css": "./dist/ExplorEda.css",
+    "./types/SavedDataStructure": "./src/types/SavedDataStructure.ts"
   },
   "main": "./dist/ExplorEda.cjs",
   "module": "./dist/ExplorEda.js",

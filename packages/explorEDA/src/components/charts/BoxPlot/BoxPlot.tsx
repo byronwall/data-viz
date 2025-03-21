@@ -52,7 +52,7 @@ export function BoxPlot({
   const hasColorField = !!settings.colorField;
 
   // Chart dimensions
-  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+  const margin = settings.margin;
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
@@ -361,7 +361,6 @@ export function BoxPlot({
         <BaseChart
           width={width}
           height={height}
-          margin={margin}
           xScale={xScale}
           yScale={yScale}
           brushingMode="2d"

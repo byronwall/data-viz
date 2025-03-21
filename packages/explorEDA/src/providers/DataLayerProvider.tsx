@@ -12,10 +12,10 @@ import { ChartSettings, datum } from "@/types/ChartTypes";
 import { ColorScaleType } from "@/types/ColorScaleTypes";
 import {
   GridSettings,
-  SavedDataStructure,
   SerializedColorScale,
   ViewMetadata,
 } from "@/types/SavedDataTypes";
+import { SavedDataStructure } from "@/types/SavedDataStructure";
 import { saveProject } from "@/utils/localStorage";
 import { createContext, useContext, useRef } from "react";
 import { createStore, useStore } from "zustand";

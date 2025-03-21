@@ -27,7 +27,7 @@ export const summaryTableDefinition: ChartDefinition<SummaryTableSettings> = {
     type: "summary",
     title: "Summary Table",
     layout,
-    margin: {},
+    margin: { top: 20, right: 20, bottom: 20, left: 20 },
   }),
 
   validateSettings: (settings) => {

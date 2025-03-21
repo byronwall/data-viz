@@ -39,7 +39,7 @@ export const dataTableDefinition: ChartDefinition<DataTableSettings> = {
     type: "data-table",
     title: "Data Table",
     layout,
-    margin: {},
+    margin: { top: 5, right: 5, bottom: 5, left: 5 },
     columns: [],
     pageSize: 25,
     currentPage: 1,

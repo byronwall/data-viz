@@ -6,19 +6,11 @@ import { cn } from "@/lib/utils";
 import { ChartSettings } from "@/types/ChartTypes";
 import { useFilterExtent } from "@/hooks/useFilterExtent";
 
-interface Margin {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
-
 type BrushMode = "horizontal" | "2d" | "none";
 
 interface BaseChartProps {
   width: number;
   height: number;
-  margin?: Margin;
   xScale: ScaleLinear<number, number> | ScaleBand<string>;
   yScale: ScaleLinear<number, number> | ScaleBand<string>;
   brushingMode?: BrushMode;
@@ -28,12 +20,9 @@ interface BaseChartProps {
   settings: ChartSettings;
 }
 
-const defaultMargin: Margin = { top: 20, right: 20, bottom: 30, left: 60 };
-
 export function BaseChart({
   width,
   height,
-  margin = defaultMargin,
   xScale,
   yScale,
   brushingMode = "none",
@@ -42,6 +31,8 @@ export function BaseChart({
   className,
   settings,
 }: BaseChartProps) {
+  const margin = settings.margin;
+
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
   const svgRef = useRef<SVGSVGElement>(null);

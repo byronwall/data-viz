@@ -4,13 +4,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { reduceDataPoints } from "@/lib/chartUtils";
 import { cn } from "@/lib/utils";
 import { useDataLayer } from "@/providers/DataLayerProvider";
 import { type BaseChartProps } from "@/types/ChartTypes";
 import { extent } from "d3-array";
 import { scaleLinear } from "d3-scale";
 import { curveLinear, curveMonotoneX, curveStepAfter, line } from "d3-shape";
-import { type FC, useEffect, useMemo } from "react";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useMemo, type FC } from "react";
 import { BaseChart } from "../BaseChart";
 import {
   useGetColumnDataForIds,
@@ -18,8 +20,6 @@ import {
 } from "../useGetColumnData";
 import { useGetLiveData } from "../useGetLiveData";
 import { type LineChartSettings } from "./definition";
-import { ArrowRight } from "lucide-react";
-import { reduceDataPoints, type DataPoint } from "@/lib/chartUtils";
 
 const curveTypes = {
   linear: curveLinear,
@@ -80,7 +80,7 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
     facetIds
   );
 
-  const margin = { top: 20, right: 60, bottom: 30, left: 60 };
+  const margin = settings.margin;
 
   // Adjust margins based on legend position
   if (settings.showLegend) {
@@ -346,7 +346,6 @@ export const LineChart: FC<BaseChartProps<LineChartSettings>> = ({
       <BaseChart
         width={width}
         height={height}
-        margin={margin}
         xScale={xScale}
         yScale={leftYScale}
         settings={settings}

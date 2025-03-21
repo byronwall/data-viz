@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: ["src/components/ExplorEda.tsx"],
-  splitting: false,
+  splitting: true,
   sourcemap: true,
   clean: true,
   format: ["esm", "cjs"],

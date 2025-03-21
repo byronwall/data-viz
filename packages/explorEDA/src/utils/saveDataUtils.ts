@@ -1,4 +1,4 @@
-import { SavedDataStructure } from "@/types/SavedDataTypes";
+import { SavedDataStructure } from "@/types/SavedDataStructure";
 
 export async function saveToClipboard(data: SavedDataStructure): Promise<void> {
   try {

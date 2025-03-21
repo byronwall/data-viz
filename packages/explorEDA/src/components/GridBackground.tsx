@@ -23,17 +23,14 @@ export function GridBackground({
 
   return (
     <div
-      className={cn(
-        "absolute inset-0 pointer-events-none border border-dashed border-gray-200",
-        className
-      )}
+      className={cn("absolute inset-0 pointer-events-none", className)}
       style={{
         width,
         height,
       }}
     >
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 border border-dashed border-gray-200"
         style={{
           margin: settings.containerPadding,
         }}

@@ -51,10 +51,10 @@ export interface AxisSettings {
 }
 
 export interface MarginSettings {
-  top?: number;
-  right?: number;
-  bottom?: number;
-  left?: number;
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
 }
 
 export interface BaseChartSettings {

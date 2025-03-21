@@ -31,7 +31,7 @@ export const barChartDefinition: ChartDefinition<BarChartSettings> = {
     type: "bar",
     title: "Bar Chart",
     layout,
-    margin: {},
+    margin: { top: 20, right: 20, bottom: 30, left: 60 },
     filters: [],
   }),
 
